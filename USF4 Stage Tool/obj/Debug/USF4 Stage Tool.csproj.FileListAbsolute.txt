@@ -1,0 +1,184 @@
+C:\Users\Durandal\Desktop\SF4\Tools\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\USF4 Stage Tool.exe.config
+C:\Users\Durandal\Desktop\SF4\Tools\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\USF4 Stage Tool.exe
+C:\Users\Durandal\Desktop\SF4\Tools\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\USF4 Stage Tool.pdb
+C:\Users\Durandal\Desktop\SF4\Tools\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csprojAssemblyReference.cache
+C:\Users\Durandal\Desktop\SF4\Tools\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.DebugOutput.resources
+C:\Users\Durandal\Desktop\SF4\Tools\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.Form1.resources
+C:\Users\Durandal\Desktop\SF4\Tools\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.Properties.Resources.resources
+C:\Users\Durandal\Desktop\SF4\Tools\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.GenerateResource.cache
+C:\Users\Durandal\Desktop\SF4\Tools\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.CoreCompileInputs.cache
+C:\Users\Durandal\Desktop\SF4\Tools\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.exe
+C:\Users\Durandal\Desktop\SF4\Tools\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.pdb
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\USF4 Stage Tool.exe.config
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\USF4 Stage Tool.exe
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\USF4 Stage Tool.pdb
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csprojAssemblyReference.cache
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.DebugOutput.resources
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.Form1.resources
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.Properties.Resources.resources
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.GenerateResource.cache
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.CoreCompileInputs.cache
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.exe
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.pdb
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\KopiLua.dll
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.CopyComplete
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\CSharpImageLibrary.dll
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\Microsoft.IO.RecyclableMemoryStream.dll
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\System.Numerics.Vectors.dll
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\System.Threading.Tasks.Dataflow.dll
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\UsefulThings.dll
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\CSharpImageLibrary.pdb
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\CSharpImageLibrary.xml
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\Microsoft.IO.RecyclableMemoryStream.pdb
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\System.Numerics.Vectors.xml
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\System.Threading.Tasks.Dataflow.xml
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\UsefulThings.pdb
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\UsefulThings.xml
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\USF4 Stage Tool.exe.config
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\USF4 Stage Tool.exe
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\USF4 Stage Tool.pdb
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\CSharpImageLibrary.dll
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\KopiLua.dll
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\Microsoft.IO.RecyclableMemoryStream.dll
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\System.Numerics.Vectors.dll
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\System.Threading.Tasks.Dataflow.dll
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\UsefulThings.dll
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\CSharpImageLibrary.pdb
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\CSharpImageLibrary.xml
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\Microsoft.IO.RecyclableMemoryStream.pdb
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\System.Numerics.Vectors.xml
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\System.Threading.Tasks.Dataflow.xml
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\UsefulThings.pdb
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\UsefulThings.xml
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.DebugOutput.resources
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.Form1.resources
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.Properties.Resources.resources
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.GenerateResource.cache
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.CoreCompileInputs.cache
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.CopyComplete
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.exe
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.pdb
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csprojAssemblyReference.cache
+D:\VS2017 Projects\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\USF4 Stage Tool.exe.config
+D:\VS2017 Projects\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\USF4 Stage Tool.exe
+D:\VS2017 Projects\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\USF4 Stage Tool.pdb
+D:\VS2017 Projects\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\CSharpImageLibrary.dll
+D:\VS2017 Projects\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\KopiLua.dll
+D:\VS2017 Projects\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\Microsoft.IO.RecyclableMemoryStream.dll
+D:\VS2017 Projects\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\System.Numerics.Vectors.dll
+D:\VS2017 Projects\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\System.Threading.Tasks.Dataflow.dll
+D:\VS2017 Projects\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\UsefulThings.dll
+D:\VS2017 Projects\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\CSharpImageLibrary.pdb
+D:\VS2017 Projects\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\CSharpImageLibrary.xml
+D:\VS2017 Projects\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\Microsoft.IO.RecyclableMemoryStream.pdb
+D:\VS2017 Projects\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\System.Numerics.Vectors.xml
+D:\VS2017 Projects\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\System.Threading.Tasks.Dataflow.xml
+D:\VS2017 Projects\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\UsefulThings.pdb
+D:\VS2017 Projects\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\UsefulThings.xml
+D:\VS2017 Projects\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.DebugOutput.resources
+D:\VS2017 Projects\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.Form1.resources
+D:\VS2017 Projects\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.Properties.Resources.resources
+D:\VS2017 Projects\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.GenerateResource.cache
+D:\VS2017 Projects\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.CoreCompileInputs.cache
+D:\VS2017 Projects\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.CopyComplete
+D:\VS2017 Projects\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.exe
+D:\VS2017 Projects\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.pdb
+D:\VS2017 Projects\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csprojAssemblyReference.cache
+D:\VS2017 Projects\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.InputBox.resources
+D:\USF4 CURRENT 16-08\USF4_Stage_Tool_v1.6_Stable14.08.2020_Mass_DDS_Extract\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\USF4 Stage Tool.exe.config
+D:\USF4 CURRENT 16-08\USF4_Stage_Tool_v1.6_Stable14.08.2020_Mass_DDS_Extract\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\USF4 Stage Tool.exe
+D:\USF4 CURRENT 16-08\USF4_Stage_Tool_v1.6_Stable14.08.2020_Mass_DDS_Extract\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\USF4 Stage Tool.pdb
+D:\USF4 CURRENT 16-08\USF4_Stage_Tool_v1.6_Stable14.08.2020_Mass_DDS_Extract\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\CSharpImageLibrary.dll
+D:\USF4 CURRENT 16-08\USF4_Stage_Tool_v1.6_Stable14.08.2020_Mass_DDS_Extract\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\KopiLua.dll
+D:\USF4 CURRENT 16-08\USF4_Stage_Tool_v1.6_Stable14.08.2020_Mass_DDS_Extract\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\Microsoft.IO.RecyclableMemoryStream.dll
+D:\USF4 CURRENT 16-08\USF4_Stage_Tool_v1.6_Stable14.08.2020_Mass_DDS_Extract\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\System.Numerics.Vectors.dll
+D:\USF4 CURRENT 16-08\USF4_Stage_Tool_v1.6_Stable14.08.2020_Mass_DDS_Extract\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\System.Threading.Tasks.Dataflow.dll
+D:\USF4 CURRENT 16-08\USF4_Stage_Tool_v1.6_Stable14.08.2020_Mass_DDS_Extract\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\UsefulThings.dll
+D:\USF4 CURRENT 16-08\USF4_Stage_Tool_v1.6_Stable14.08.2020_Mass_DDS_Extract\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\CSharpImageLibrary.pdb
+D:\USF4 CURRENT 16-08\USF4_Stage_Tool_v1.6_Stable14.08.2020_Mass_DDS_Extract\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\CSharpImageLibrary.xml
+D:\USF4 CURRENT 16-08\USF4_Stage_Tool_v1.6_Stable14.08.2020_Mass_DDS_Extract\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\Microsoft.IO.RecyclableMemoryStream.pdb
+D:\USF4 CURRENT 16-08\USF4_Stage_Tool_v1.6_Stable14.08.2020_Mass_DDS_Extract\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\System.Numerics.Vectors.xml
+D:\USF4 CURRENT 16-08\USF4_Stage_Tool_v1.6_Stable14.08.2020_Mass_DDS_Extract\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\System.Threading.Tasks.Dataflow.xml
+D:\USF4 CURRENT 16-08\USF4_Stage_Tool_v1.6_Stable14.08.2020_Mass_DDS_Extract\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\UsefulThings.pdb
+D:\USF4 CURRENT 16-08\USF4_Stage_Tool_v1.6_Stable14.08.2020_Mass_DDS_Extract\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\UsefulThings.xml
+D:\USF4 CURRENT 16-08\USF4_Stage_Tool_v1.6_Stable14.08.2020_Mass_DDS_Extract\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csprojAssemblyReference.cache
+D:\USF4 CURRENT 16-08\USF4_Stage_Tool_v1.6_Stable14.08.2020_Mass_DDS_Extract\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.DebugOutput.resources
+D:\USF4 CURRENT 16-08\USF4_Stage_Tool_v1.6_Stable14.08.2020_Mass_DDS_Extract\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.Form1.resources
+D:\USF4 CURRENT 16-08\USF4_Stage_Tool_v1.6_Stable14.08.2020_Mass_DDS_Extract\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.InputBox.resources
+D:\USF4 CURRENT 16-08\USF4_Stage_Tool_v1.6_Stable14.08.2020_Mass_DDS_Extract\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.Properties.Resources.resources
+D:\USF4 CURRENT 16-08\USF4_Stage_Tool_v1.6_Stable14.08.2020_Mass_DDS_Extract\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.GenerateResource.cache
+D:\USF4 CURRENT 16-08\USF4_Stage_Tool_v1.6_Stable14.08.2020_Mass_DDS_Extract\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.CoreCompileInputs.cache
+D:\USF4 CURRENT 16-08\USF4_Stage_Tool_v1.6_Stable14.08.2020_Mass_DDS_Extract\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.CopyComplete
+D:\USF4 CURRENT 16-08\USF4_Stage_Tool_v1.6_Stable14.08.2020_Mass_DDS_Extract\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.exe
+D:\USF4 CURRENT 16-08\USF4_Stage_Tool_v1.6_Stable14.08.2020_Mass_DDS_Extract\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.pdb
+D:\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\USF4 Stage Tool.exe.config
+D:\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\USF4 Stage Tool.exe
+D:\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\USF4 Stage Tool.pdb
+D:\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\CSharpImageLibrary.dll
+D:\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\KopiLua.dll
+D:\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\Microsoft.IO.RecyclableMemoryStream.dll
+D:\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\System.Numerics.Vectors.dll
+D:\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\System.Threading.Tasks.Dataflow.dll
+D:\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\UsefulThings.dll
+D:\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\CSharpImageLibrary.pdb
+D:\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\CSharpImageLibrary.xml
+D:\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\Microsoft.IO.RecyclableMemoryStream.pdb
+D:\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\System.Numerics.Vectors.xml
+D:\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\System.Threading.Tasks.Dataflow.xml
+D:\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\UsefulThings.pdb
+D:\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\UsefulThings.xml
+D:\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csprojAssemblyReference.cache
+D:\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.DebugOutput.resources
+D:\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.Form1.resources
+D:\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.InputBox.resources
+D:\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.Properties.Resources.resources
+D:\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.GenerateResource.cache
+D:\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.CoreCompileInputs.cache
+D:\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.CopyComplete
+D:\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.exe
+D:\USF4 Stage Tool\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.pdb
+D:\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\USF4 Stage Tool.exe.config
+D:\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\USF4 Stage Tool.exe
+D:\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\USF4 Stage Tool.pdb
+D:\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\CSharpImageLibrary.dll
+D:\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\KopiLua.dll
+D:\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\Microsoft.IO.RecyclableMemoryStream.dll
+D:\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\System.Numerics.Vectors.dll
+D:\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\System.Threading.Tasks.Dataflow.dll
+D:\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\UsefulThings.dll
+D:\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\CSharpImageLibrary.pdb
+D:\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\CSharpImageLibrary.xml
+D:\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\Microsoft.IO.RecyclableMemoryStream.pdb
+D:\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\System.Numerics.Vectors.xml
+D:\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\System.Threading.Tasks.Dataflow.xml
+D:\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\UsefulThings.pdb
+D:\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\UsefulThings.xml
+D:\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csprojAssemblyReference.cache
+D:\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.DebugOutput.resources
+D:\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.Form1.resources
+D:\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.InputBox.resources
+D:\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.Properties.Resources.resources
+D:\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.GenerateResource.cache
+D:\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.CoreCompileInputs.cache
+D:\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.CopyComplete
+D:\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.exe
+D:\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.pdb
+C:\Users\Durandal\Desktop\SF4\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.InputBox.resources
+C:\Users\Durandal\Desktop\USF4 Stage Base\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\USF4 Stage Tool.exe.config
+C:\Users\Durandal\Desktop\USF4 Stage Base\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\USF4 Stage Tool.exe
+C:\Users\Durandal\Desktop\USF4 Stage Base\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\USF4 Stage Tool.pdb
+C:\Users\Durandal\Desktop\USF4 Stage Base\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\CSharpImageLibrary.xml
+C:\Users\Durandal\Desktop\USF4 Stage Base\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\System.Numerics.Vectors.xml
+C:\Users\Durandal\Desktop\USF4 Stage Base\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\System.Threading.Tasks.Dataflow.xml
+C:\Users\Durandal\Desktop\USF4 Stage Base\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\UsefulThings.xml
+C:\Users\Durandal\Desktop\USF4 Stage Base\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csprojAssemblyReference.cache
+C:\Users\Durandal\Desktop\USF4 Stage Base\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.DebugOutput.resources
+C:\Users\Durandal\Desktop\USF4 Stage Base\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.Form1.resources
+C:\Users\Durandal\Desktop\USF4 Stage Base\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.InputBox.resources
+C:\Users\Durandal\Desktop\USF4 Stage Base\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.Properties.Resources.resources
+C:\Users\Durandal\Desktop\USF4 Stage Base\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.GenerateResource.cache
+C:\Users\Durandal\Desktop\USF4 Stage Base\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.CoreCompileInputs.cache
+C:\Users\Durandal\Desktop\USF4 Stage Base\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.Fody.CopyLocal.cache
+C:\Users\Durandal\Desktop\USF4 Stage Base\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.CopyComplete
+C:\Users\Durandal\Desktop\USF4 Stage Base\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.exe
+C:\Users\Durandal\Desktop\USF4 Stage Base\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.pdb
