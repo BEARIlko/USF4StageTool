@@ -182,3 +182,21 @@ C:\Users\Durandal\Desktop\USF4 Stage Base\USF4 Stage Tool\USF4 Stage Tool\obj\De
 C:\Users\Durandal\Desktop\USF4 Stage Base\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.CopyComplete
 C:\Users\Durandal\Desktop\USF4 Stage Base\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.exe
 C:\Users\Durandal\Desktop\USF4 Stage Base\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.pdb
+D:\GITS\USF4StageTool\USF4 Stage Tool\bin\Debug\USF4 Stage Tool.exe.config
+D:\GITS\USF4StageTool\USF4 Stage Tool\bin\Debug\USF4 Stage Tool.exe
+D:\GITS\USF4StageTool\USF4 Stage Tool\bin\Debug\USF4 Stage Tool.pdb
+D:\GITS\USF4StageTool\USF4 Stage Tool\bin\Debug\CSharpImageLibrary.xml
+D:\GITS\USF4StageTool\USF4 Stage Tool\bin\Debug\System.Numerics.Vectors.xml
+D:\GITS\USF4StageTool\USF4 Stage Tool\bin\Debug\System.Threading.Tasks.Dataflow.xml
+D:\GITS\USF4StageTool\USF4 Stage Tool\bin\Debug\UsefulThings.xml
+D:\GITS\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csprojAssemblyReference.cache
+D:\GITS\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.DebugOutput.resources
+D:\GITS\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.Form1.resources
+D:\GITS\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.InputBox.resources
+D:\GITS\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.Properties.Resources.resources
+D:\GITS\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.GenerateResource.cache
+D:\GITS\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.CoreCompileInputs.cache
+D:\GITS\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.Fody.CopyLocal.cache
+D:\GITS\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.CopyComplete
+D:\GITS\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.exe
+D:\GITS\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.pdb

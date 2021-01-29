@@ -3667,93 +3667,109 @@ namespace USF4_Stage_Tool
 
         private void EMOtoRefSMD(EMO emo)
 		{
-			List<string> SMDData = new List<string>();
+			string filepath;
+			string newSMD = $"{Encoding.ASCII.GetString(emo.Name)}.smd";
 
-			SMDData.Add("version 1");
-
-			SMDData.AddRange(WriteSMDNodesFromSkeleton(emo.Skeleton));
-
-			SMDData.Add("triangles");
-			for (int i = 0; i < emo.EMGList.Count; i++)
+			saveFileDialog1.InitialDirectory = string.Empty;
+			saveFileDialog1.FileName = newSMD;
+			saveFileDialog1.Filter = SMDFileFilter;     //"Wavefront (.obj)|*.obj";
+			if (saveFileDialog1.ShowDialog() == DialogResult.OK)
 			{
-				for (int j = 0; j < emo.EMGList[i].Models.Count; j++)
+				filepath = saveFileDialog1.FileName;
+				if (filepath.Trim() != "")
 				{
-					Model wMod = emo.EMGList[i].Models[j];
+					List<string> SMDData = new List<string>();
 
-					for (int k = 0; k < emo.EMGList[i].Models[j].SubModels.Count; k++)
+					SMDData.Add("version 1");
+
+					SMDData.AddRange(WriteSMDNodesFromSkeleton(emo.Skeleton));
+
+					SMDData.Add("triangles");
+					for (int i = 0; i < emo.EMGList.Count; i++)
 					{
-						SubModel wSM = wMod.SubModels[k];
-						List<int[]> smFaces = FaceIndicesFromDaisyChain(wSM.DaisyChain);
-
-						for (int f = 0; f < smFaces.Count; f++)
+						for (int j = 0; j < emo.EMGList[i].Models.Count; j++)
 						{
-							SMDData.Add(Encoding.ASCII.GetString(wSM.SubModelName).Replace(Convert.ToChar(0x00),' ')); //Use as material name
+							Model wMod = emo.EMGList[i].Models[j];
 
-							float weightTotal = 0;
-
-							string v1 = $"{emo.EMGList[i].RootBone} ";
-							v1 += $"{wMod.VertexData[smFaces[f][0]].X} {wMod.VertexData[smFaces[f][0]].Y} {wMod.VertexData[smFaces[f][0]].Z} ";
-							v1 += $"{wMod.VertexData[smFaces[f][0]].nX} {wMod.VertexData[smFaces[f][0]].nY} {wMod.VertexData[smFaces[f][0]].nZ} ";
-							v1 += $"{wMod.VertexData[smFaces[f][0]].U} {wMod.VertexData[smFaces[f][0]].V} ";
-							if (wMod.VertexData[smFaces[f][0]].BoneIDs != null && wMod.VertexData[smFaces[f][0]].BoneIDs.Count > 0)
+							for (int k = 0; k < emo.EMGList[i].Models[j].SubModels.Count; k++)
 							{
-								v1 += "4 ";
-								v1 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][0]].BoneIDs[0]]} {wMod.VertexData[smFaces[f][0]].BoneWeights[0]} ";
-								v1 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][0]].BoneIDs[1]]} {wMod.VertexData[smFaces[f][0]].BoneWeights[1]} ";
-								v1 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][0]].BoneIDs[2]]} {wMod.VertexData[smFaces[f][0]].BoneWeights[2]} ";
-								weightTotal += wMod.VertexData[smFaces[f][0]].BoneWeights[0];
-								weightTotal += wMod.VertexData[smFaces[f][0]].BoneWeights[1];
-								weightTotal += wMod.VertexData[smFaces[f][0]].BoneWeights[2];
-								v1 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][0]].BoneIDs[3]]} {Math.Max(1 - weightTotal, 0)} ";
+								SubModel wSM = wMod.SubModels[k];
+								List<int[]> smFaces = FaceIndicesFromDaisyChain(wSM.DaisyChain);
+
+								for (int f = 0; f < smFaces.Count; f++)
+								{
+									SMDData.Add(Encoding.ASCII.GetString(wSM.SubModelName).Replace(Convert.ToChar(0x00), ' ')); //Use as material name
+
+									float weightTotal = 0;
+
+									string v1 = $"{emo.EMGList[i].RootBone} ";
+									v1 += $"{wMod.VertexData[smFaces[f][0]].X} {wMod.VertexData[smFaces[f][0]].Y} {wMod.VertexData[smFaces[f][0]].Z} ";
+									v1 += $"{wMod.VertexData[smFaces[f][0]].nX} {wMod.VertexData[smFaces[f][0]].nY} {wMod.VertexData[smFaces[f][0]].nZ} ";
+									v1 += $"{wMod.VertexData[smFaces[f][0]].U} {wMod.VertexData[smFaces[f][0]].V} ";
+									if (wMod.VertexData[smFaces[f][0]].BoneIDs != null && wMod.VertexData[smFaces[f][0]].BoneIDs.Count > 0)
+									{
+										v1 += "4 ";
+										v1 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][0]].BoneIDs[0]]} {wMod.VertexData[smFaces[f][0]].BoneWeights[0]} ";
+										v1 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][0]].BoneIDs[1]]} {wMod.VertexData[smFaces[f][0]].BoneWeights[1]} ";
+										v1 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][0]].BoneIDs[2]]} {wMod.VertexData[smFaces[f][0]].BoneWeights[2]} ";
+										weightTotal += wMod.VertexData[smFaces[f][0]].BoneWeights[0];
+										weightTotal += wMod.VertexData[smFaces[f][0]].BoneWeights[1];
+										weightTotal += wMod.VertexData[smFaces[f][0]].BoneWeights[2];
+										v1 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][0]].BoneIDs[3]]} {Math.Max(1 - weightTotal, 0)} ";
+									}
+
+									SMDData.Add(v1);
+									weightTotal = 0;
+
+									string v2 = $"{emo.EMGList[i].RootBone} ";
+									v2 += $"{wMod.VertexData[smFaces[f][1]].X} {wMod.VertexData[smFaces[f][1]].Y} {wMod.VertexData[smFaces[f][1]].Z} ";
+									v2 += $"{wMod.VertexData[smFaces[f][1]].nX} {wMod.VertexData[smFaces[f][1]].nY} {wMod.VertexData[smFaces[f][1]].nZ} ";
+									v2 += $"{wMod.VertexData[smFaces[f][1]].U} {wMod.VertexData[smFaces[f][1]].V} ";
+									if (wMod.VertexData[smFaces[f][1]].BoneIDs != null && wMod.VertexData[smFaces[f][1]].BoneIDs.Count > 0)
+									{
+										v2 += "4 ";
+										v2 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][1]].BoneIDs[0]]} {wMod.VertexData[smFaces[f][1]].BoneWeights[0]} ";
+										v2 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][1]].BoneIDs[1]]} {wMod.VertexData[smFaces[f][1]].BoneWeights[1]} ";
+										v2 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][1]].BoneIDs[2]]} {wMod.VertexData[smFaces[f][1]].BoneWeights[2]} ";
+										weightTotal += wMod.VertexData[smFaces[f][1]].BoneWeights[0];
+										weightTotal += wMod.VertexData[smFaces[f][1]].BoneWeights[1];
+										weightTotal += wMod.VertexData[smFaces[f][1]].BoneWeights[2];
+										v2 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][1]].BoneIDs[3]]} {Math.Max(1 - weightTotal, 0)} ";
+									}
+
+									SMDData.Add(v2);
+									weightTotal = 0;
+
+									string v3 = $"{emo.EMGList[i].RootBone} ";
+									v3 += $"{wMod.VertexData[smFaces[f][2]].X} {wMod.VertexData[smFaces[f][2]].Y} {wMod.VertexData[smFaces[f][2]].Z} ";
+									v3 += $"{wMod.VertexData[smFaces[f][2]].nX} {wMod.VertexData[smFaces[f][2]].nY} {wMod.VertexData[smFaces[f][2]].nZ} ";
+									v3 += $"{wMod.VertexData[smFaces[f][2]].U} {wMod.VertexData[smFaces[f][2]].V} ";
+									if (wMod.VertexData[smFaces[f][2]].BoneIDs != null && wMod.VertexData[smFaces[f][2]].BoneIDs.Count > 0)
+									{
+										v3 += "4 ";
+										v3 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][2]].BoneIDs[0]]} {wMod.VertexData[smFaces[f][2]].BoneWeights[0]} ";
+										v3 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][2]].BoneIDs[1]]} {wMod.VertexData[smFaces[f][2]].BoneWeights[1]} ";
+										v3 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][2]].BoneIDs[2]]} {wMod.VertexData[smFaces[f][2]].BoneWeights[2]} ";
+										weightTotal += wMod.VertexData[smFaces[f][2]].BoneWeights[0];
+										weightTotal += wMod.VertexData[smFaces[f][2]].BoneWeights[1];
+										weightTotal += wMod.VertexData[smFaces[f][2]].BoneWeights[2];
+										v3 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][2]].BoneIDs[3]]} {Math.Max(1 - weightTotal, 0)} ";
+									}
+
+									SMDData.Add(v3);
+								}
 							}
-
-							SMDData.Add(v1);
-							weightTotal = 0;
-
-							string v2 = $"{emo.EMGList[i].RootBone} ";
-							v2 += $"{wMod.VertexData[smFaces[f][1]].X} {wMod.VertexData[smFaces[f][1]].Y} {wMod.VertexData[smFaces[f][1]].Z} ";
-							v2 += $"{wMod.VertexData[smFaces[f][1]].nX} {wMod.VertexData[smFaces[f][1]].nY} {wMod.VertexData[smFaces[f][1]].nZ} ";
-							v2 += $"{wMod.VertexData[smFaces[f][1]].U} {wMod.VertexData[smFaces[f][1]].V} ";
-							if (wMod.VertexData[smFaces[f][1]].BoneIDs != null && wMod.VertexData[smFaces[f][1]].BoneIDs.Count > 0)
-							{
-								v2 += "4 ";
-								v2 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][1]].BoneIDs[0]]} {wMod.VertexData[smFaces[f][1]].BoneWeights[0]} ";
-								v2 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][1]].BoneIDs[1]]} {wMod.VertexData[smFaces[f][1]].BoneWeights[1]} ";
-								v2 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][1]].BoneIDs[2]]} {wMod.VertexData[smFaces[f][1]].BoneWeights[2]} ";
-								weightTotal += wMod.VertexData[smFaces[f][1]].BoneWeights[0];
-								weightTotal += wMod.VertexData[smFaces[f][1]].BoneWeights[1];
-								weightTotal += wMod.VertexData[smFaces[f][1]].BoneWeights[2];
-								v2 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][1]].BoneIDs[3]]} {Math.Max(1 - weightTotal, 0)} ";
-							}
-
-							SMDData.Add(v2);
-							weightTotal = 0;
-
-							string v3 = $"{emo.EMGList[i].RootBone} ";
-							v3 += $"{wMod.VertexData[smFaces[f][2]].X} {wMod.VertexData[smFaces[f][2]].Y} {wMod.VertexData[smFaces[f][2]].Z} ";
-							v3 += $"{wMod.VertexData[smFaces[f][2]].nX} {wMod.VertexData[smFaces[f][2]].nY} {wMod.VertexData[smFaces[f][2]].nZ} ";
-							v3 += $"{wMod.VertexData[smFaces[f][2]].U} {wMod.VertexData[smFaces[f][2]].V} ";
-							if (wMod.VertexData[smFaces[f][2]].BoneIDs != null && wMod.VertexData[smFaces[f][2]].BoneIDs.Count > 0)
-							{
-								v3 += "4 ";
-								v3 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][2]].BoneIDs[0]]} {wMod.VertexData[smFaces[f][2]].BoneWeights[0]} ";
-								v3 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][2]].BoneIDs[1]]} {wMod.VertexData[smFaces[f][2]].BoneWeights[1]} ";
-								v3 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][2]].BoneIDs[2]]} {wMod.VertexData[smFaces[f][2]].BoneWeights[2]} ";
-								weightTotal += wMod.VertexData[smFaces[f][2]].BoneWeights[0];
-								weightTotal += wMod.VertexData[smFaces[f][2]].BoneWeights[1];
-								weightTotal += wMod.VertexData[smFaces[f][2]].BoneWeights[2];
-								v3 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][2]].BoneIDs[3]]} {Math.Max(1 - weightTotal, 0)} ";
-							}
-
-							SMDData.Add(v3);
 						}
 					}
+
+					SMDData.Add("end");
+
+					//File.WriteAllLines($"{Encoding.ASCII.GetString(emo.Name)}.smd", SMDData.Cast<string>().ToArray());
+					File.WriteAllLines(filepath, SMDData.Cast<string>().ToArray());
 				}
 			}
 
-			SMDData.Add("end");
-
-			File.WriteAllLines($"{Encoding.ASCII.GetString(emo.Name)}.smd", SMDData.Cast<string>().ToArray());
+			
 		}
 
 
@@ -4481,12 +4497,14 @@ namespace USF4_Stage_Tool
 
 					for (int k = 0; k < model.Frames.Count; k++)
 					{
+						int xflip = -1;
+
 						float Rad2Deg = Convert.ToSingle(180 / Math.PI);
 						int dumVal; //TryGetValue outputs the dictionary result, but we don't care right now
-						if (!ValueDict.TryGetValue(model.Frames[k].traX[i], out dumVal)) { ValueDict.Add(model.Frames[k].traX[i], ValueDict.Count); }
+						if (!ValueDict.TryGetValue(xflip*model.Frames[k].traX[i], out dumVal)) { ValueDict.Add(xflip*model.Frames[k].traX[i], ValueDict.Count); }
 						if (!ValueDict.TryGetValue(model.Frames[k].traY[i], out dumVal)) { ValueDict.Add(model.Frames[k].traY[i], ValueDict.Count); }
 						if (!ValueDict.TryGetValue(model.Frames[k].traZ[i], out dumVal)) { ValueDict.Add(model.Frames[k].traZ[i], ValueDict.Count); }
-						if (!ValueDict.TryGetValue(Rad2Deg * model.Frames[k].rotX[i], out dumVal)) { ValueDict.Add(Rad2Deg * model.Frames[k].rotX[i], ValueDict.Count); }
+						if (!ValueDict.TryGetValue(Rad2Deg * xflip*model.Frames[k].rotX[i], out dumVal)) { ValueDict.Add(Rad2Deg * xflip*model.Frames[k].rotX[i], ValueDict.Count); }
 						if (!ValueDict.TryGetValue(Rad2Deg * model.Frames[k].rotY[i], out dumVal)) { ValueDict.Add(Rad2Deg * model.Frames[k].rotY[i], ValueDict.Count); }
 						if (!ValueDict.TryGetValue(Rad2Deg * model.Frames[k].rotZ[i], out dumVal)) { ValueDict.Add(Rad2Deg * model.Frames[k].rotZ[i], ValueDict.Count); }
 					}
