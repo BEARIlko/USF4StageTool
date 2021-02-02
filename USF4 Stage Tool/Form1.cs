@@ -11,6 +11,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static KopiLua.Lua;
 using static CSharpImageLibrary.ImageFormats;
 
 namespace USF4_Stage_Tool
@@ -185,7 +186,7 @@ namespace USF4_Stage_Tool
 				}
 				if (line.StartsWith("usemtl"))
 				{   //Starting a new material group, add the old material to the WorkingObj if needed
-					if (WorkingMat.lines.Count > 0) 
+					if (WorkingMat.lines.Count > 0)
 					{
 						WorkingObject.MaterialGroups.Add(WorkingMat);
 					}
@@ -611,12 +612,12 @@ namespace USF4_Stage_Tool
 		//		if (dr == DialogResult.Cancel || dr == DialogResult.No) { ClearUpStatus(); return; }
 		//	}
 
-  //          VertexDaisyChain = DaisyChainFromIndices(new List<int[]>(WorkingObject.FaceIndices));
+		//          VertexDaisyChain = DaisyChainFromIndices(new List<int[]>(WorkingObject.FaceIndices));
 		//	lbLoadSteps.Text = TStrings.STR_EncodeComplete;
 		//}
 
 		async void EncodeTheOBJ()
-        {
+		{
 			for (int i = 0; i < WorkingObject.MaterialGroups.Count; i++)
 			{
 				ObjMatGroup tempMatGroup = WorkingObject.MaterialGroups[i];
@@ -631,7 +632,7 @@ namespace USF4_Stage_Tool
 			}
 		}
 
-        void SetupProgress(int steps)
+		void SetupProgress(int steps)
 		{
 			StartTime = DateTime.Now;
 			progressBar1.Maximum = steps;
@@ -647,7 +648,7 @@ namespace USF4_Stage_Tool
 		}
 
 		bool ValidateOBJ()
-		{	//TODO fix face validation
+		{   //TODO fix face validation
 			if (WorkingObject.Verts.Count <= 0) { MessageBox.Show(TStrings.STR_ERR_VertsNotFoundinOBJ, TStrings.STR_Information); return false; }
 			if (WorkingObject.Textures.Count <= 0) { MessageBox.Show(TStrings.STR_ERR_TexturesNotFoundinOBJ, TStrings.STR_Information); return false; }
 			if (WorkingObject.Normals.Count <= 0) { MessageBox.Show(TStrings.STR_ERR_NormalsNotFoundinOBJ, TStrings.STR_Information); return false; }
@@ -758,7 +759,7 @@ namespace USF4_Stage_Tool
 				//TimeEstimate(TStrings.STR_OutputingHex, WorkingObject.UniqueVerts.Count, progressBar1.Value);
 			}
 		}
-		
+
 		void SaveEncodedOBJHex()
 		{
 			if (!ObjectLoaded) { AddStatus(TStrings.STR_ERR_NoOBJ); return; }
@@ -841,7 +842,7 @@ namespace USF4_Stage_Tool
 			nModel.VertexData = new List<Vertex>();
 			for (int i = 0; i < nModel.VertexCount; i++)
 			{
-				int ReadPosition = 0; 
+				int ReadPosition = 0;
 				//After a particular data type is read form the vertex block, we advance the position by the correct length
 				//This way a single function can read all vert data blocks. Relative order of all data types is fixed.
 
@@ -896,7 +897,7 @@ namespace USF4_Stage_Tool
 					//Move the read head
 					ReadPosition += 0x04;
 				}
-				
+
 				//Bone weighting
 				if ((nModel.BitFlag & 0x0200) == 0x0200)
 				{
@@ -933,11 +934,11 @@ namespace USF4_Stage_Tool
 				newSubModel.DaisyChain[i] = Utils.ReadInt(false, 0x36 + i * 2, newSubModel.HEXBytes);
 			}
 			newSubModel.BoneIntegersCount = Utils.ReadInt(false, 0x14, newSubModel.HEXBytes);
-			
-			for(int i = 0; i < newSubModel.BoneIntegersCount; i++)
-            {
+
+			for (int i = 0; i < newSubModel.BoneIntegersCount; i++)
+			{
 				newSubModel.BoneIntegersList.Add(Utils.ReadInt(false, 0x36 + (newSubModel.DaisyChainLength + i) * 2, Data));
-            }
+			}
 
 			newSubModel.SubModelName = Utils.ReadStringToArray(0x16, 0x20, newSubModel.HEXBytes, newSubModel.HEXBytes.Length);
 			return newSubModel;
@@ -1009,10 +1010,10 @@ namespace USF4_Stage_Tool
 				tex.Scales_V = new List<float> { 1f };
 				tex.TextureLayers = 0x01;
 				tex.TextureIndex = new List<int> { template.Models[0].TexturesList[0].TextureIndex[0] };
-				
+
 				mod.TexturesList.Add(tex);
 				mod.TexturePointer.Add(0x00);
-				
+
 				if (tbTextureIndex.Text.Trim() != string.Empty)
 				{
 					tex.TextureIndex[0] = int.Parse(tbTextureIndex.Text);
@@ -1225,7 +1226,7 @@ namespace USF4_Stage_Tool
 						}
 					}
 				}
-				
+
 				Utils.UpdateIntAtPosition(Data, VertexListPointerPosition, Data.Count - 0x10);
 
 				for (int j = 0; j < emg.Models[i].VertexCount; j++)
@@ -1281,16 +1282,16 @@ namespace USF4_Stage_Tool
 					//3 Floats listing the weightings. If the 3 floats don't add up to 1, the remainder is applied to bone 4?
 					if ((emg.Models[i].BitFlag & 0x0200) == 0x0200)
 					{
-						for(int k = 0; k < 4; k++)
-                        {
+						for (int k = 0; k < 4; k++)
+						{
 							if (emg.Models[i].VertexData[j].BoneIDs.Count > k)
 							{
 								Data.Add(Convert.ToByte(emg.Models[i].VertexData[j].BoneIDs[k]));
 							}
 							else Data.Add(0x00);
-                        }
+						}
 						for (int k = 0; k < 3; k++)
-                        {
+						{
 							if (emg.Models[i].VertexData[j].BoneWeights.Count > k)
 							{
 								Utils.AddFloatAsBytes(Data, emg.Models[i].VertexData[j].BoneWeights[k]);
@@ -1433,7 +1434,7 @@ namespace USF4_Stage_Tool
 		}
 
 		Skeleton SkeletonFromSMD(SMDModel model)
-        {
+		{
 			Skeleton skel = new Skeleton();
 			skel.FFList = new List<byte[]>();
 			skel.Nodes = new List<Node>();
@@ -1567,7 +1568,7 @@ namespace USF4_Stage_Tool
 				WorkingNode.NodeMatrix = new Matrix4x4(m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44);
 
 				if (skel.SecondaryMatrixPointer != 0)
-                {
+				{
 					m11 = Utils.ReadFloat(skel.SecondaryMatrixPointer + i * 0x40 + 0x00, Data);
 					m12 = Utils.ReadFloat(skel.SecondaryMatrixPointer + i * 0x40 + 0x04, Data);
 					m13 = Utils.ReadFloat(skel.SecondaryMatrixPointer + i * 0x40 + 0x08, Data);
@@ -1592,8 +1593,8 @@ namespace USF4_Stage_Tool
 				skel.Nodes.Add(WorkingNode);
 			}
 
-			if(skel.IKObjectCount != 0)
-            {
+			if (skel.IKObjectCount != 0)
+			{
 				for (int i = 0; i < skel.IKObjectCount; i++)
 				{
 					IKNode wIK = new IKNode();
@@ -1603,24 +1604,24 @@ namespace USF4_Stage_Tool
 					wIK.BoneListPointer = Utils.ReadInt(true, skel.IKBoneListPointer + i * 0x08 + 0x04, Data);
 
 					for (int j = 0; j < wIK.BoneCount; j++)
-                    {
+					{
 						wIK.BoneList.Add(Utils.ReadInt(false, skel.IKBoneListPointer + i * 0x08 + wIK.BoneListPointer + j * 0x02, Data));
-                    }
+					}
 
 					skel.IKNameIndex.Add(Utils.ReadInt(true, skel.IKObjectNameIndexPointer + i * 0x04, Data));
 					skel.IKNodeNames.Add(Utils.ReadZeroTermStringToArray(skel.IKNameIndex[i], Data, Data.Length));
 
 					skel.IKNodes.Add(wIK);
 				}
-            }
+			}
 
-			if(skel.IKDataCount != 0)
-            {
+			if (skel.IKDataCount != 0)
+			{
 				//There's no pointers to individual IKData blocks, so we initialise the position for the first data block,
 				//and add the length of each data block as we read it in.
 				int CurrentBlockStartPosition = skel.IKDataPointer;
-				for(int i = 0; i < skel.IKDataCount; i++)
-                {
+				for (int i = 0; i < skel.IKDataCount; i++)
+				{
 					IKDataBlock wIKData = new IKDataBlock();
 
 					wIKData.IKShorts = new List<int>();
@@ -1629,41 +1630,41 @@ namespace USF4_Stage_Tool
 					wIKData.BitFlag = Utils.ReadInt(false, CurrentBlockStartPosition, Data);
 					wIKData.Length = Utils.ReadInt(false, CurrentBlockStartPosition + 0x02, Data);
 
-					if(wIKData.BitFlag == 0x00)
-                    {
-						for(int j = 0; j < wIKData.Length - 0x04; j+=2)
-                        {
-							wIKData.IKShorts.Add(Utils.ReadInt(false, CurrentBlockStartPosition + j + 0x04, Data));
-                        }
-                    }
-					else if(wIKData.BitFlag == 0x01)
-                    {
-						for(int j = 0; j < wIKData.Length - 0x10; j+=2) //- 0x10 because first 0x04 bytes are the "header", last 0x0C bytes are the floats
-                        {
+					if (wIKData.BitFlag == 0x00)
+					{
+						for (int j = 0; j < wIKData.Length - 0x04; j += 2)
+						{
 							wIKData.IKShorts.Add(Utils.ReadInt(false, CurrentBlockStartPosition + j + 0x04, Data));
 						}
-						for(int j = 0; j < 3; j++)
-                        {
+					}
+					else if (wIKData.BitFlag == 0x01)
+					{
+						for (int j = 0; j < wIKData.Length - 0x10; j += 2) //- 0x10 because first 0x04 bytes are the "header", last 0x0C bytes are the floats
+						{
+							wIKData.IKShorts.Add(Utils.ReadInt(false, CurrentBlockStartPosition + j + 0x04, Data));
+						}
+						for (int j = 0; j < 3; j++)
+						{
 							wIKData.IKFloats.Add(Utils.ReadFloat(CurrentBlockStartPosition + 0x04 + wIKData.IKShorts.Count * 0x02 + j * 0x04, Data));
-                        }
-                    }
+						}
+					}
 					else
-                    {
+					{
 						Console.WriteLine("UNKNOWN IKFLAG IN SKELETON IK DATA BLOCK " + i);
 						return skel;
-                    }
+					}
 
 					skel.IKDataBlocks.Add(wIKData);
 
 					CurrentBlockStartPosition += wIKData.Length;
-                }
-            }
+				}
+			}
 
 			return skel;
 		}
 
 		byte[] HexDataFromSkeleton(Skeleton skel)
-        {
+		{
 			List<byte> Data = new List<byte>();
 			//0x00
 			Utils.AddIntAsBytes(Data, skel.NodeCount, false);
@@ -1695,7 +1696,7 @@ namespace USF4_Stage_Tool
 			//0x40 - Node relationships and main matrices
 			Utils.UpdateIntAtPosition(Data, NodeListPointerPosition, Data.Count);
 			for (int i = 0; i < skel.NodeCount; i++)
-            {
+			{
 				Utils.AddSignedShortAsBytes(Data, skel.Nodes[i].Parent);
 				Utils.AddSignedShortAsBytes(Data, skel.Nodes[i].Child1);
 				Utils.AddSignedShortAsBytes(Data, skel.Nodes[i].Sibling);
@@ -1724,23 +1725,23 @@ namespace USF4_Stage_Tool
 			//FF Register
 			Utils.UpdateIntAtPosition(Data, RegisterPointerPosition, Data.Count);
 			for (int i = 0; i < skel.FFList.Count; i++)
-            {
+			{
 				Utils.AddCopiedBytes(Data, 0x00, skel.FFList[i].Length, skel.FFList[i]);
-            }
+			}
 			//Node Name Index
 			Utils.UpdateIntAtPosition(Data, NameIndexPointerPosition, Data.Count);
 			List<int> NodeNameIndexPointerPositions = new List<int>();
-			for(int i = 0; i < skel.NodeNames.Count; i++)
-            {
+			for (int i = 0; i < skel.NodeNames.Count; i++)
+			{
 				NodeNameIndexPointerPositions.Add(Data.Count);
 				Utils.AddIntAsBytes(Data, skel.NodeNameIndex[i], true);
-            }
-			for(int i = 0; i < skel.NodeNames.Count; i++)
-            {
+			}
+			for (int i = 0; i < skel.NodeNames.Count; i++)
+			{
 				Utils.UpdateIntAtPosition(Data, NodeNameIndexPointerPositions[i], Data.Count);
 				Utils.AddCopiedBytes(Data, 0x00, skel.NodeNames[i].Length, skel.NodeNames[i]);
 				Data.Add(0x00);
-            }
+			}
 			//Utils.AddZeroToLineEnd(Data);
 
 			//Secondary Matrix List TODO Check the secondary matrix position - not sure where it appears
@@ -1825,7 +1826,7 @@ namespace USF4_Stage_Tool
 			Data.Add(0x00);
 
 			return Data.ToArray();
-        }
+		}
 
 
 		EMM ReadEMM(byte[] Data)
@@ -1852,7 +1853,7 @@ namespace USF4_Stage_Tool
 			newMaterial.Name = Utils.ReadStringToArray(0, 0x20, Data, Data.Length);
 			newMaterial.Shader = Utils.ReadStringToArray(0x20, 0x20, Data, Data.Length);
 			string shaderName = Encoding.ASCII.GetString(newMaterial.Shader);
-			if(!Utils.Shaders.ContainsKey(shaderName)) Utils.Shaders.Add(shaderName, Utils.Shaders.Count);
+			if (!Utils.Shaders.ContainsKey(shaderName)) Utils.Shaders.Add(shaderName, Utils.Shaders.Count);
 			newMaterial.PropertyCount = Utils.ReadInt(true, 0x40, Data);
 			newMaterial.PropertyValues = new List<byte[]>();
 			newMaterial.PropertyNames = new List<byte[]>();
@@ -1861,8 +1862,8 @@ namespace USF4_Stage_Tool
 				newMaterial.PropertyNames.Add(Utils.ReadStringToArray(0x44 + i * 0x28, 0x20, Data, Data.Length));
 				newMaterial.PropertyValues.Add(Utils.ReadStringToArray(0x64 + i * 0x28, 0x08, Data, Data.Length));
 
-				string propertyName = Encoding.ASCII.GetString(newMaterial.PropertyNames[i]).Replace("\0","");
-				string propertyValue = Utils.HexStr2(newMaterial.PropertyValues[i],  0x08);
+				string propertyName = Encoding.ASCII.GetString(newMaterial.PropertyNames[i]).Replace("\0", "");
+				string propertyValue = Utils.HexStr2(newMaterial.PropertyValues[i], 0x08);
 
 				if (!Utils.ShadersProperties.ContainsKey(propertyName))
 				{
@@ -1999,8 +2000,8 @@ namespace USF4_Stage_Tool
 				{
 					TreeNode nodeEMA = AddTreeNode(NodeEMZ, nodeName, "EMA");
 					EMA ema = (EMA)sourceEMZ.Files[i];
-					for(int j = 0; j < ema.Animations.Count; j++)
-                    {
+					for (int j = 0; j < ema.Animations.Count; j++)
+					{
 						AddTreeNode(nodeEMA, j + "  " + Encoding.ASCII.GetString(ema.Animations[j].Name), "Animation");
 					}
 				}
@@ -2112,7 +2113,7 @@ namespace USF4_Stage_Tool
 				CM = emoContext;
 				SelectedEMONumberInTree = e.Node.Index;
 				TreeDisplayEMOData((EMO)WorkingEMZ.Files[e.Node.Index]);
-				
+
 				title = e.Node.Text;
 			}
 			if (e.Node.Tag.ToString() == "EMG")
@@ -2178,7 +2179,7 @@ namespace USF4_Stage_Tool
 
 		void AddPropertyLineToTextBox(string Line)
 		{
-			lvShaderProperties.Text = lvShaderProperties.Text  + Line + Environment.NewLine;
+			lvShaderProperties.Text = lvShaderProperties.Text + Line + Environment.NewLine;
 		}
 
 		void GetNodeParent(TreeNode node, int ParrentUP)
@@ -2514,7 +2515,7 @@ namespace USF4_Stage_Tool
 					SourceEMZ.FileLengthList[i] = nEMM.HEXBytes.Length;
 					Utils.UpdateIntAtPosition(EMZData, FileLengthPositions[i], nEMM.HEXBytes.Length);
 					Utils.AddCopiedBytes(EMZData, 0x00, nEMM.HEXBytes.Length, nEMM.HEXBytes);
-				}				
+				}
 
 				if (file.GetType() == typeof(EMB))
 				{
@@ -2630,13 +2631,13 @@ namespace USF4_Stage_Tool
 
 		void InjectCSB()
 		{
-			diagOpenOBJ .Filter = CSBFileFilter;
+			diagOpenOBJ.Filter = CSBFileFilter;
 			if (diagOpenOBJ.ShowDialog() == DialogResult.OK)
 			{
 				CSB csb = (CSB)WorkingEMZ.Files[LastSelectedTreeNode.Index];
-				FileStream fsSource = new FileStream(diagOpenOBJ.FileName , FileMode.Open, FileAccess.Read);
+				FileStream fsSource = new FileStream(diagOpenOBJ.FileName, FileMode.Open, FileAccess.Read);
 				byte[] bytes;
-				using (BinaryReader br = new BinaryReader(fsSource, Encoding.ASCII))	{ bytes = br.ReadBytes((int)fsSource.Length); }
+				using (BinaryReader br = new BinaryReader(fsSource, Encoding.ASCII)) { bytes = br.ReadBytes((int)fsSource.Length); }
 				csb.HEXBytes = bytes;
 				WorkingEMZ.Files.Remove(LastSelectedTreeNode.Index);
 				WorkingEMZ.Files.Add(LastSelectedTreeNode.Index, csb);
@@ -2676,19 +2677,19 @@ namespace USF4_Stage_Tool
 			}
 			if (ObjectLoaded)
 			{
-			EMO targetEMO = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
-			EMG newEMG = ReadEMG(targetEMO.EMGList[0].HEXBytes);
-			newEMG = NewEMGFromOBJ(newEMG, true);
-			int NamingListPointer = targetEMO.NamingListPointer;
-			targetEMO.EMGCount += 1;
-			targetEMO.EMGPointerList.Add(NamingListPointer + 0x10);
-			targetEMO.EMGList.Add(newEMG);
-			targetEMO.HEXBytes = HexDataFromEMO(targetEMO);
-			WorkingEMZ.Files.Remove(SelectedEMONumberInTree);
-			WorkingEMZ.Files.Add(SelectedEMONumberInTree, targetEMO);
-			RefreshTree(false);
-			OpenEMONode(true);
-			AddStatus("OBJ " + WorkingFileName + " added as new  EMG " + (targetEMO.EMGCount - 1) + " in " + Encoding.ASCII.GetString(targetEMO.Name));
+				EMO targetEMO = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
+				EMG newEMG = ReadEMG(targetEMO.EMGList[0].HEXBytes);
+				newEMG = NewEMGFromOBJ(newEMG, true);
+				int NamingListPointer = targetEMO.NamingListPointer;
+				targetEMO.EMGCount += 1;
+				targetEMO.EMGPointerList.Add(NamingListPointer + 0x10);
+				targetEMO.EMGList.Add(newEMG);
+				targetEMO.HEXBytes = HexDataFromEMO(targetEMO);
+				WorkingEMZ.Files.Remove(SelectedEMONumberInTree);
+				WorkingEMZ.Files.Add(SelectedEMONumberInTree, targetEMO);
+				RefreshTree(false);
+				OpenEMONode(true);
+				AddStatus("OBJ " + WorkingFileName + " added as new  EMG " + (targetEMO.EMGCount - 1) + " in " + Encoding.ASCII.GetString(targetEMO.Name));
 			}
 		}
 
@@ -2754,9 +2755,9 @@ namespace USF4_Stage_Tool
 		{
 			emo.EMGCount -= 1;
 			if (emo.EMGCount == 1)
-            {
+			{
 				emo.temp_bitdepth = emo.EMGList[0].Models[0].BitDepth;
-            }
+			}
 			emo.EMGList.RemoveAt(EMGIndex);
 			emo.EMGPointerList.RemoveAt(EMGIndex); //Doesn't matter which one we remove, they all get re-generated later
 			emo.HEXBytes = HexDataFromEMO(emo);
@@ -2848,7 +2849,7 @@ namespace USF4_Stage_Tool
 						Console.WriteLine("Found nothing");
 					}
 				}
-				if (!found & !alreadyExists) Console.Write("Did not find material"); 
+				if (!found & !alreadyExists) Console.Write("Did not find material");
 				if (alreadyExists) Console.Write("Found exisitng material");
 				if (found)
 				{
@@ -2877,7 +2878,7 @@ namespace USF4_Stage_Tool
 
 		async void button1_Click(object sender, EventArgs e)
 		{
-            diagOpenOBJ.RestoreDirectory = true;
+			diagOpenOBJ.RestoreDirectory = true;
 			diagOpenOBJ.FileName = string.Empty;
 			diagOpenOBJ.InitialDirectory = LastOpenFolder;
 			diagOpenOBJ.Filter = SMDFileFilter;
@@ -2894,7 +2895,7 @@ namespace USF4_Stage_Tool
 
 					EMA testEMA = SimpleEMAFromSMD(someSMD);
 
-					WorkingEMZ.Files.Add(WorkingEMZ.Files.Count,testEMA);
+					WorkingEMZ.Files.Add(WorkingEMZ.Files.Count, testEMA);
 					WorkingEMZ.FileNameList.Add(new byte[11] { 0x54, 0x52, 0x4E, 0x5F, 0x44, 0x52, 0x4D, 0x2E, 0x65, 0x6D, 0x61 });
 					WorkingEMZ.FileLengthList.Add(testEMA.HEXBytes.Length);
 					WorkingEMZ.FileNamePointerList.Add(0x00);
@@ -3074,10 +3075,11 @@ namespace USF4_Stage_Tool
 							//Compare current vert to each previous vert to generate a unique vert list
 							int match = -1;
 
-							for (int k = 0; k < WorkingSMD.Verts.Count; k++)
-							{
-								if (WorkingSMD.Verts[k].VertexEquals(WorkingVert)) { match = k; }
-							}
+							//TODO re-enable vert splits
+							//for (int k = 0; k < WorkingSMD.Verts.Count; k++)
+							//{
+							//	if (WorkingSMD.Verts[k].VertexEquals(WorkingVert)) { match = k; }
+							//}
 							if (match == -1)
 							{
 								tempFaceArray[j] = WorkingSMD.Verts.Count; //If we didn't find a match, our index is our current number of verts
@@ -3133,14 +3135,14 @@ namespace USF4_Stage_Tool
 					if (!ValueDict.TryGetValue(model.Frames[k].traX[i], out dumVal)) { ValueDict.Add(model.Frames[k].traX[i], ValueDict.Count); }
 					if (!ValueDict.TryGetValue(model.Frames[k].traY[i], out dumVal)) { ValueDict.Add(model.Frames[k].traY[i], ValueDict.Count); }
 					if (!ValueDict.TryGetValue(model.Frames[k].traZ[i], out dumVal)) { ValueDict.Add(model.Frames[k].traZ[i], ValueDict.Count); }
-                    if (!ValueDict.TryGetValue(Rad2Deg * model.Frames[k].rotX[i], out dumVal)) { ValueDict.Add(Rad2Deg * model.Frames[k].rotX[i], ValueDict.Count); }
-                    if (!ValueDict.TryGetValue(Rad2Deg * model.Frames[k].rotY[i], out dumVal)) { ValueDict.Add(Rad2Deg * model.Frames[k].rotY[i], ValueDict.Count); }
-                    if (!ValueDict.TryGetValue(Rad2Deg * model.Frames[k].rotZ[i], out dumVal)) { ValueDict.Add(Rad2Deg * model.Frames[k].rotZ[i], ValueDict.Count); }
+					if (!ValueDict.TryGetValue(Rad2Deg * model.Frames[k].rotX[i], out dumVal)) { ValueDict.Add(Rad2Deg * model.Frames[k].rotX[i], ValueDict.Count); }
+					if (!ValueDict.TryGetValue(Rad2Deg * model.Frames[k].rotY[i], out dumVal)) { ValueDict.Add(Rad2Deg * model.Frames[k].rotY[i], ValueDict.Count); }
+					if (!ValueDict.TryGetValue(Rad2Deg * model.Frames[k].rotZ[i], out dumVal)) { ValueDict.Add(Rad2Deg * model.Frames[k].rotZ[i], ValueDict.Count); }
 
-                    //if (!ValueDict.TryGetValue(Rad2Deg * ActualRot_X, out dumVal)) { ValueDict.Add(Rad2Deg * ActualRot_X, ValueDict.Count); }
-                    //if (!ValueDict.TryGetValue(Rad2Deg * ActualRot_Y, out dumVal)) { ValueDict.Add(Rad2Deg * ActualRot_Y, ValueDict.Count); }
-                    //if (!ValueDict.TryGetValue(Rad2Deg * ActualRot_Z, out dumVal)) { ValueDict.Add(Rad2Deg * ActualRot_Z, ValueDict.Count); }
-                }
+					//if (!ValueDict.TryGetValue(Rad2Deg * ActualRot_X, out dumVal)) { ValueDict.Add(Rad2Deg * ActualRot_X, ValueDict.Count); }
+					//if (!ValueDict.TryGetValue(Rad2Deg * ActualRot_Y, out dumVal)) { ValueDict.Add(Rad2Deg * ActualRot_Y, ValueDict.Count); }
+					//if (!ValueDict.TryGetValue(Rad2Deg * ActualRot_Z, out dumVal)) { ValueDict.Add(Rad2Deg * ActualRot_Z, ValueDict.Count); }
+				}
 			}
 			WorkingAnimation.ValueCount = ValueDict.Count;
 			//Populate the Value list from the dictionary
@@ -3202,9 +3204,9 @@ namespace USF4_Stage_Tool
 
 					//k = keyframe count
 					for (int k = 0; k < model.Frames.Count; k++)
-					{	
+					{
 						float Rad2Deg = Convert.ToSingle(180 / Math.PI);
-						
+
 						WorkingCMD.StepList.Add(k);
 						if (j == 0)
 						{
@@ -3238,7 +3240,7 @@ namespace USF4_Stage_Tool
 		}
 
 		private EMA ReadEMA(byte[] Data)
-        {
+		{
 			EMA nEMA = new EMA();
 
 			nEMA.HEXBytes = Data;
@@ -3303,9 +3305,9 @@ namespace USF4_Stage_Tool
 					WorkingCMD.StepList = new List<int>();
 
 					if ((WorkingCMD.BitFlag & 0x10) == 0x10)
-                    {
-						
-                    }
+					{
+
+					}
 
 					for (int k = 0; k < WorkingCMD.StepCount; k++)
 					{
@@ -3371,7 +3373,7 @@ namespace USF4_Stage_Tool
 
 			List<int> AnimationStartOSs = new List<int>();
 			List<int> AnimationNamePointerPositions = new List<int>();
-			
+
 			for (int i = 0; i < ema.AnimationCount; i++)
 			{
 				List<int> CMDTrackPointerPositions = new List<int>();
@@ -3389,7 +3391,7 @@ namespace USF4_Stage_Tool
 				Utils.AddIntAsBytes(Data, ema.Animations[i].ValueListPointer, true);
 
 				for (int j = 0; j < ema.Animations[i].CmdTrackCount; j++)
-				{	//Write out the CMD track pointers and store the pos
+				{   //Write out the CMD track pointers and store the pos
 					CMDTrackPointerPositions.Add(Data.Count);
 					Utils.AddIntAsBytes(Data, ema.Animations[i].CmdTrackPointerList[j], true);
 				}
@@ -3410,8 +3412,8 @@ namespace USF4_Stage_Tool
 						{
 							Data.Add(Convert.ToByte(ema.Animations[i].CMDTracks[j].StepList[k]));
 						}
-                    }
-                    else //If flag is set, step list is shorts
+					}
+					else //If flag is set, step list is shorts
 					{
 						for (int k = 0; k < ema.Animations[i].CMDTracks[j].StepList.Count; k++)
 						{
@@ -3419,14 +3421,14 @@ namespace USF4_Stage_Tool
 						}
 					}
 					while (CMDStartOS + ema.Animations[i].CMDTracks[j].IndiceListPointer > Data.Count)
-                    {
-                        Data.Add(0x00);
-                    }
-
-					if((Data.Count - CMDStartOS) % 2 != 0)
-                    {
+					{
 						Data.Add(0x00);
-                    }
+					}
+
+					if ((Data.Count - CMDStartOS) % 2 != 0)
+					{
+						Data.Add(0x00);
+					}
 					Utils.UpdateShortAtPosition(Data, IndicesPointerPosition, Data.Count - CMDStartOS);
 					if ((ema.Animations[i].CMDTracks[j].BitFlag & 0x40) != 0x40) //If flag not set (Index list is short)
 					{
@@ -3445,14 +3447,14 @@ namespace USF4_Stage_Tool
 					}
 
 					if (j < ema.Animations[i].CMDTracks.Count - 1)
-					{	//If there's still another track left, pad out to the track pointer
-						while (AnimationStartOSs[i] + ema.Animations[i].CmdTrackPointerList[j+1] > Data.Count)
+					{   //If there's still another track left, pad out to the track pointer
+						while (AnimationStartOSs[i] + ema.Animations[i].CmdTrackPointerList[j + 1] > Data.Count)
 						{
 							Data.Add(0x00);
 						}
 					}
 					else //Else pad out to the start of the value list
-                    {	
+					{
 						while (AnimationStartOSs[i] + ema.Animations[i].ValueListPointer > Data.Count)
 						{
 							Data.Add(0x00);
@@ -3479,7 +3481,7 @@ namespace USF4_Stage_Tool
 				ema.Skeleton.HEXBytes = HexDataFromSkeleton(ema.Skeleton);
 				Data.AddRange(ema.Skeleton.HEXBytes);
 			}
-			
+
 			//The padding and pointers for the name list are weird, so name 0 is handled on its own, then the rest are handled in a loop.
 			//I can't work out how it "really" works but this seems to do the trick.
 			Utils.UpdateIntAtPosition(Data, AnimationNamePointerPositions[0], Data.Count - (AnimationStartOSs[0]));
@@ -3509,7 +3511,7 @@ namespace USF4_Stage_Tool
 		}
 
 		private List<string> WriteSMDNodesFromSkeleton(Skeleton skel)
-        {
+		{
 			List<string> skeldata = new List<string>();
 			skeldata.Add("nodes");
 			for (int i = 0; i < skel.Nodes.Count; i++)
@@ -3543,7 +3545,7 @@ namespace USF4_Stage_Tool
 				skeldata.Add($"{i} {String.Format("{0:0.000000}", -tx)} {String.Format("{0:0.000000}", tz)} {String.Format("{0:0.000000}", ty)} {String.Format("{0:0.000000}", -rx)} {String.Format("{0:0.000000}", rz)} {String.Format("{0:0.000000}", ry)}");
 
 				//skeldata.Add($"{i} {String.Format("{0:0.000000}", tx)} {String.Format("{0:0.000000}", ty)} {String.Format("{0:0.000000}", tz)} {String.Format("{0:0.000000}", rx)} {String.Format("{0:0.000000}", ry)} {String.Format("{0:0.000000}", rz)} #{sx} {sy} {sz}");
-			
+
 			}
 			skeldata.Add("end");
 
@@ -3551,7 +3553,7 @@ namespace USF4_Stage_Tool
 		}
 
 		private void EMAAnimationtoSMD(EMA ema, int index)
-        {
+		{
 			List<string> SMDData = new List<string>();
 
 			SMDData.Add("version 1");
@@ -3560,7 +3562,7 @@ namespace USF4_Stage_Tool
 		}
 
 		private void InitialPoseFromEMA(EMA ema)
-        {
+		{
 			List<string> SMDData = new List<string>();
 			Skeleton skel = ema.Skeleton;
 
@@ -3585,68 +3587,68 @@ namespace USF4_Stage_Tool
 			//Simplified animation extractor for calculating reference poses
 			Animation anim = ema.Animations[0];
 
-			for(int i = 0; i < ema.Skeleton.Nodes.Count; i++)
-            {
+			for (int i = 0; i < ema.Skeleton.Nodes.Count; i++)
+			{
 				Matrix4x4 NoT = Matrix4x4.CreateTranslation(0, 0, 0);
 				Matrix4x4[] NodeCMDMatrices = new Matrix4x4[9] { NoT, NoT, NoT, NoT, NoT, NoT, NoT, NoT, NoT };
 				float[] NodeCMDValues = new float[9] { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 				Matrix4x4 AnimMatrix;
 
-				foreach(CMDTrack cmd in anim.CMDTracks)
+				foreach (CMDTrack cmd in anim.CMDTracks)
 				{
-					if(cmd.BoneID == i)
-                    {
+					if (cmd.BoneID == i)
+					{
 						int tType = (cmd.TransformType * 3) + (cmd.BitFlag & 0x03);
 
 						int MaskedIndex = cmd.IndiceList[0] & 0b0011111111111111;
 
 						float value = anim.ValueList[MaskedIndex];
 
-						if(tType > 2 && tType < 6) //If it's a rotation value, convert to radians
-                        {
+						if (tType > 2 && tType < 6) //If it's a rotation value, convert to radians
+						{
 							value = value * Convert.ToSingle(Math.PI) / 180f;
-                        }
+						}
 
 						NodeCMDValues[tType] = value;
 
-                        switch (tType)
-                        {
-                            case 0:
-                                NodeCMDMatrices[0] = Matrix4x4.CreateTranslation(value, 0, 0);
-                                break;
-                            case 1:
-                                NodeCMDMatrices[1] = Matrix4x4.CreateTranslation(0, value, 0);
-                                break;
-                            case 2:
-                                NodeCMDMatrices[2] = Matrix4x4.CreateTranslation(0, 0, value);
-                                break;
+						switch (tType)
+						{
+							case 0:
+								NodeCMDMatrices[0] = Matrix4x4.CreateTranslation(value, 0, 0);
+								break;
+							case 1:
+								NodeCMDMatrices[1] = Matrix4x4.CreateTranslation(0, value, 0);
+								break;
+							case 2:
+								NodeCMDMatrices[2] = Matrix4x4.CreateTranslation(0, 0, value);
+								break;
 
-                            case 3:
-                                NodeCMDMatrices[3] = Matrix4x4.CreateRotationX(value);
-                                break;
-                            case 4:
-                                NodeCMDMatrices[4] = Matrix4x4.CreateRotationY(value);
-                                break;
-                            case 5:
-                                NodeCMDMatrices[5] = Matrix4x4.CreateRotationZ(value);
-                                break;
+							case 3:
+								NodeCMDMatrices[3] = Matrix4x4.CreateRotationX(value);
+								break;
+							case 4:
+								NodeCMDMatrices[4] = Matrix4x4.CreateRotationY(value);
+								break;
+							case 5:
+								NodeCMDMatrices[5] = Matrix4x4.CreateRotationZ(value);
+								break;
 
-                            case 6:
-                                NodeCMDMatrices[6] = Matrix4x4.CreateScale(value, 0, 0);
-                                break;
-                            case 7:
-                                NodeCMDMatrices[7] = Matrix4x4.CreateScale(0, value, 0);
-                                break;
-                            case 8:
-                                NodeCMDMatrices[8] = Matrix4x4.CreateScale(0, 0, value);
-                                break;
+							case 6:
+								NodeCMDMatrices[6] = Matrix4x4.CreateScale(value, 0, 0);
+								break;
+							case 7:
+								NodeCMDMatrices[7] = Matrix4x4.CreateScale(0, value, 0);
+								break;
+							case 8:
+								NodeCMDMatrices[8] = Matrix4x4.CreateScale(0, 0, value);
+								break;
 
-                            default:
-                                break;
-                        }
-                    }
-                }
+							default:
+								break;
+						}
+					}
+				}
 
 				AnimMatrix = NodeCMDMatrices[6] * NodeCMDMatrices[7] * NodeCMDMatrices[8] * NodeCMDMatrices[3] * NodeCMDMatrices[4] * NodeCMDMatrices[5] * NodeCMDMatrices[0] * NodeCMDMatrices[1] * NodeCMDMatrices[2];
 
@@ -3654,18 +3656,18 @@ namespace USF4_Stage_Tool
 
 				float tx, ty, tz, rx, ry, rz, sx, sy, sz;
 
-				Utils.DecomposeMatrixXYZ(tempMatrix, out tx, out ty, out tz, out rx, out ry, out rz, out sx, out sy, out sz); 
+				Utils.DecomposeMatrixXYZ(tempMatrix, out tx, out ty, out tz, out rx, out ry, out rz, out sx, out sy, out sz);
 
 				SMDData.Add($"{i} {String.Format("{0:0.000000}", tx)} {String.Format("{0:0.000000}", ty)} {String.Format("{0:0.000000}", tz)} {String.Format("{0:0.000000}", rx)} {String.Format("{0:0.000000}", ry)} {String.Format("{0:0.000000}", rz)}");
 
-            }
+			}
 
 			SMDData.Add("end");
 
 			File.WriteAllLines($"{Encoding.ASCII.GetString(ema.Name)}.smd", SMDData.Cast<string>().ToArray());
 		}
 
-        private void EMOtoRefSMD(EMO emo)
+		private void EMOtoRefSMD(EMO emo)
 		{
 			string filepath;
 			string newSMD = $"{Encoding.ASCII.GetString(emo.Name)}.smd";
@@ -3702,6 +3704,7 @@ namespace USF4_Stage_Tool
 
 									float weightTotal = 0;
 
+									//TODO crash - exporting an EMG to SMD crashes if the EMG was created from an SMD import
 									string v1 = $"{emo.EMGList[i].RootBone} ";
 									v1 += $"{wMod.VertexData[smFaces[f][0]].X} {wMod.VertexData[smFaces[f][0]].Y} {wMod.VertexData[smFaces[f][0]].Z} ";
 									v1 += $"{wMod.VertexData[smFaces[f][0]].nX} {wMod.VertexData[smFaces[f][0]].nY} {wMod.VertexData[smFaces[f][0]].nZ} ";
@@ -3769,30 +3772,30 @@ namespace USF4_Stage_Tool
 				}
 			}
 
-			
+
 		}
 
 
 		List<int[]> FaceIndicesFromDaisyChain(int[] DaisyChain)
-        {
+		{
 			List<int[]> FaceIndices = new List<int[]>();
 
 			Boolean bForwards = true;
 
-			for(int i = 0; i < DaisyChain.Length - 0x02; i++)
-            {
-				if(bForwards)
-                {
+			for (int i = 0; i < DaisyChain.Length - 0x02; i++)
+			{
+				if (bForwards)
+				{
 					int[] temp = new int[] { DaisyChain[i], DaisyChain[i + 1], DaisyChain[i + 2] };
 
-					if(temp[0] != temp[1] && temp[1] != temp[2] && temp[2] != temp[0])
-                    {
+					if (temp[0] != temp[1] && temp[1] != temp[2] && temp[2] != temp[0])
+					{
 						FaceIndices.Add(temp);
-                    }
-                }
+					}
+				}
 				else
 				{
-					int[] temp = new int[] { DaisyChain[i+2], DaisyChain[i + 1], DaisyChain[i] };
+					int[] temp = new int[] { DaisyChain[i + 2], DaisyChain[i + 1], DaisyChain[i] };
 
 					if (temp[0] != temp[1] && temp[1] != temp[2] && temp[2] != temp[0])
 					{
@@ -3804,7 +3807,7 @@ namespace USF4_Stage_Tool
 			}
 
 			return FaceIndices;
-        }
+		}
 
 		EMO EMOFromSMD(SMDModel model)
 		{
@@ -3820,10 +3823,10 @@ namespace USF4_Stage_Tool
 			nEMO.NamingPointerList = new List<int>();
 
 			foreach (string s in model.MaterialDictionary.Keys)
-            {
+			{
 				nEMO.NamingList.Add(Encoding.ASCII.GetBytes(s));
 				nEMO.NamingPointerList.Add(0x00);
-            }
+			}
 
 			nEMO.NamingListPointer = 0x00;
 
@@ -3872,7 +3875,7 @@ namespace USF4_Stage_Tool
 										   0xEE, 0x94, 0x0A, 0xC1, 0x43, 0xB9, 0x0D, 0x43,
 										   0x5A, 0x2F, 0xA2, 0x40, 0x63, 0x47, 0x32, 0x41,
 										   0x3A, 0xD1, 0x0F, 0x41, 0xF6, 0x79, 0xBE, 0x41 };
-			for(int i = 0; i < nModel.TextureCount; i++)
+			for (int i = 0; i < nModel.TextureCount; i++)
 			{
 				nModel.TexturePointer.Add(0x00);
 
@@ -3882,26 +3885,26 @@ namespace USF4_Stage_Tool
 				tex.Scales_V = new List<float>();
 
 				tex.TextureLayers = 1;
-				tex.TextureIndex.Add(i);
+				tex.TextureIndex.Add(0);
 				tex.Scales_U.Add(1);
 				tex.Scales_V.Add(1);
 
 				nModel.TexturesList.Add(tex);
 			}
-			for(int i = 0; i < nModel.SubModelsCount; i++)
+			for (int i = 0; i < nModel.SubModelsCount; i++)
 			{
 				nModel.SubModelList.Add(0x00);
 
 				List<int[]> SubmodelFaceIndices = new List<int[]>();
 
-				for(int j = 0; j < smd.FaceIndices.Count; j++)
-                {
+				for (int j = 0; j < smd.FaceIndices.Count; j++)
+				{
 					//Check if our current face indice j belongs to submodel i using the dictionary
 					if (smd.MaterialDictionary[Encoding.ASCII.GetString(smd.MaterialNames[j])] == i)
-                    {
+					{
 						SubmodelFaceIndices.Add(smd.FaceIndices[j]);
-                    }
-                }
+					}
+				}
 
 				//Submodel indices list complete
 
@@ -3920,14 +3923,14 @@ namespace USF4_Stage_Tool
 				sm.BoneIntegersCount = smd.Nodes.Count;
 				sm.BoneIntegersList = new List<int>();
 
-				for(int j = 0; j < smd.Nodes.Count; j++)
-                {
+				for (int j = 0; j < smd.Nodes.Count; j++)
+				{
 					sm.BoneIntegersList.Add(j);
-                }
+				}
 
 				sm.SubModelName = MakeModelName(smd.MaterialDictionary.ElementAt(i).Key);
 
-				nModel.SubModels.Add(sm);		
+				nModel.SubModels.Add(sm);
 			}
 
 			nEMG.Models.Add(nModel);
@@ -3991,9 +3994,9 @@ namespace USF4_Stage_Tool
 					//Well we tried!!
 
 					//If DDS read the RAW bytes and use that no need to convert
-					FileStream fsSource = new FileStream(diagOpenOBJ.FileName , FileMode.Open, FileAccess.Read);
+					FileStream fsSource = new FileStream(diagOpenOBJ.FileName, FileMode.Open, FileAccess.Read);
 					byte[] bytes;
-					using (BinaryReader br = new BinaryReader(fsSource, Encoding.ASCII))	{ bytes = br.ReadBytes((int)fsSource.Length); }
+					using (BinaryReader br = new BinaryReader(fsSource, Encoding.ASCII)) { bytes = br.ReadBytes((int)fsSource.Length); }
 					dds.HEXBytes = bytes;
 					emb.DDSFiles.RemoveAt(LastSelectedTreeNode.Index);
 					emb.DDSFiles.Insert(LastSelectedTreeNode.Index, dds);
@@ -4035,9 +4038,9 @@ namespace USF4_Stage_Tool
 				if (diagOpenOBJ.ShowDialog() == DialogResult.OK)
 				{
 					//If DDS read the RAW bytes and use that no need to convert
-					FileStream fsSource = new FileStream(diagOpenOBJ.FileName , FileMode.Open, FileAccess.Read);
+					FileStream fsSource = new FileStream(diagOpenOBJ.FileName, FileMode.Open, FileAccess.Read);
 					byte[] bytes;
-					using (BinaryReader br = new BinaryReader(fsSource, Encoding.ASCII))	{ bytes = br.ReadBytes((int)fsSource.Length); }
+					using (BinaryReader br = new BinaryReader(fsSource, Encoding.ASCII)) { bytes = br.ReadBytes((int)fsSource.Length); }
 					dds.HEXBytes = bytes;
 					emb.NumberOfFiles += 1;
 					emb.FileLengthList.Add(0);
@@ -4077,18 +4080,18 @@ namespace USF4_Stage_Tool
 
 		private void btnSaveEMZ_Click_1(object sender, EventArgs e)
 		{
-			Button btn = (Button) sender;
+			Button btn = (Button)sender;
 			SaveEMZToFile((string)btn.Tag);
 		}
 
 		private void btnSaveTEXEMZ_Click(object sender, EventArgs e)
 		{
-			Button btn = (Button) sender;
+			Button btn = (Button)sender;
 			SaveEMZToFile((string)btn.Tag);
 		}
 
 		private void cbShaders_SelectedIndexChanged(object sender, EventArgs e)
-		{	
+		{
 			//Console.WriteLine("Property fishing: " + SelectedShaderID);
 		}
 
@@ -4120,7 +4123,7 @@ namespace USF4_Stage_Tool
 			WorkingEMZ.Files.Remove(LastSelectedTreeNode.Parent.Index);
 			WorkingEMZ.Files.Add(LastSelectedTreeNode.Parent.Index, emm);
 			RefreshTree(false);
-			AddStatus("Material '" + Encoding.ASCII.GetString(newMat.Name).Replace("\0","") + "' saved with shader '" + ShaderName.Replace("\0","") + "'"); 
+			AddStatus("Material '" + Encoding.ASCII.GetString(newMat.Name).Replace("\0", "") + "' saved with shader '" + ShaderName.Replace("\0", "") + "'");
 		}
 
 		private void addMaterialToolStripMenuItem_Click(object sender, EventArgs e)
@@ -4141,10 +4144,10 @@ namespace USF4_Stage_Tool
 					emmNode = LastSelectedTreeNode;
 				else
 					emmNode = LastSelectedTreeNode.Parent;
-				
+
 				foreach (TreeNode n in emmNode.Nodes)
 				{
-					if (n.Text.Replace("\0","") == newMatName)
+					if (n.Text.Replace("\0", "") == newMatName)
 					{
 						MessageBox.Show("Name already exists!", TStrings.STR_Error);
 						return;
@@ -4186,11 +4189,100 @@ namespace USF4_Stage_Tool
 					}
 				}
 				RefreshTree(false);
-				AddStatus("Material '" + newMatName + "' added to '" + Encoding.ASCII.GetString(emm.Name).Replace("\0","") + "'");
+				AddStatus("Material '" + newMatName + "' added to '" + Encoding.ASCII.GetString(emm.Name).Replace("\0", "") + "'");
 			}
 			else
 			{
 				return;
+			}
+		}
+
+		void InjectLUAScript()
+		{
+			string target_lua = @"""sample.lua""";
+
+            string ChunkSpy_script = CodeStrings.ChunkSpy1;
+
+			lua_State L = null;
+
+			string samplelua = "print(\\\"Hello World!\\\")";
+
+			try
+			{
+				LUA lua = (LUA)WorkingEMZ.Files[LastSelectedTreeNode.Index];
+
+				diagOpenOBJ.RestoreDirectory = true;
+				diagOpenOBJ.FileName = string.Empty;
+				diagOpenOBJ.InitialDirectory = LastOpenFolder;
+				diagOpenOBJ.Filter = LUAFileFilter;
+				if (diagOpenOBJ.ShowDialog() == DialogResult.OK)
+				{
+					target_lua = diagOpenOBJ.SafeFileName;
+
+					//this is the loadfile method
+					string luac_script =
+							@"f=assert(io.open(""native_lua_chunk.out"",""wb""))" +
+							@"assert(f:write(string.dump(assert(loadfile(""" + target_lua + @""")))))" +
+							"assert(f:close())";
+
+					//this is the loadstring method which might allow files from anywhere to be loaded as strings, but the string needs "double escaping"
+					string luac_script2 =
+							@"f=assert(io.open(""native_lua_chunk.out"",""wb""))" +
+							@"assert(f:write(string.dump(assert(loadstring(""" + samplelua + @""")))))" +
+							"assert(f:close())";
+
+					//LUAC implementation
+					try
+					{
+						// initialization
+						L = lua_open();
+						luaL_openlibs(L);
+
+						int loaderror = luaL_loadbuffer(L, luac_script, (uint)luac_script.Length, "program");
+
+						int error = lua_pcall(L, 0, 0, 0);
+					}
+					finally
+					{
+						// cleanup
+						lua_close(L);
+					}
+
+					//ChunkSpy implementation
+					try
+					{
+						// initialization
+						L = lua_open();
+						luaL_openlibs(L);
+
+						//int loaderror = luaL_loadbuffer(L, ChunkSpy_script, (uint)ChunkSpy_script.Length, "program");
+
+						//int loaderror = luaL_loadfile(L, "ChunkSpy2.lua");
+
+						int loaderror = luaL_loadbuffer(L, ChunkSpy_script, (uint)ChunkSpy_script.Length, "program");
+
+						int error = lua_pcall(L, 0, 0, 0);
+					}
+					finally
+					{
+						// cleanup
+						lua_close(L);
+					}
+
+					//Read in the newly created bytecode file and inject into EMZ
+					FileStream fsSource = new FileStream("output_usf4.out", FileMode.Open, FileAccess.Read);
+					byte[] bytes;
+					using (BinaryReader br = new BinaryReader(fsSource, Encoding.ASCII)) { bytes = br.ReadBytes((int)fsSource.Length); }
+					lua.HEXBytes = bytes;
+
+					WorkingEMZ.Files.Remove(LastSelectedTreeNode.Index);
+					WorkingEMZ.Files.Add(LastSelectedTreeNode.Index, lua);
+					RefreshTree(false);
+				}
+			}
+			catch
+			{
+				MessageBox.Show("Something went wrong while injecting LUA!", TStrings.STR_Error);
 			}
 		}
 
@@ -4645,6 +4737,110 @@ namespace USF4_Stage_Tool
 		{
 			AddOBJAsNewEMG();
 		}
-	}
+
+        async private void injectSMDAsEMGExperimentalToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			diagOpenOBJ.RestoreDirectory = true;
+			diagOpenOBJ.FileName = string.Empty;
+			diagOpenOBJ.InitialDirectory = LastOpenFolder;
+			diagOpenOBJ.Filter = SMDFileFilter;
+
+			if (diagOpenOBJ.ShowDialog() == DialogResult.OK)
+			{
+				string filepath = diagOpenOBJ.FileName;
+				if (filepath.Trim() != string.Empty)
+				{
+					LastOpenFolder = Path.GetDirectoryName(filepath);
+					WorkingFileName = diagOpenOBJ.SafeFileName;
+					SMDModel someSMD = new SMDModel();
+					await Task.Run(() => { someSMD = ReadSMD(filepath); });
+
+					EMO emo = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
+					EMG targetEMG = emo.EMGList[SelectedEMGNumberInTree];
+					EMG newEMG = NewEMGFromSMD(someSMD);
+					emo.EMGList.RemoveAt(SelectedEMGNumberInTree);
+					emo.EMGList.Insert(SelectedEMGNumberInTree, newEMG);
+					emo.HEXBytes = HexDataFromEMO(emo);
+					WorkingEMZ.Files.Remove(SelectedEMONumberInTree);
+					WorkingEMZ.Files.Add(SelectedEMONumberInTree, emo);
+
+					RefreshTree(false);
+					OpenEMONode(true);
+				}
+			}
+		}
+
+        private void injectLUAScriptToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+			InjectLUAScript();
+        }
+
+		private void injectFileExperimentalToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			diagOpenOBJ.RestoreDirectory = true;
+			diagOpenOBJ.FileName = string.Empty;
+			diagOpenOBJ.InitialDirectory = LastOpenFolder;
+			diagOpenOBJ.Filter = String.Empty;
+
+			if (diagOpenOBJ.ShowDialog() == DialogResult.OK)
+			{
+				string filepath = diagOpenOBJ.FileName;
+				string extension = diagOpenOBJ.FileName.Split('.')[1];
+				string name = diagOpenOBJ.SafeFileName;
+				if (filepath.Trim() != string.Empty)
+				{
+					FileStream fsSource = new FileStream(diagOpenOBJ.FileName, FileMode.Open, FileAccess.Read);
+					byte[] bytes;
+					using (BinaryReader br = new BinaryReader(fsSource, Encoding.ASCII)) { bytes = br.ReadBytes((int)fsSource.Length); }
+					
+					if(extension == "emo")
+                    {
+						EMO nEMO = ReadEMO(bytes);
+						WorkingEMZ.Files.Add(WorkingEMZ.Files.Count, nEMO);
+
+						WorkingEMZ.NumberOfFiles++;
+						WorkingEMZ.FileNamePointerList.Add(0x00);
+						WorkingEMZ.FileLengthList.Add(0x00);
+						WorkingEMZ.FilePointerList.Add(0x00);
+						WorkingEMZ.FileNameList.Add(Encoding.ASCII.GetBytes(name));
+					}
+					if (extension == "emm")
+					{
+						EMM nEMM = ReadEMM(bytes);
+						WorkingEMZ.Files.Add(WorkingEMZ.Files.Count, nEMM);
+
+						WorkingEMZ.NumberOfFiles++;
+						WorkingEMZ.FileNamePointerList.Add(0x00);
+						WorkingEMZ.FileLengthList.Add(0x00);
+						WorkingEMZ.FilePointerList.Add(0x00);
+						WorkingEMZ.FileNameList.Add(Encoding.ASCII.GetBytes(name));
+					}
+					if (extension == "ema")
+					{
+						EMA nEMA = ReadEMA(bytes);
+						WorkingEMZ.Files.Add(WorkingEMZ.Files.Count, nEMA);
+
+						WorkingEMZ.NumberOfFiles++;
+						WorkingEMZ.FileNamePointerList.Add(0x00);
+						WorkingEMZ.FileLengthList.Add(0x00);
+						WorkingEMZ.FilePointerList.Add(0x00);
+						WorkingEMZ.FileNameList.Add(Encoding.ASCII.GetBytes(name));
+					}
+					if (extension == "emb")
+					{
+						EMB nEMB = ReadEMB(bytes);
+						WorkingTEXEMZ.Files.Add(WorkingTEXEMZ.Files.Count, nEMB);
+						WorkingTEXEMZ.NumberOfFiles++;
+						WorkingTEXEMZ.FileNamePointerList.Add(0x00);
+						WorkingTEXEMZ.FileLengthList.Add(0x00);
+						WorkingTEXEMZ.FilePointerList.Add(0x00);
+						WorkingTEXEMZ.FileNameList.Add(Encoding.ASCII.GetBytes(name));
+					}
+
+					RefreshTree(false);
+				}
+			}
+		}
+    }
 }
 
