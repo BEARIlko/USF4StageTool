@@ -38,6 +38,7 @@ namespace USF4_Stage_Tool
 
 		public int TotalNewVerts;
 		public bool ObjectLoaded;
+		public bool EncodingInProgress;
 		private const int MaxVertWarning = 100000;
 		private const bool WarnForMaxVerts = false;
 		private string TargetEMZFilePath;
@@ -109,9 +110,10 @@ namespace USF4_Stage_Tool
 					await Task.Run(() => { ReadOBJ(filepath); });
 					if (ValidateOBJ())
 					{
-						ObjectLoaded = true;
+						
 						lbOBJNameProperty.Text = Path.GetFileName(filepath);
 						_ = Task.Delay(10).ContinueWith(t => EncodeTheOBJ());
+						
 					}
 					else
 					{
@@ -513,7 +515,7 @@ namespace USF4_Stage_Tool
 
 		List<int> DaisyChainFromIndices(List<int[]> nIndices)
 		{
-			//SetupProgress(TStrings.STR_ReorderingFaces, nIndices.Count);
+			SetupProgress(nIndices.Count);
 
 			List<int> Chain = new List<int>();
 			bool bForwards = false;
@@ -540,7 +542,7 @@ namespace USF4_Stage_Tool
 							nIndices.RemoveAt(i);
 							i = -1;
 							bForwards = !bForwards;
-							//progressBar1.Value += 1;
+							progressBar1.Value += 1;
 							//TimeEstimate(TStrings.STR_ReorderingFaces, count, Chain.Count);
 							break;
 						}
@@ -552,7 +554,7 @@ namespace USF4_Stage_Tool
 							nIndices.RemoveAt(i);
 							i = -1;
 							bForwards = !bForwards;
-							//progressBar1.Value += 1;
+							progressBar1.Value += 1;
 							//TimeEstimate(TStrings.STR_ReorderingFaces, count, Chain.Count);
 							break;
 						}
@@ -588,10 +590,12 @@ namespace USF4_Stage_Tool
 					//Clear the used face and flip the flag
 					nIndices.RemoveAt(0);
 					bForwards = !bForwards;
-					//progressBar1.Value += 1;
+					progressBar1.Value += 1;
 					//TimeEstimate(TStrings.STR_ReorderingFaces, count, Chain.Count);
 				}
 			}
+
+			progressBar1.Value = progressBar1.Maximum;
 
 			return Chain;
 		}
@@ -618,11 +622,18 @@ namespace USF4_Stage_Tool
 
 		async void EncodeTheOBJ()
 		{
+			EncodingInProgress = true;
+
 			for (int i = 0; i < WorkingObject.MaterialGroups.Count; i++)
 			{
 				ObjMatGroup tempMatGroup = WorkingObject.MaterialGroups[i];
 
-				tempMatGroup.DaisyChain = DaisyChainFromIndices(new List<int[]>(WorkingObject.MaterialGroups[i].FaceIndices));
+				tempMatGroup.DaisyChain = await Task.Run(() =>
+				{
+					return DaisyChainFromIndices(new List<int[]>(WorkingObject.MaterialGroups[i].FaceIndices));
+				});
+
+				//tempMatGroup.DaisyChain = DaisyChainFromIndices(new List<int[]>(WorkingObject.MaterialGroups[i].FaceIndices));
 
 				WorkingObject.MaterialGroups.RemoveAt(i);
 				WorkingObject.MaterialGroups.Insert(i, tempMatGroup);
@@ -630,6 +641,8 @@ namespace USF4_Stage_Tool
 				lbLoadSteps.Text = TStrings.STR_EncodeComplete;
 				AddStatus(WorkingFileName + " encoded!");
 			}
+			ObjectLoaded = true;
+			EncodingInProgress = false;
 		}
 
 		void SetupProgress(int steps)
@@ -801,7 +814,7 @@ namespace USF4_Stage_Tool
 			nModel.BitDepth = Utils.ReadInt(false, 0x12, nModel.HEXBytes);
 			nModel.VertexListPointer = Utils.ReadInt(true, 0x14, nModel.HEXBytes);
 			nModel.ReadMode = Utils.ReadInt(false, 0x18, nModel.HEXBytes);
-			nModel.CullData = new byte[] { 0x00, 0x0A, 0x1B, 0x3C, 0xC3, 0xA4, 0x9E, 0x40,
+			nModel.CullData = new byte[] { 0x00, 0x0A, 0x1B, 0x3C, 0xC3, 0xA4, 0x9E, 0x40, //Generic cull data with broad display
 										0x80, 0x89, 0x27, 0x3E, 0xF6, 0x79, 0x3E, 0x41,
 										0x50, 0x94, 0xA1, 0xC0, 0xFD, 0x14, 0x9D, 0xBF,
 										0xEE, 0x94, 0x0A, 0xC1, 0x43, 0xB9, 0x0D, 0x43,
@@ -923,8 +936,13 @@ namespace USF4_Stage_Tool
 		{
 			SubModel newSubModel = new SubModel();
 			newSubModel.HEXBytes = Data;
-			newSubModel.MysteryFloats = new byte[] { 0x9E, 0xDF, 0xDD, 0xBC, 0xC5, 0x2A, 0x3B, 0x3E,
-											  0xA7, 0x68, 0x3F, 0x3C, 0x00, 0x00, 0x80, 0x3F };
+			newSubModel.MysteryFloats = new byte[0x10]; //{  Data[0x00], 0xDF, 0xDD, 0xBC, 0xC5, 0x2A, 0x3B, 0x3E,
+											 // 0xA7, 0x68, 0x3F, 0x3C, 0x00, 0x00, 0x80, 0x3F };
+			for (int i = 0; i < 0x010; i ++) //Read in "mystery float" bytes. Not storing them as floats 'cos we don't know what they do and they might not be
+            {
+				newSubModel.MysteryFloats[i] = Data[i];
+            }
+
 			newSubModel.BoneIntegersList = new List<int>();
 			newSubModel.MaterialIndex = Utils.ReadInt(false, 0x10, newSubModel.HEXBytes);
 			newSubModel.DaisyChainLength = Utils.ReadInt(false, 0x12, newSubModel.HEXBytes);
@@ -1534,6 +1552,9 @@ namespace USF4_Stage_Tool
 			skel.MysteryFloat1 = Utils.ReadFloat(0x38, Data);           //2		Are these some kind of checksum to make sure EMA and EMO skels match?
 			skel.MysteryFloat2 = Utils.ReadFloat(0x3C, Data);           //3
 
+			if (skel.SecondaryMatrixPointer != 0) { Console.WriteLine("EMO WITH SECONDARY MATRIX"); }
+			else { Console.WriteLine("EMO WITHOUT SECONDARY MATRIX"); }
+
 			for (int i = 0; i < skel.NodeCount; i++)
 			{
 				skel.NodeNameIndex.Add(Utils.ReadInt(true, skel.NameIndexPointer + i * 4, Data));
@@ -1588,7 +1609,6 @@ namespace USF4_Stage_Tool
 
 					WorkingNode.SecondaryMatrix = new Matrix4x4(m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44);
 				}
-
 
 				skel.Nodes.Add(WorkingNode);
 			}
@@ -1967,7 +1987,13 @@ namespace USF4_Stage_Tool
 							}
 						}
 						//nodeEMG.Text =$"{nodeEMG.Text} - [{Encoding.UTF8.GetString(emo.EMGList[j].Models[0].SubModels[0].SubModelName)} ----]";
+						
 					}
+					TreeNode nodeSkeleton = AddTreeNode(nodeEMO, "Skeleton", "Skeleton");
+					for (int k = 0; k < emo.Skeleton.Nodes.Count; k++)
+                    {
+						AddTreeNode(nodeSkeleton, k + " " + Encoding.ASCII.GetString(emo.Skeleton.NodeNames[k]), "Node");
+                    }
 				}
 				if (file.GetType() == typeof(EMM))
 				{
@@ -2003,6 +2029,11 @@ namespace USF4_Stage_Tool
 					for (int j = 0; j < ema.Animations.Count; j++)
 					{
 						AddTreeNode(nodeEMA, j + "  " + Encoding.ASCII.GetString(ema.Animations[j].Name), "Animation");
+					}
+					TreeNode nodeSkeleton = AddTreeNode(nodeEMA, "Skeleton", "Skeleton");
+					for (int k = 0; k < ema.Skeleton.Nodes.Count; k++)
+					{
+						AddTreeNode(nodeSkeleton, k + " " + Encoding.ASCII.GetString(ema.Skeleton.NodeNames[k]), "Node");
 					}
 				}
 				if (file.GetType() == typeof(OtherFile))
@@ -2578,14 +2609,18 @@ namespace USF4_Stage_Tool
 
 		void TreeContextInjectOBJ_Click(object sender, EventArgs e)
 		{
-			if (!ObjectLoaded)
+			if (ObjectLoaded && !EncodingInProgress)
+			{
+				InjectOBJ();
+			}
+			else if (!ObjectLoaded && EncodingInProgress)
+            {
+				MessageBox.Show("OBJ Encoding still in progress.", TStrings.STR_Error);
+			}
+			else if (!ObjectLoaded)
 			{
 				InjectObjAfterOpen = true;
 				BTNOpenOBJ();
-			}
-			if (ObjectLoaded)
-			{
-				InjectOBJ();
 			}
 		}
 
@@ -2671,11 +2706,15 @@ namespace USF4_Stage_Tool
 
 		private void AddOBJAsNewEMG()
 		{
-			if (!ObjectLoaded)
+			if (!ObjectLoaded && !EncodingInProgress)
 			{
 				BTNOpenOBJ();
 			}
-			if (ObjectLoaded)
+			else if(EncodingInProgress)
+            {
+				MessageBox.Show("OBJ Encoding still in progress.", TStrings.STR_Error);
+			}
+			else if (ObjectLoaded)
 			{
 				EMO targetEMO = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
 				EMG newEMG = ReadEMG(targetEMO.EMGList[0].HEXBytes);
@@ -3685,6 +3724,7 @@ namespace USF4_Stage_Tool
 					SMDData.Add("version 1");
 
 					SMDData.AddRange(WriteSMDNodesFromSkeleton(emo.Skeleton));
+					//SMDData.AddRange(WriteSMDNodesFromSkeleton(Anim.DuplicateSkeleton(emo.Skeleton)));
 
 					SMDData.Add("triangles");
 					for (int i = 0; i < emo.EMGList.Count; i++)
@@ -3942,6 +3982,7 @@ namespace USF4_Stage_Tool
 
 		bool ValidateSMD()
 		{
+			//TODO validate SMD
 			return true;
 		}
 
@@ -4197,19 +4238,17 @@ namespace USF4_Stage_Tool
 			}
 		}
 
-		void InjectLUAScript()
+		LUA LUAScriptToBytecode()
 		{
 			string target_lua = @"""sample.lua""";
-
             string ChunkSpy_script = CodeStrings.ChunkSpy1;
 
 			lua_State L = null;
-
-			string samplelua = "print(\\\"Hello World!\\\")";
+			LUA nLUA = (LUA)WorkingEMZ.Files[LastSelectedTreeNode.Index];
 
 			try
 			{
-				LUA lua = (LUA)WorkingEMZ.Files[LastSelectedTreeNode.Index];
+				
 
 				diagOpenOBJ.RestoreDirectory = true;
 				diagOpenOBJ.FileName = string.Empty;
@@ -4225,12 +4264,6 @@ namespace USF4_Stage_Tool
 							@"assert(f:write(string.dump(assert(loadfile(""" + target_lua + @""")))))" +
 							"assert(f:close())";
 
-					//this is the loadstring method which might allow files from anywhere to be loaded as strings, but the string needs "double escaping"
-					string luac_script2 =
-							@"f=assert(io.open(""native_lua_chunk.out"",""wb""))" +
-							@"assert(f:write(string.dump(assert(loadstring(""" + samplelua + @""")))))" +
-							"assert(f:close())";
-
 					//LUAC implementation
 					try
 					{
@@ -4239,7 +4272,6 @@ namespace USF4_Stage_Tool
 						luaL_openlibs(L);
 
 						int loaderror = luaL_loadbuffer(L, luac_script, (uint)luac_script.Length, "program");
-
 						int error = lua_pcall(L, 0, 0, 0);
 					}
 					finally
@@ -4255,12 +4287,7 @@ namespace USF4_Stage_Tool
 						L = lua_open();
 						luaL_openlibs(L);
 
-						//int loaderror = luaL_loadbuffer(L, ChunkSpy_script, (uint)ChunkSpy_script.Length, "program");
-
-						//int loaderror = luaL_loadfile(L, "ChunkSpy2.lua");
-
 						int loaderror = luaL_loadbuffer(L, ChunkSpy_script, (uint)ChunkSpy_script.Length, "program");
-
 						int error = lua_pcall(L, 0, 0, 0);
 					}
 					finally
@@ -4273,17 +4300,17 @@ namespace USF4_Stage_Tool
 					FileStream fsSource = new FileStream("output_usf4.out", FileMode.Open, FileAccess.Read);
 					byte[] bytes;
 					using (BinaryReader br = new BinaryReader(fsSource, Encoding.ASCII)) { bytes = br.ReadBytes((int)fsSource.Length); }
-					lua.HEXBytes = bytes;
+					nLUA.HEXBytes = bytes;
+					nLUA.Name = Encoding.ASCII.GetBytes(target_lua);
 
-					WorkingEMZ.Files.Remove(LastSelectedTreeNode.Index);
-					WorkingEMZ.Files.Add(LastSelectedTreeNode.Index, lua);
-					RefreshTree(false);
 				}
 			}
 			catch
 			{
 				MessageBox.Show("Something went wrong while injecting LUA!", TStrings.STR_Error);
 			}
+
+			return nLUA;
 		}
 
 		private void addNewMaterialToolStripMenuItem_Click(object sender, EventArgs e)
@@ -4772,8 +4799,12 @@ namespace USF4_Stage_Tool
 
         private void injectLUAScriptToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-			InjectLUAScript();
-        }
+			LUA nLUA = LUAScriptToBytecode();
+
+			WorkingEMZ.Files.Remove(LastSelectedTreeNode.Index);
+			WorkingEMZ.Files.Add(LastSelectedTreeNode.Index, nLUA);
+			RefreshTree(false);
+		}
 
 		private void injectFileExperimentalToolStripMenuItem_Click(object sender, EventArgs e)
 		{
@@ -4836,11 +4867,251 @@ namespace USF4_Stage_Tool
 						WorkingTEXEMZ.FilePointerList.Add(0x00);
 						WorkingTEXEMZ.FileNameList.Add(Encoding.ASCII.GetBytes(name));
 					}
-
 					RefreshTree(false);
 				}
 			}
 		}
+
+        private void emzContext_Opening(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+
+        }
+
+        private void addLUAScriptToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			LUA nLUA = LUAScriptToBytecode();
+			WorkingEMZ.Files.Add(WorkingEMZ.Files.Count, nLUA);
+
+			WorkingEMZ.NumberOfFiles++;
+			WorkingEMZ.FileNamePointerList.Add(0x00);
+			WorkingEMZ.FileLengthList.Add(0x00);
+			WorkingEMZ.FilePointerList.Add(0x00);
+			WorkingEMZ.FileNameList.Add(nLUA.Name);
+
+			RefreshTree(false);
+		}
+
+        private void emoContext_Opening(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+
+        }
+
+        private void rawDumpEMOToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			EMO targetEMO = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
+
+			EMO nEMO = targetEMO;
+
+			//nEMO.Skeleton = Anim.DuplicateSkeleton(nEMO.Skeleton, 1, 20);
+			nEMO.Skeleton.HEXBytes = HexDataFromSkeleton(nEMO.Skeleton);
+			nEMO.HEXBytes = HexDataFromEMO(nEMO);
+
+			saveFileDialog1.Filter = EMOFileFilter;
+			saveFileDialog1.FileName = Encoding.ASCII.GetString(nEMO.Name);
+			if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+			{
+				Utils.WriteDataToStream(saveFileDialog1.FileName, nEMO.HEXBytes);
+				AddStatus($"Extracted {Encoding.ASCII.GetString(nEMO.Name)}");
+			}
+		}
+
+        private void rawDumpEMAToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			EMA targetEMA = (EMA)WorkingEMZ.Files[LastSelectedTreeNode.Parent.Index];
+
+			EMA nEMA = targetEMA;
+
+			Animation nAnim = new Animation();
+
+			for(int i = 0; i < nEMA.AnimationCount; i++)
+            {
+				nAnim = Anim.DuplicateAnimation(nEMA.Animations[i], 1,20);
+				nEMA.Animations.RemoveAt(i);
+				nEMA.Animations.Insert(i, nAnim);
+            }
+
+			//nEMA.Skeleton = Anim.DuplicateSkeleton(nEMA.Skeleton, 1);
+			nEMA.Skeleton.HEXBytes = HexDataFromSkeleton(nEMA.Skeleton);
+			nEMA.HEXBytes = HexDataFromEMA(nEMA);
+
+			WorkingEMZ.Files.Remove(LastSelectedTreeNode.Parent.Index);
+			WorkingEMZ.Files.Add(LastSelectedTreeNode.Parent.Index, nEMA);
+			RefreshTree(false);
+
+			//saveFileDialog1.Filter = EMOFileFilter;
+			//saveFileDialog1.FileName = Encoding.ASCII.GetString(nEMA.Name);
+			//if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+			//{
+			//	Utils.WriteDataToStream(saveFileDialog1.FileName, nEMA.HEXBytes);
+			//	AddStatus($"Extracted {Encoding.ASCII.GetString(nEMA.Name)}");
+			//}
+
+		}
+
+        private void duplicateEMGToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			
+			EMO targetEMO = (EMO)WorkingEMZ.Files[LastSelectedTreeNode.Parent.Index];
+			EMG targetEMG = ReadEMG(targetEMO.EMGList[LastSelectedTreeNode.Index].HEXBytes);
+			List<int> newbones = new List<int>();
+
+			for (int i = 0; i < targetEMG.Models[0].SubModels[0].BoneIntegersList.Count; i++)
+            {
+				newbones.Add(targetEMG.Models[0].SubModels[0].BoneIntegersList[i] + 21);
+            }
+
+			//TODO need to recalculate the bone integers count
+			targetEMG.Models[0].SubModels[0].BoneIntegersList.Clear();
+			targetEMG.Models[0].SubModels[0].BoneIntegersList.AddRange(newbones);
+			targetEMG.HEXBytes = HexDataFromEMG(targetEMG);
+
+			//targetEMO.Skeleton = Anim.DuplicateSkeleton(targetEMO.Skeleton, 1, 20);
+			//targetEMO.Skeleton.HEXBytes = HexDataFromSkeleton(targetEMO.Skeleton);
+			targetEMO.EMGList.Add(targetEMG);
+			targetEMO.EMGCount++;
+			targetEMO.EMGPointerList.Add(0x00);
+
+			targetEMO.HEXBytes = HexDataFromEMO(targetEMO);
+
+			WorkingEMZ.Files.Remove(LastSelectedTreeNode.Parent.Index);
+			WorkingEMZ.Files.Add(LastSelectedTreeNode.Parent.Index, targetEMO);
+			RefreshTree(false);
+		}
+
+        private void duplicateModelToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			EMO targetEMO = (EMO)WorkingEMZ.Files[LastSelectedTreeNode.Parent.Index];
+			EMG targetEMG = ReadEMG(targetEMO.EMGList[LastSelectedTreeNode.Index].HEXBytes);
+
+			Model targetModel = targetEMG.Models[0];
+			SubModel targetSM = targetModel.SubModels[0];
+
+			List<int> daisychain1 = targetSM.DaisyChain.ToList();
+			List<int> daisychain2 = new List<int>();
+
+			for (int i = 0; i < daisychain1.Count; i++)
+            {
+				daisychain2.Add(daisychain1[i] + targetModel.VertexCount);
+            }
+
+			daisychain1.Add(daisychain1.Last());   //Last entry from daisychain1
+			daisychain1.Add(daisychain2[2]);
+			daisychain1.Add(daisychain2[2]);
+			daisychain1.Add(daisychain2[1]);
+
+			daisychain1.AddRange(daisychain2);
+
+			targetSM.DaisyChain = daisychain1.ToArray();
+			targetSM.DaisyChainLength = daisychain1.Count;
+
+			//Duplicate daisychain - convert back to indices, double the indices, re-daisychain
+			//List<int[]> daisychain = FaceIndicesFromDaisyChain(targetEMG.Models[0].SubModels[0].DaisyChain);
+			//int dc_length = daisychain.Count;
+
+			//daisychain.Add(daisychain[daisychain.Count]);
+
+			//for(int i = 0; i < dc_length; i++)
+   //         {
+			//	daisychain.Add(new int[3] { daisychain[i][0] + targetModel.VertexCount, daisychain[i][1] + targetModel.VertexCount, daisychain[i][2] + targetModel.VertexCount });
+			//}
+			//targetSM.DaisyChain = DaisyChainFromIndices(daisychain).ToArray();
+			//targetSM.DaisyChainLength = targetSM.DaisyChain.Length;
+
+			//Add the new bones to the bone list
+			
+			int bone_count = targetSM.BoneIntegersList.Count;
+			for(int i = 0; i < bone_count; i++)
+            {
+				//targetSM.BoneIntegersList.Add(targetSM.BoneIntegersList[i] + 20);
+            }
+			targetSM.BoneIntegersCount = targetSM.BoneIntegersList.Count;
+
+			//Return Submodel
+			targetModel.SubModels.RemoveAt(0);
+			targetModel.SubModels.Insert(0, targetSM);
+			
+			//Duplicate verts and increase the bone IDs
+			int vert_count = targetModel.VertexData.Count;
+			
+			for(int i = 0; i < vert_count; i++)
+            {
+				Vertex v = targetModel.VertexData[i];
+				List<int> new_BoneIDs = new List<int>();
+
+				//for (int j = 0; j < v.BoneIDs.Count; j++)
+    //            {
+				//	if(j > 0 && v.BoneIDs[j] == 0)
+    //                {
+				//		new_BoneIDs.Add(0x00);
+    //                }
+				//	else
+    //                {
+				//		new_BoneIDs.Add(v.BoneIDs[j] + 19);
+    //                }
+						
+    //            }
+				//v.BoneIDs = new_BoneIDs;
+				v.X += 0f;
+				targetModel.VertexData.Add(v);
+            }
+
+			targetModel.VertexCount = targetModel.VertexData.Count;
+
+			targetEMG.Models.RemoveAt(0);
+			targetEMG.Models.Insert(0, targetModel);
+
+			targetEMG.HEXBytes = HexDataFromEMG(targetEMG);
+
+			targetEMO.EMGList.RemoveAt(0);
+			targetEMO.EMGList.Insert(0, targetEMG);
+
+			//targetEMO.Skeleton = Anim.DuplicateSkeleton(targetEMO.Skeleton, 1,20);
+			//targetEMO.Skeleton.HEXBytes = HexDataFromSkeleton(targetEMO.Skeleton);
+
+			targetEMO.HEXBytes = HexDataFromEMO(targetEMO);
+
+			WorkingEMZ.Files.Remove(LastSelectedTreeNode.Parent.Index);
+			WorkingEMZ.Files.Add(LastSelectedTreeNode.Parent.Index, targetEMO);
+			RefreshTree(false);
+
+		}
+
+		public void DuplicateUSA_MAN01_B()
+		{
+			EMA ema = (EMA)WorkingEMZ.Files[8];
+			EMO emo = (EMO)WorkingEMZ.Files[10];
+
+			ema.Skeleton = Anim.DuplicateSkeleton(ema.Skeleton, 1,20);
+			emo.Skeleton = Anim.DuplicateSkeleton(emo.Skeleton, 1,20);
+
+			Animation nAnim = new Animation();
+
+			//for (int i = 0; i < ema.AnimationCount; i++)
+			for (int i = 0; i < 1; i++)
+			{
+				nAnim = Anim.DuplicateAnimation(ema.Animations[i], 1, 20);
+				ema.Animations.RemoveAt(i);
+				ema.Animations.Insert(i, nAnim);
+			}
+
+			emo.Skeleton.HEXBytes = HexDataFromSkeleton(emo.Skeleton);
+			ema.Skeleton.HEXBytes = HexDataFromSkeleton(ema.Skeleton);
+			ema.HEXBytes = HexDataFromEMA(ema);
+			emo.HEXBytes = HexDataFromEMO(emo);
+
+			WorkingEMZ.Files.Remove(8);
+			WorkingEMZ.Files.Add(8, ema);
+			WorkingEMZ.Files.Remove(10);
+			WorkingEMZ.Files.Add(10, emo);
+			RefreshTree(false);
+
+		}
+
+        private void dupliacteUSAMAN01BToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			DuplicateUSA_MAN01_B();
+        }
     }
+
 }
 

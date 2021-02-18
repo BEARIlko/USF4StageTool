@@ -95,6 +95,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CodeFile1.cs" />
+    <Compile Include="Animation Functions.cs" />
     <Compile Include="DebugOutput.cs">
       <SubType>Form</SubType>
     </Compile>
