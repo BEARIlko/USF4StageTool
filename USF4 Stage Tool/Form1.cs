@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using static KopiLua.Lua;
 using static CSharpImageLibrary.ImageFormats;
+using System.Globalization;
 
 namespace USF4_Stage_Tool
 {
@@ -204,7 +205,7 @@ namespace USF4_Stage_Tool
 				}
 			}
 			//Once we reach the end of the file, add the final group to the OBJ
-			WorkingObject.MaterialGroups.Add(WorkingMat);
+			if (WorkingMat.lines.Count > 0) { WorkingObject.MaterialGroups.Add(WorkingMat); }
 
 			foreach (ObjMatGroup omg in WorkingObject.MaterialGroups)
 			{
@@ -661,11 +662,12 @@ namespace USF4_Stage_Tool
 		}
 
 		bool ValidateOBJ()
-		{   //TODO fix face validation
+		{
 			if (WorkingObject.Verts.Count <= 0) { MessageBox.Show(TStrings.STR_ERR_VertsNotFoundinOBJ, TStrings.STR_Information); return false; }
 			if (WorkingObject.Textures.Count <= 0) { MessageBox.Show(TStrings.STR_ERR_TexturesNotFoundinOBJ, TStrings.STR_Information); return false; }
 			if (WorkingObject.Normals.Count <= 0) { MessageBox.Show(TStrings.STR_ERR_NormalsNotFoundinOBJ, TStrings.STR_Information); return false; }
-			//if (WorkingObject.FaceIndices.Count <= 0) { MessageBox.Show(TStrings.STR_ERR_FacesNotFoundinOBJ, TStrings.STR_Information); return false; }
+			if (WorkingObject.MaterialGroups.Count <= 0) { MessageBox.Show(TStrings.STR_ERR_FacesNotFoundinOBJ, TStrings.STR_Information); return false; }
+
 			return true;
 		}
 
@@ -4799,6 +4801,7 @@ namespace USF4_Stage_Tool
 
         private void injectLUAScriptToolStripMenuItem1_Click(object sender, EventArgs e)
         {
+			CultureInfo.CurrentCulture = new CultureInfo("en-GB", false);
 			LUA nLUA = LUAScriptToBytecode();
 
 			WorkingEMZ.Files.Remove(LastSelectedTreeNode.Index);
