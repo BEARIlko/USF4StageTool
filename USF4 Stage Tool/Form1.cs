@@ -4242,7 +4242,7 @@ namespace USF4_Stage_Tool
 
 		LUA LUAScriptToBytecode()
 		{
-			string target_lua = @"""sample.lua""";
+			string target_lua = "plaintext.lua";
             string ChunkSpy_script = CodeStrings.ChunkSpy1;
 
 			lua_State L = null;
@@ -4258,7 +4258,12 @@ namespace USF4_Stage_Tool
 				diagOpenOBJ.Filter = LUAFileFilter;
 				if (diagOpenOBJ.ShowDialog() == DialogResult.OK)
 				{
-					target_lua = diagOpenOBJ.SafeFileName;
+					
+					string[] lines = File.ReadAllLines(diagOpenOBJ.FileName);
+
+					File.WriteAllLines("plaintext.lua", lines, Encoding.ASCII);
+
+					//target_lua = diagOpenOBJ.SafeFileName;
 
 					//this is the loadfile method
 					string luac_script =

@@ -2,3 +2,5 @@
 /New Text Document.txt
 *.lua
 *.out
+/USF4 Stage Tool/bin
+/USF4 Stage Tool/obj
