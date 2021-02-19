@@ -2365,8 +2365,6 @@ namespace USF4_Stage_Tool
 
 		private void BtnOpenEMZ_Click(object sender, EventArgs e)
 		{
-			Zipstream();
-
 			diagOpenOBJ.RestoreDirectory = true;
 			diagOpenOBJ.FileName = string.Empty;
 			diagOpenOBJ.InitialDirectory = LastOpenFolder;
