@@ -30,7 +30,7 @@ namespace USF4_Stage_Tool
 			tbValue.Focus();
 		}
 
-		private void Close()
+		private new void Close()
 		{
 			ActiveForm.Close();
 		}

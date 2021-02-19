@@ -180,8 +180,8 @@
             // 
             // pnlOBJECTS
             // 
-            this.pnlOBJECTS.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.pnlOBJECTS.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlOBJECTS.BackColor = System.Drawing.Color.AliceBlue;
             this.pnlOBJECTS.Controls.Add(this.pSelectedTreeNodeData);
@@ -196,8 +196,8 @@
             // 
             // pSelectedTreeNodeData
             // 
-            this.pSelectedTreeNodeData.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.pSelectedTreeNodeData.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.pSelectedTreeNodeData.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pSelectedTreeNodeData.Controls.Add(this.pnlEO_MaterialEdit);
@@ -214,8 +214,8 @@
             // 
             // pnlEO_MaterialEdit
             // 
-            this.pnlEO_MaterialEdit.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.pnlEO_MaterialEdit.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlEO_MaterialEdit.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pnlEO_MaterialEdit.Controls.Add(this.btnCalculateFloat);
@@ -248,7 +248,7 @@
             // 
             // SPOutFloat
             // 
-            this.SPOutFloat.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            this.SPOutFloat.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.SPOutFloat.Location = new System.Drawing.Point(219, 275);
             this.SPOutFloat.Name = "SPOutFloat";
@@ -275,7 +275,7 @@
             // 
             // cbShaderProperties
             // 
-            this.cbShaderProperties.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            this.cbShaderProperties.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.cbShaderProperties.FormattingEnabled = true;
             this.cbShaderProperties.Location = new System.Drawing.Point(10, 333);
@@ -296,8 +296,8 @@
             // 
             // lvShaderProperties
             // 
-            this.lvShaderProperties.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.lvShaderProperties.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lvShaderProperties.Location = new System.Drawing.Point(6, 63);
             this.lvShaderProperties.Multiline = true;
@@ -328,7 +328,7 @@
             // 
             // cbShaders
             // 
-            this.cbShaders.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.cbShaders.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.cbShaders.FormattingEnabled = true;
             this.cbShaders.Location = new System.Drawing.Point(46, 7);
@@ -348,7 +348,7 @@
             // 
             // pnlEO_SUBMOD
             // 
-            this.pnlEO_SUBMOD.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.pnlEO_SUBMOD.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlEO_SUBMOD.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pnlEO_SUBMOD.Controls.Add(this.bntEO_SubModSave);
@@ -384,7 +384,7 @@
             // 
             // label1
             // 
-            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.label1.Location = new System.Drawing.Point(3, 5);
@@ -405,7 +405,7 @@
             // 
             // pnlEO_MOD
             // 
-            this.pnlEO_MOD.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.pnlEO_MOD.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlEO_MOD.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pnlEO_MOD.Controls.Add(this.bntEO_ModSave);
@@ -440,7 +440,7 @@
             // 
             // label10
             // 
-            this.label10.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.label10.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.label10.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.label10.Location = new System.Drawing.Point(3, 5);
@@ -461,7 +461,7 @@
             // 
             // pnlEO_EMG
             // 
-            this.pnlEO_EMG.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.pnlEO_EMG.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlEO_EMG.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pnlEO_EMG.Controls.Add(this.bntEO_EMGSave);
@@ -496,7 +496,7 @@
             // 
             // label9
             // 
-            this.label9.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.label9.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.label9.Location = new System.Drawing.Point(3, 5);
@@ -517,7 +517,7 @@
             // 
             // lbSelNODE_ListData
             // 
-            this.lbSelNODE_ListData.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.lbSelNODE_ListData.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
             | System.Windows.Forms.AnchorStyles.Left)));
             this.lbSelNODE_ListData.BackColor = System.Drawing.Color.AliceBlue;
             this.lbSelNODE_ListData.BorderStyle = System.Windows.Forms.BorderStyle.None;
@@ -529,7 +529,7 @@
             // 
             // lbSelNODE_Title
             // 
-            this.lbSelNODE_Title.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.lbSelNODE_Title.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lbSelNODE_Title.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.lbSelNODE_Title.Location = new System.Drawing.Point(3, 9);
@@ -541,8 +541,8 @@
             // 
             // pbPreviewDDS
             // 
-            this.pbPreviewDDS.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.pbPreviewDDS.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.pbPreviewDDS.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.pbPreviewDDS.Location = new System.Drawing.Point(3, 3);
@@ -554,7 +554,7 @@
             // 
             // pOBJProperties
             // 
-            this.pOBJProperties.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.pOBJProperties.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.pOBJProperties.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pOBJProperties.Controls.Add(this.lbOBJNameProperty);
@@ -575,7 +575,7 @@
             // 
             // lbOBJNameProperty
             // 
-            this.lbOBJNameProperty.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.lbOBJNameProperty.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lbOBJNameProperty.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.lbOBJNameProperty.Location = new System.Drawing.Point(3, 42);
@@ -692,7 +692,7 @@
             // 
             // tvTree
             // 
-            this.tvTree.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.tvTree.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
             | System.Windows.Forms.AnchorStyles.Left)));
             this.tvTree.Location = new System.Drawing.Point(11, 18);
             this.tvTree.Name = "tvTree";
@@ -703,7 +703,7 @@
             // 
             // lbLoadSteps
             // 
-            this.lbLoadSteps.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            this.lbLoadSteps.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lbLoadSteps.BackColor = System.Drawing.Color.Transparent;
             this.lbLoadSteps.Font = new System.Drawing.Font("Verdana", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
@@ -715,7 +715,7 @@
             // 
             // progressBar1
             // 
-            this.progressBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            this.progressBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.progressBar1.Location = new System.Drawing.Point(16, 445);
             this.progressBar1.Name = "progressBar1";
@@ -724,7 +724,7 @@
             // 
             // panel1
             // 
-            this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panel1.BackColor = System.Drawing.Color.Moccasin;
             this.panel1.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("panel1.BackgroundImage")));
@@ -747,7 +747,7 @@
             // 
             // lvStatus
             // 
-            this.lvStatus.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.lvStatus.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lvStatus.BackColor = System.Drawing.Color.AntiqueWhite;
             this.lvStatus.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
@@ -1103,7 +1103,7 @@
             this.extractLUABytecodeToolStripMenuItem,
             this.addLUAScriptToolStripMenuItem});
             this.luaContext.Name = "luaContext";
-            this.luaContext.Size = new System.Drawing.Size(188, 136);
+            this.luaContext.Size = new System.Drawing.Size(188, 114);
             // 
             // injectLUAScriptToolStripMenuItem1
             // 
@@ -1288,7 +1288,7 @@
             this.rawDumpEMOAsSMDToolStripMenuItem,
             this.rawDumpEMOToolStripMenuItem});
             this.emoContext.Name = "luaContext";
-            this.emoContext.Size = new System.Drawing.Size(259, 136);
+            this.emoContext.Size = new System.Drawing.Size(259, 158);
             this.emoContext.Opening += new System.ComponentModel.CancelEventHandler(this.emoContext_Opening);
             // 
             // insertOBJAsNewEMGToolStripMenuItem1
@@ -1389,96 +1389,96 @@
         private System.Windows.Forms.ToolStripMenuItem menuToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem debugToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem consoleMessagesOutputToolStripMenuItem;
-		private System.Windows.Forms.SaveFileDialog saveFileDialog1;
-		private System.Windows.Forms.ToolStripMenuItem informationToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem uSF4ModdingDocumentToolStripMenuItem;
-		private System.Windows.Forms.PictureBox pictureBox2;
-		private System.Windows.Forms.ProgressBar progressBar1;
-		private System.Windows.Forms.Label lbLoadSteps;
-		private System.Windows.Forms.TreeView tvTree;
-		private System.Windows.Forms.Button btnOpenEMZ;
-		private System.Windows.Forms.ContextMenuStrip emgContext;
-		private System.Windows.Forms.ToolStripMenuItem emgContextInjectOBJ;
-		private System.Windows.Forms.ToolStripMenuItem insertOBJAsNewEMGToolStripMenuItem;
-		private System.Windows.Forms.Panel pOBJProperties;
-		private System.Windows.Forms.TextBox tbTextureIndex;
-		private System.Windows.Forms.Label label7;
-		private System.Windows.Forms.CheckBox chkTextureFlipX;
-		private System.Windows.Forms.CheckBox chkTextureFlipY;
-		private System.Windows.Forms.Label label5;
-		private System.Windows.Forms.Label label3;
-		private System.Windows.Forms.Label label2;
-		private System.Windows.Forms.TextBox tbScaleV;
-		private System.Windows.Forms.TextBox tbScaleU;
-		private System.Windows.Forms.Label label8;
-		private System.Windows.Forms.Panel pSelectedTreeNodeData;
-		private System.Windows.Forms.Label lbSelNODE_Title;
-		private System.Windows.Forms.ListBox lbSelNODE_ListData;
-		private System.Windows.Forms.Label lbOBJNameProperty;
-		private System.Windows.Forms.Panel pnlEO_EMG;
-		private System.Windows.Forms.TextBox tbEMGRootBone;
-		private System.Windows.Forms.Label label9;
-		private System.Windows.Forms.Label label6;
-		private System.Windows.Forms.Button bntEO_EMGSave;
-		private System.Windows.Forms.Panel pnlEO_MOD;
-		private System.Windows.Forms.Button bntEO_ModSave;
-		private System.Windows.Forms.TextBox tbEOMod_TextureIndex;
-		private System.Windows.Forms.Label label10;
-		private System.Windows.Forms.Label label11;
-		private System.Windows.Forms.ToolStripMenuItem deleteEMGToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem saveEncodedOBJToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem saveEncodedOBJToHEXToolStripMenuItem;
-		private System.Windows.Forms.CheckBox chkGeometryFlipX;
-		private System.Windows.Forms.Panel pnlEO_SUBMOD;
-		private System.Windows.Forms.Button bntEO_SubModSave;
-		private System.Windows.Forms.TextBox tbEO_SubModName;
-		private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.SaveFileDialog saveFileDialog1;
+        private System.Windows.Forms.ToolStripMenuItem informationToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem uSF4ModdingDocumentToolStripMenuItem;
+        private System.Windows.Forms.PictureBox pictureBox2;
+        private System.Windows.Forms.ProgressBar progressBar1;
+        private System.Windows.Forms.Label lbLoadSteps;
+        private System.Windows.Forms.TreeView tvTree;
+        private System.Windows.Forms.Button btnOpenEMZ;
+        private System.Windows.Forms.ContextMenuStrip emgContext;
+        private System.Windows.Forms.ToolStripMenuItem emgContextInjectOBJ;
+        private System.Windows.Forms.ToolStripMenuItem insertOBJAsNewEMGToolStripMenuItem;
+        private System.Windows.Forms.Panel pOBJProperties;
+        private System.Windows.Forms.TextBox tbTextureIndex;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.CheckBox chkTextureFlipX;
+        private System.Windows.Forms.CheckBox chkTextureFlipY;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.TextBox tbScaleV;
+        private System.Windows.Forms.TextBox tbScaleU;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.Panel pSelectedTreeNodeData;
+        private System.Windows.Forms.Label lbSelNODE_Title;
+        private System.Windows.Forms.ListBox lbSelNODE_ListData;
+        private System.Windows.Forms.Label lbOBJNameProperty;
+        private System.Windows.Forms.Panel pnlEO_EMG;
+        private System.Windows.Forms.TextBox tbEMGRootBone;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Button bntEO_EMGSave;
+        private System.Windows.Forms.Panel pnlEO_MOD;
+        private System.Windows.Forms.Button bntEO_ModSave;
+        private System.Windows.Forms.TextBox tbEOMod_TextureIndex;
+        private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.ToolStripMenuItem deleteEMGToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem saveEncodedOBJToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem saveEncodedOBJToHEXToolStripMenuItem;
+        private System.Windows.Forms.CheckBox chkGeometryFlipX;
+        private System.Windows.Forms.Panel pnlEO_SUBMOD;
+        private System.Windows.Forms.Button bntEO_SubModSave;
+        private System.Windows.Forms.TextBox tbEO_SubModName;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label label12;
         private System.Windows.Forms.Button button1;
-		private System.Windows.Forms.ContextMenuStrip emzContext;
-		private System.Windows.Forms.ToolStripMenuItem saveEMZToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem closeEMZToolStripMenuItem;
-		private System.Windows.Forms.ContextMenuStrip cmEmpty;
-		private System.Windows.Forms.ContextMenuStrip emmContext;
-		private System.Windows.Forms.ContextMenuStrip embContext;
-		private System.Windows.Forms.ContextMenuStrip luaContext;
-		private System.Windows.Forms.ToolStripMenuItem addNewMaterialToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem injectDDSToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem addDDSToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem injectLUAScriptToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem extractLUAScriptToolStripMenuItem;
-		private System.Windows.Forms.ContextMenuStrip ddsContext;
-		private System.Windows.Forms.ToolStripMenuItem injectDDSToolStripMenuItem1;
-		private System.Windows.Forms.ToolStripMenuItem addDDSToolStripMenuItem1;
-		private System.Windows.Forms.PictureBox pbPreviewDDS;
-		private System.Windows.Forms.ContextMenuStrip matContext;
-		private System.Windows.Forms.ToolStripMenuItem addMaterialToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem deleteMaterialToolStripMenuItem1;
-		private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
-		private System.Windows.Forms.ToolStripMenuItem deleteDDSToolStripMenuItem;
-		private System.Windows.Forms.Button btnSaveEMZ;
-		private System.Windows.Forms.Button btnSaveTEXEMZ;
-		private System.Windows.Forms.Panel pnlEO_MaterialEdit;
-		private System.Windows.Forms.Label label13;
-		private System.Windows.Forms.ComboBox cbShaders;
-		private System.Windows.Forms.Label lbShader;
-		private System.Windows.Forms.Button btnEO_ShaderEditSave;
-		private System.Windows.Forms.TextBox lvShaderProperties;
-		private System.Windows.Forms.ComboBox cbShaderProperties;
-		private System.Windows.Forms.Label label14;
-		private System.Windows.Forms.Button btnCalculateFloat;
-		private System.Windows.Forms.TextBox SPOutFloat;
-		private System.Windows.Forms.TextBox SPINFloat;
-		private System.Windows.Forms.Label label15;
-		private System.Windows.Forms.ToolStripMenuItem renameDDSToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem extractDDSToolStripMenuItem;
-		private System.Windows.Forms.ListBox lvStatus;
-		private System.Windows.Forms.ToolStripMenuItem exctractAllDDSToolStripMenuItem;
-		private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
-		private System.Windows.Forms.ToolStripMenuItem exctractTEXEMZTexturesToolStripMenuItem;
-		private System.Windows.Forms.ContextMenuStrip csbContext;
-		private System.Windows.Forms.ToolStripMenuItem injectCSBToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem extractCSBToolStripMenuItem;
+        private System.Windows.Forms.ContextMenuStrip emzContext;
+        private System.Windows.Forms.ToolStripMenuItem saveEMZToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem closeEMZToolStripMenuItem;
+        private System.Windows.Forms.ContextMenuStrip cmEmpty;
+        private System.Windows.Forms.ContextMenuStrip emmContext;
+        private System.Windows.Forms.ContextMenuStrip embContext;
+        private System.Windows.Forms.ContextMenuStrip luaContext;
+        private System.Windows.Forms.ToolStripMenuItem addNewMaterialToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem injectDDSToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem addDDSToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem injectLUAScriptToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem extractLUAScriptToolStripMenuItem;
+        private System.Windows.Forms.ContextMenuStrip ddsContext;
+        private System.Windows.Forms.ToolStripMenuItem injectDDSToolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem addDDSToolStripMenuItem1;
+        private System.Windows.Forms.PictureBox pbPreviewDDS;
+        private System.Windows.Forms.ContextMenuStrip matContext;
+        private System.Windows.Forms.ToolStripMenuItem addMaterialToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem deleteMaterialToolStripMenuItem1;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripMenuItem deleteDDSToolStripMenuItem;
+        private System.Windows.Forms.Button btnSaveEMZ;
+        private System.Windows.Forms.Button btnSaveTEXEMZ;
+        private System.Windows.Forms.Panel pnlEO_MaterialEdit;
+        private System.Windows.Forms.Label label13;
+        private System.Windows.Forms.ComboBox cbShaders;
+        private System.Windows.Forms.Label lbShader;
+        private System.Windows.Forms.Button btnEO_ShaderEditSave;
+        private System.Windows.Forms.TextBox lvShaderProperties;
+        private System.Windows.Forms.ComboBox cbShaderProperties;
+        private System.Windows.Forms.Label label14;
+        private System.Windows.Forms.Button btnCalculateFloat;
+        private System.Windows.Forms.TextBox SPOutFloat;
+        private System.Windows.Forms.TextBox SPINFloat;
+        private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.ToolStripMenuItem renameDDSToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem extractDDSToolStripMenuItem;
+        private System.Windows.Forms.ListBox lvStatus;
+        private System.Windows.Forms.ToolStripMenuItem exctractAllDDSToolStripMenuItem;
+        private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
+        private System.Windows.Forms.ToolStripMenuItem exctractTEXEMZTexturesToolStripMenuItem;
+        private System.Windows.Forms.ContextMenuStrip csbContext;
+        private System.Windows.Forms.ToolStripMenuItem injectCSBToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem extractCSBToolStripMenuItem;
         private System.Windows.Forms.ContextMenuStrip animationContext;
         private System.Windows.Forms.ToolStripMenuItem InjectAnimationtoolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem AddAnimationtoolStripMenuItem2;
@@ -1488,9 +1488,9 @@
         private System.Windows.Forms.ToolStripMenuItem dumpRefPoseToSMDToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem rawDumpEMOAsSMDToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem extractLUABytecodeToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem expandAllToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem collapseAllToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem insertOBJAsNewEMGToolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem expandAllToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem collapseAllToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem insertOBJAsNewEMGToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem injectSMDAsEMGExperimentalToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem injectLUAScriptToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem injectFileExperimentalToolStripMenuItem;

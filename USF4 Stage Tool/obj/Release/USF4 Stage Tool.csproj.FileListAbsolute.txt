@@ -116,3 +116,21 @@ E:\GIT\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.csproj.Fody.Cop
 E:\GIT\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.csproj.CopyComplete
 E:\GIT\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.exe
 E:\GIT\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.pdb
+E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\bin\Release\USF4 Stage Tool.exe.config
+E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\bin\Release\USF4 Stage Tool.exe
+E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\bin\Release\USF4 Stage Tool.pdb
+E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\bin\Release\CSharpImageLibrary.xml
+E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\bin\Release\System.Numerics.Vectors.xml
+E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\bin\Release\System.Threading.Tasks.Dataflow.xml
+E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\bin\Release\UsefulThings.xml
+E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.csprojAssemblyReference.cache
+E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\obj\Release\USF4_Stage_Tool.DebugOutput.resources
+E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\obj\Release\USF4_Stage_Tool.Form1.resources
+E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\obj\Release\USF4_Stage_Tool.InputBox.resources
+E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\obj\Release\USF4_Stage_Tool.Properties.Resources.resources
+E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.csproj.GenerateResource.cache
+E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.csproj.CoreCompileInputs.cache
+E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.csproj.Fody.CopyLocal.cache
+E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.csproj.CopyComplete
+E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.exe
+E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.pdb

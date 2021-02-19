@@ -15,12 +15,28 @@ using static KopiLua.Lua;
 using static CSharpImageLibrary.ImageFormats;
 using System.Globalization;
 
+
 namespace USF4_Stage_Tool
 {
 
 	public partial class Form1 : Form
 	{
-		DebugOutput debugOutputForm;
+		public void Zipstream()
+		{
+			FileStream fsSource = new FileStream("STG_TRN.emz.compressed", FileMode.Open, FileAccess.Read);
+			byte[] bytes;
+			using (BinaryReader br = new BinaryReader(fsSource, Encoding.ASCII)) { bytes = br.ReadBytes((int)fsSource.Length); }
+
+			bytes = Utils.ChopByteArray(bytes, 0x10, bytes.Length - 0x10);
+
+			IList<byte> ilbytes = bytes.ToList();
+
+			List<byte> defbytes = ZlibDecoder.Inflate(ilbytes);
+
+			Utils.WriteDataToStream("testout.emz", defbytes);
+		}
+
+        DebugOutput debugOutputForm;
 		public string LastOpenFolder = string.Empty;
 
 		//File types filters
@@ -138,18 +154,22 @@ namespace USF4_Stage_Tool
 			Dictionary<UInt64, int> UniqueChunkDictionary = new Dictionary<UInt64, int>();
 
 			//Prepare Input OBJ Structure
-			WorkingObject = new ObjModel();
-			WorkingObject.Verts = new List<Vertex>();
-			WorkingObject.Textures = new List<UVMap>();
-			WorkingObject.Normals = new List<Normal>();
-			WorkingObject.FaceIndices = new List<int[]>();
-			WorkingObject.UniqueVerts = new List<Vertex>();
-			WorkingObject.MaterialGroups = new List<ObjMatGroup>();
+			WorkingObject = new ObjModel
+			{
+				Verts = new List<Vertex>(),
+				Textures = new List<UVMap>(),
+				Normals = new List<Normal>(),
+				FaceIndices = new List<int[]>(),
+				UniqueVerts = new List<Vertex>(),
+				MaterialGroups = new List<ObjMatGroup>()
+			};
 
-			ObjMatGroup WorkingMat = new ObjMatGroup();
-			WorkingMat.FaceIndices = new List<int[]>();
-			WorkingMat.lines = new List<string>();
-			WorkingMat.DaisyChain = new List<int>();
+			ObjMatGroup WorkingMat = new ObjMatGroup()
+			{
+				FaceIndices = new List<int[]>(),
+				lines = new List<string>(),
+				DaisyChain = new List<int>()
+			};
 
 			for (int i = 0; i < lines.Length; i++)
 			{
@@ -161,10 +181,12 @@ namespace USF4_Stage_Tool
 
 					string vertCoords = line.Replace("v ", "").Trim();
 					string[] vertProps = vertCoords.Trim().Split(' ');
-					Vertex vert = new Vertex();
-					vert.X = flip * float.Parse(Utils.FixFloatingPoint(vertProps[0]));
-					vert.Y = float.Parse(Utils.FixFloatingPoint(vertProps[1]));
-					vert.Z = float.Parse(Utils.FixFloatingPoint(vertProps[2]));
+					Vertex vert = new Vertex()
+					{
+						X = flip * float.Parse(Utils.FixFloatingPoint(vertProps[0])),
+						Y = float.Parse(Utils.FixFloatingPoint(vertProps[1])),
+						Z = float.Parse(Utils.FixFloatingPoint(vertProps[2]))
+					};
 					WorkingObject.Verts.Add(vert);
 				}
 				if (line.StartsWith("vt "))
@@ -172,19 +194,24 @@ namespace USF4_Stage_Tool
 					string vertTextures = line.Replace("vt ", "").Trim();
 					vertTextures = Utils.FixFloatingPoint(vertTextures);
 					string[] vertTex = vertTextures.Trim().Split(' ');
-					UVMap tex = new UVMap();
-					tex.U = (float.Parse(vertTex[0]));
-					tex.V = (float.Parse(vertTex[1]));
+					UVMap tex = new UVMap()
+					{
+						U = float.Parse(vertTex[0]),
+						V = float.Parse(vertTex[1])
+					};
+
 					WorkingObject.Textures.Add(tex);
 				}
 				if (line.StartsWith("vn "))
 				{   //TODO test if we need to flip normals
 					string normCoords = line.Replace("vn ", "").Trim();
 					string[] normProps = normCoords.Trim().Split(' ');
-					Normal norm = new Normal();
-					norm.nX = float.Parse(Utils.FixFloatingPoint(normProps[0]));
-					norm.nY = float.Parse(Utils.FixFloatingPoint(normProps[1]));
-					norm.nZ = float.Parse(Utils.FixFloatingPoint(normProps[2]));
+					Normal norm = new Normal()
+					{
+						nX = float.Parse(Utils.FixFloatingPoint(normProps[0])),
+						nY = float.Parse(Utils.FixFloatingPoint(normProps[1])),
+						nZ = float.Parse(Utils.FixFloatingPoint(normProps[2]))
+					};
 					WorkingObject.Normals.Add(norm);
 				}
 				if (line.StartsWith("usemtl"))
@@ -193,12 +220,14 @@ namespace USF4_Stage_Tool
 					{
 						WorkingObject.MaterialGroups.Add(WorkingMat);
 					}
-					//Initialise a new MatGroup
-					WorkingMat = new ObjMatGroup();
-					WorkingMat.FaceIndices = new List<int[]>();
-					WorkingMat.lines = new List<string>();
-					WorkingMat.DaisyChain = new List<int>();
-				}
+                    //Initialise a new MatGroup
+                    WorkingMat = new ObjMatGroup
+                    {
+                        FaceIndices = new List<int[]>(),
+                        lines = new List<string>(),
+                        DaisyChain = new List<int>()
+                    };
+                }
 				if (line.StartsWith("f "))
 				{   //If we find a face line, add it to our current material group
 					WorkingMat.lines.Add(line);
@@ -807,32 +836,38 @@ namespace USF4_Stage_Tool
 
 		private Model ReadModel(byte[] Data)
 		{
-			Model nModel = new Model();
-			nModel.HEXBytes = Data;
-			nModel.BitFlag = Utils.ReadInt(true, 0x00, nModel.HEXBytes);
-			nModel.TextureCount = Utils.ReadInt(true, 0x04, nModel.HEXBytes);
-			nModel.TextureListPointer = Utils.ReadInt(true, 0x0C, nModel.HEXBytes);
-			nModel.VertexCount = Utils.ReadInt(false, 0x10, nModel.HEXBytes);
-			nModel.BitDepth = Utils.ReadInt(false, 0x12, nModel.HEXBytes);
-			nModel.VertexListPointer = Utils.ReadInt(true, 0x14, nModel.HEXBytes);
-			nModel.ReadMode = Utils.ReadInt(false, 0x18, nModel.HEXBytes);
-			nModel.CullData = new byte[] { 0x00, 0x0A, 0x1B, 0x3C, 0xC3, 0xA4, 0x9E, 0x40, //Generic cull data with broad display
+			Model nModel = new Model()
+			{
+				HEXBytes = Data,
+				BitFlag = Utils.ReadInt(true, 0x00, Data),
+				TextureCount = Utils.ReadInt(true, 0x04, Data),
+				TextureListPointer = Utils.ReadInt(true, 0x0C, Data),
+				VertexCount = Utils.ReadInt(false, 0x10, Data),
+				BitDepth = Utils.ReadInt(false, 0x12, Data),
+				VertexListPointer = Utils.ReadInt(true, 0x14, Data),
+				ReadMode = Utils.ReadInt(false, 0x18, Data),
+				CullData = new byte[] { 0x00, 0x0A, 0x1B, 0x3C, 0xC3, 0xA4, 0x9E, 0x40, //Generic cull data with broad display
 										0x80, 0x89, 0x27, 0x3E, 0xF6, 0x79, 0x3E, 0x41,
 										0x50, 0x94, 0xA1, 0xC0, 0xFD, 0x14, 0x9D, 0xBF,
 										0xEE, 0x94, 0x0A, 0xC1, 0x43, 0xB9, 0x0D, 0x43,
 										0x5A, 0x2F, 0xA2, 0x40, 0x63, 0x47, 0x32, 0x41,
-										0x3A, 0xD1, 0x0F, 0x41, 0xF6, 0x79, 0xBE, 0x41 };
-			nModel.TexturePointer = new List<int>();
-			nModel.TexturesList = new List<EMGTexture>();
+										0x3A, 0xD1, 0x0F, 0x41, 0xF6, 0x79, 0xBE, 0x41 },
+				TexturePointer = new List<int>(),
+				TexturesList = new List<EMGTexture>()
+			};
+
 			for (int i = 0; i < nModel.TextureCount; i++)
 			{
 				nModel.TexturePointer.Add(Utils.ReadInt(true, nModel.TextureListPointer + i * 4, nModel.HEXBytes));
-				EMGTexture newEMGTexture = new EMGTexture();
-				newEMGTexture.TextureLayers = Utils.ReadInt(true, nModel.TexturePointer[i], nModel.HEXBytes);
-				newEMGTexture.TextureIndex = new List<int>();
-				newEMGTexture.Scales_U = new List<float>();
-				newEMGTexture.Scales_V = new List<float>();
-				int TextureLength = 0x0C;
+                EMGTexture newEMGTexture = new EMGTexture
+                {
+                    TextureLayers = Utils.ReadInt(true, nModel.TexturePointer[i], nModel.HEXBytes),
+                    TextureIndex = new List<int>(),
+                    Scales_U = new List<float>(),
+                    Scales_V = new List<float>()
+                };
+
+                int TextureLength = 0x0C;
 				for (int j = 0; j < newEMGTexture.TextureLayers; j++)
 				{
 					newEMGTexture.TextureIndex.Add(Utils.ReadInt(false, nModel.TexturePointer[i] + 0x05 + (j * TextureLength), nModel.HEXBytes));
@@ -966,13 +1001,15 @@ namespace USF4_Stage_Tool
 
 		private EMG ReadEMG(byte[] Data)
 		{
-			EMG nEMG = new EMG();
-			nEMG.HEXBytes = Data;
-			nEMG.RootBone = Utils.ReadInt(false, 0x04, nEMG.HEXBytes);
-			nEMG.ModelCount = Utils.ReadInt(false, 0x06, nEMG.HEXBytes);
-			if (nEMG.ModelCount < 1) nEMG.ModelCount = 1; //TODO hack fix
-			nEMG.ModelPointerList = new List<int>();
-			nEMG.Models = new List<Model>();
+			EMG nEMG = new EMG()
+			{
+				HEXBytes = Data,
+				RootBone = Utils.ReadInt(false, 0x04, Data),
+				ModelCount = Math.Max(Utils.ReadInt(false, 0x06, Data), 1),		//If model count < 1, set to 1. TODO less hacky fix
+				ModelPointerList = new List<int>(),
+				Models = new List<Model>()
+			};
+			
 			for (int i = 0; i < nEMG.ModelCount; i++)
 			{
 				nEMG.ModelPointerList.Add(Utils.ReadInt(true, 0x08 + i * 4, nEMG.HEXBytes));
@@ -999,39 +1036,42 @@ namespace USF4_Stage_Tool
 			emg.ModelCount = 1;
 			emg.ModelPointerList = new List<int> { 0x10 };
 
-			//Model Header
-			Model mod = new Model();
-			mod.BitFlag = template.Models[0].BitFlag; //0x45;
-			mod.TextureCount = WorkingObject.MaterialGroups.Count;
-			mod.TextureListPointer = 0x50;
-			mod.TexturesList = new List<EMGTexture>();
-			mod.TexturePointer = new List<int>();
-			mod.VertexCount = WorkingObject.UniqueVerts.Count;
-			mod.BitDepth = template.Models[0].BitDepth;
-			mod.ReadMode = 0x01;
-			mod.SubModelsCount = WorkingObject.MaterialGroups.Count;
-			mod.SubModeListPointer = 0x64;
-			mod.SubModelList = new List<int>();
-			mod.SubModels = new List<SubModel>();
+            //Model Header
+            Model mod = new Model
+            {
+                BitFlag = template.Models[0].BitFlag, //0x45;
+                TextureCount = WorkingObject.MaterialGroups.Count,
+                TextureListPointer = 0x50,
+                TexturesList = new List<EMGTexture>(),
+                TexturePointer = new List<int>(),
+                VertexCount = WorkingObject.UniqueVerts.Count,
+                BitDepth = template.Models[0].BitDepth,
+                ReadMode = 0x01,
+                SubModelsCount = WorkingObject.MaterialGroups.Count,
+                SubModeListPointer = 0x64,
+                SubModelList = new List<int>(),
+                SubModels = new List<SubModel>(),
+                //Copy of the MAD_KAN cull data, can adjust if needed
+                CullData = new byte[] { 0x00, 0x0A, 0x1B, 0x3C, 0xC3, 0xA4, 0x9E, 0x40,
+                                        0x80, 0x89, 0x27, 0x3E, 0xF6, 0x79, 0x3E, 0x41,
+                                        0x50, 0x94, 0xA1, 0xC0, 0xFD, 0x14, 0x9D, 0xBF,
+                                        0xEE, 0x94, 0x0A, 0xC1, 0x43, 0xB9, 0x0D, 0x43,
+                                        0x5A, 0x2F, 0xA2, 0x40, 0x63, 0x47, 0x32, 0x41,
+                                        0x3A, 0xD1, 0x0F, 0x41, 0xF6, 0x79, 0xBE, 0x41 }
+            };
 
-			//Copy of the MAD_KAN cull data, can adjust if needed
-			mod.CullData = new byte[] { 0x00, 0x0A, 0x1B, 0x3C, 0xC3, 0xA4, 0x9E, 0x40,
-										0x80, 0x89, 0x27, 0x3E, 0xF6, 0x79, 0x3E, 0x41,
-										0x50, 0x94, 0xA1, 0xC0, 0xFD, 0x14, 0x9D, 0xBF,
-										0xEE, 0x94, 0x0A, 0xC1, 0x43, 0xB9, 0x0D, 0x43,
-										0x5A, 0x2F, 0xA2, 0x40, 0x63, 0x47, 0x32, 0x41,
-										0x3A, 0xD1, 0x0F, 0x41, 0xF6, 0x79, 0xBE, 0x41 };
-
-			//Populate texture info
-			for (int i = 0; i < WorkingObject.MaterialGroups.Count; i++)
+            //Populate texture info
+            for (int i = 0; i < WorkingObject.MaterialGroups.Count; i++)
 			{
-				EMGTexture tex = new EMGTexture();
-				tex.Scales_U = new List<float> { 1f };
-				tex.Scales_V = new List<float> { 1f };
-				tex.TextureLayers = 0x01;
-				tex.TextureIndex = new List<int> { template.Models[0].TexturesList[0].TextureIndex[0] };
+                EMGTexture tex = new EMGTexture
+                {
+                    Scales_U = new List<float> { 1f },
+                    Scales_V = new List<float> { 1f },
+                    TextureLayers = 0x01,
+                    TextureIndex = new List<int> { template.Models[0].TexturesList[0].TextureIndex[0] }
+                };
 
-				mod.TexturesList.Add(tex);
+                mod.TexturesList.Add(tex);
 				mod.TexturePointer.Add(0x00);
 
 				if (tbTextureIndex.Text.Trim() != string.Empty)
@@ -1060,18 +1100,16 @@ namespace USF4_Stage_Tool
 			{
 				mod.SubModelList.Add(0x00);
 
-				subm = new SubModel();
-				subm.MaterialIndex = i;
+                subm = new SubModel
+                {
+                    MaterialIndex = i,
+                    MysteryFloats = new byte[] { 0x9E, 0xDF, 0xDD, 0xBC, 0xC5, 0x2A, 0x3B, 0x3E, 0xA7, 0x68, 0x3F, 0x3C, 0x00, 0x00, 0x80, 0x3F },
+                    DaisyChain = WorkingObject.MaterialGroups[i].DaisyChain.ToArray(),
+                    DaisyChainLength = WorkingObject.MaterialGroups[i].DaisyChain.Count,
+                    SubModelName = ModelName
+                };
 
-
-				//subm.MysteryFloats = template.Models[0].SubModels[0].MysteryFloats;
-				subm.MysteryFloats = new byte[] { 0x9E, 0xDF, 0xDD, 0xBC, 0xC5, 0x2A, 0x3B, 0x3E, 0xA7, 0x68, 0x3F, 0x3C, 0x00, 0x00, 0x80, 0x3F };
-				subm.DaisyChain = WorkingObject.MaterialGroups[i].DaisyChain.ToArray();
-				subm.DaisyChainLength = WorkingObject.MaterialGroups[i].DaisyChain.Count;
-
-				subm.SubModelName = ModelName;
-
-				mod.SubModels.Add(subm);
+                mod.SubModels.Add(subm);
 			}
 			mod.VertexListPointer = mod.SubModelList[0] + 0x36 + (subm.DaisyChainLength * 2) + (subm.BoneIntegersCount * 2);
 
@@ -1424,16 +1462,22 @@ namespace USF4_Stage_Tool
 
 		EMO ReadEMO(byte[] Data)
 		{
-			EMO nEMO = new EMO();
-			nEMO.HEXBytes = Data;
-			nEMO.SkeletonPointer = Utils.ReadInt(true, 0x10, nEMO.HEXBytes);
-			nEMO.EMGCount = Utils.ReadInt(false, 0x20, nEMO.HEXBytes);
-			nEMO.NumberEMMMaterials = Utils.ReadInt(false, 0x22, nEMO.HEXBytes);
-			nEMO.NamingListPointer = Utils.ReadInt(true, 0x24, nEMO.HEXBytes);
-			nEMO.EMGPointerList = new List<int>();
-			nEMO.NamingPointerList = new List<int>();
-			nEMO.NamingList = new List<byte[]>();
-			nEMO.EMGList = new List<EMG>();
+            EMO nEMO = new EMO
+            {
+                HEXBytes = Data,
+                SkeletonPointer = Utils.ReadInt(true, 0x10, Data),
+                EMGCount = Utils.ReadInt(false, 0x20, Data),
+                NumberEMMMaterials = Utils.ReadInt(false, 0x22, Data),
+                NamingListPointer = Utils.ReadInt(true, 0x24, Data),
+                EMGPointerList = new List<int>(),
+                NamingPointerList = new List<int>(),
+                NamingList = new List<byte[]>(),
+                EMGList = new List<EMG>()
+            };
+
+            nEMO.Skeleton.HEXBytes = Utils.ChopByteArray(nEMO.HEXBytes, nEMO.SkeletonPointer, nEMO.HEXBytes.Length - nEMO.SkeletonPointer);
+			nEMO.Skeleton = ReadSkeleton(nEMO.Skeleton.HEXBytes);
+			
 			for (int i = 0; i < nEMO.EMGCount; i++)
 			{
 				nEMO.EMGPointerList.Add(Utils.ReadInt(true, 0x28 + (i * 4), nEMO.HEXBytes));
@@ -1441,8 +1485,7 @@ namespace USF4_Stage_Tool
 				Console.WriteLine("Got EMG " + i);
 			}
 
-			nEMO.Skeleton.HEXBytes = Utils.ChopByteArray(nEMO.HEXBytes, nEMO.SkeletonPointer, nEMO.HEXBytes.Length - nEMO.SkeletonPointer);
-			nEMO.Skeleton = ReadSkeleton(nEMO.Skeleton.HEXBytes);
+			
 
 			for (int i = 0; i < nEMO.NumberEMMMaterials; i++)
 			{
@@ -1455,38 +1498,41 @@ namespace USF4_Stage_Tool
 
 		Skeleton SkeletonFromSMD(SMDModel model)
 		{
-			Skeleton skel = new Skeleton();
-			skel.FFList = new List<byte[]>();
-			skel.Nodes = new List<Node>();
-			skel.NodeNameIndex = new List<int>();
-			skel.NodeNames = new List<byte[]>();
-			//Declare generic skeleton values
-			skel.NodeCount = model.Nodes.Count;
-			skel.IKObjectCount = 0;
-			skel.IKDataCount = 0;
-			skel.NodeListPointer = 0;
-			skel.NameIndexPointer = 0;
-			skel.IKBoneListPointer = 0;
-			skel.IKObjectNameIndexPointer = 0;
-			skel.RegisterPointer = 0;
-			skel.IKDataPointer = 0;
-			skel.MysteryShort = 2;           //1 REALLY no idea what these are
-			skel.MysteryFloat1 = 0x26a1dd0a; //2
-			skel.MysteryFloat2 = 0x4d28129d; //3
+            Skeleton skel = new Skeleton
+            {
+                FFList = new List<byte[]>(),
+                Nodes = new List<Node>(),
+                NodeNameIndex = new List<int>(),
+                NodeNames = new List<byte[]>(),
+                //Declare generic skeleton values
+                NodeCount = model.Nodes.Count,
+                IKObjectCount = 0,
+                IKDataCount = 0,
+                NodeListPointer = 0,
+                NameIndexPointer = 0,
+                IKBoneListPointer = 0,
+                IKObjectNameIndexPointer = 0,
+                RegisterPointer = 0,
+                IKDataPointer = 0,
+                MysteryShort = 2,           //1 REALLY no idea what these are
+                MysteryFloat1 = 0x26a1dd0a, //2
+                MysteryFloat2 = 0x4d28129d  //3
+            };
 
-			//Populate nodes and register
-			for (int i = 0; i < model.Nodes.Count; i++)
+            //Populate nodes and register
+            for (int i = 0; i < model.Nodes.Count; i++)
 			{
 				skel.FFList.Add(new byte[] { 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00 });
 
-				Node WorkingNode = new Node();
-				WorkingNode.Parent = -1;
-				WorkingNode.Child1 = -1;
-				WorkingNode.Sibling = -1;
-				WorkingNode.Child3 = -1;
-				WorkingNode.Child4 = -1;
-				WorkingNode.PreMatrixFloat = 0f;
-				WorkingNode.Parent = model.Nodes[i].Parent;
+                Node WorkingNode = new Node
+                {
+                    Parent = model.Nodes[i].Parent,
+                    Child1 = -1,
+                    Sibling = -1,
+                    Child3 = -1,
+                    Child4 = -1,
+                    PreMatrixFloat = 0f
+				};
 
 				//Look forwards for a child, break loop when found
 				for (int j = i + 1; j < model.Nodes.Count; j++)
@@ -1524,37 +1570,38 @@ namespace USF4_Stage_Tool
 
 		Skeleton ReadSkeleton(byte[] Data)
 		{
-			Skeleton skel = new Skeleton();
+            Skeleton skel = new Skeleton
+            {
+                HEXBytes = Data,
 
-			skel.HEXBytes = Data;
+                Nodes = new List<Node>(),
+                NodeNameIndex = new List<int>(),
+                NodeNames = new List<byte[]>(),
+                FFList = new List<byte[]>(),
+                IKNodes = new List<IKNode>(),
+                IKNameIndex = new List<int>(),
+                IKNodeNames = new List<byte[]>(),
+                IKDataBlocks = new List<IKDataBlock>(),
 
-			skel.Nodes = new List<Node>();
-			skel.NodeNameIndex = new List<int>();
-			skel.NodeNames = new List<byte[]>();
-			skel.FFList = new List<byte[]>();
-			skel.IKNodes = new List<IKNode>();
-			skel.IKNameIndex = new List<int>();
-			skel.IKNodeNames = new List<byte[]>();
-			skel.IKDataBlocks = new List<IKDataBlock>();
+                NodeCount = Utils.ReadInt(false, 0x00, Data),
+                IKObjectCount = Utils.ReadInt(false, 0x02, Data),
+                IKDataCount = Utils.ReadInt(true, 0x04, Data),
+                NodeListPointer = Utils.ReadInt(true, 0x08, Data),
+                NameIndexPointer = Utils.ReadInt(true, 0x0C, Data),
+                //0x10
+                IKBoneListPointer = Utils.ReadInt(true, 0x10, Data),
+                IKObjectNameIndexPointer = Utils.ReadInt(true, 0x14, Data),
+                RegisterPointer = Utils.ReadInt(true, 0x18, Data),
+                SecondaryMatrixPointer = Utils.ReadInt(true, 0x1C, Data),
+                //0x20
+                IKDataPointer = Utils.ReadInt(true, 0x20, Data),
+                //0x30
+                MysteryShort = Utils.ReadInt(false, 0x36, Data),       //1 REALLY no idea what these are
+                MysteryFloat1 = Utils.ReadFloat(0x38, Data),           //2		Are these some kind of checksum to make sure EMA and EMO skels match?
+                MysteryFloat2 = Utils.ReadFloat(0x3C, Data)           //3
+            };
 
-			skel.NodeCount = Utils.ReadInt(false, 0x00, Data);
-			skel.IKObjectCount = Utils.ReadInt(false, 0x02, Data);
-			skel.IKDataCount = Utils.ReadInt(true, 0x04, Data);
-			skel.NodeListPointer = Utils.ReadInt(true, 0x08, Data);
-			skel.NameIndexPointer = Utils.ReadInt(true, 0x0C, Data);
-			//0x10
-			skel.IKBoneListPointer = Utils.ReadInt(true, 0x10, Data);
-			skel.IKObjectNameIndexPointer = Utils.ReadInt(true, 0x14, Data);
-			skel.RegisterPointer = Utils.ReadInt(true, 0x18, Data);
-			skel.SecondaryMatrixPointer = Utils.ReadInt(true, 0x1C, Data);
-			//0x20
-			skel.IKDataPointer = Utils.ReadInt(true, 0x20, Data);
-			//0x30
-			skel.MysteryShort = Utils.ReadInt(false, 0x36, Data);       //1 REALLY no idea what these are
-			skel.MysteryFloat1 = Utils.ReadFloat(0x38, Data);           //2		Are these some kind of checksum to make sure EMA and EMO skels match?
-			skel.MysteryFloat2 = Utils.ReadFloat(0x3C, Data);           //3
-
-			if (skel.SecondaryMatrixPointer != 0) { Console.WriteLine("EMO WITH SECONDARY MATRIX"); }
+            if (skel.SecondaryMatrixPointer != 0) { Console.WriteLine("EMO WITH SECONDARY MATRIX"); }
 			else { Console.WriteLine("EMO WITHOUT SECONDARY MATRIX"); }
 
 			for (int i = 0; i < skel.NodeCount; i++)
@@ -1563,15 +1610,18 @@ namespace USF4_Stage_Tool
 				skel.NodeNames.Add(Utils.ReadZeroTermStringToArray(skel.NodeNameIndex[i], Data, Data.Length));
 				skel.FFList.Add(Utils.ReadStringToArray(skel.RegisterPointer + i * 8, 0x08, Data, Data.Length));
 
-				Node WorkingNode = new Node();
-				WorkingNode.Parent = Utils.ReadSignedShort(skel.NodeListPointer + i * 0x50, Data);
-				WorkingNode.Child1 = Utils.ReadSignedShort(skel.NodeListPointer + i * 0x50 + 0x02, Data);
-				WorkingNode.Sibling = Utils.ReadSignedShort(skel.NodeListPointer + i * 0x50 + 0x04, Data);
-				WorkingNode.Child3 = Utils.ReadSignedShort(skel.NodeListPointer + i * 0x50 + 0x06, Data);
-				WorkingNode.Child4 = Utils.ReadSignedShort(skel.NodeListPointer + i * 0x50 + 0x08, Data);
-				WorkingNode.BitFlag = Utils.ReadInt(false, skel.NodeListPointer + i * 0x50 + 0x0A, Data); //Tells if the node is animated, IK'd, ???
-				WorkingNode.PreMatrixFloat = Utils.ReadFloat(skel.NodeListPointer + i * 0x50 + 0x0C, Data); //???
-				float m11 = Utils.ReadFloat(skel.NodeListPointer + i * 0x50 + 0x10, Data);
+                Node WorkingNode = new Node
+                {
+                    Parent = Utils.ReadSignedShort(skel.NodeListPointer + i * 0x50, Data),
+                    Child1 = Utils.ReadSignedShort(skel.NodeListPointer + i * 0x50 + 0x02, Data),
+                    Sibling = Utils.ReadSignedShort(skel.NodeListPointer + i * 0x50 + 0x04, Data),
+                    Child3 = Utils.ReadSignedShort(skel.NodeListPointer + i * 0x50 + 0x06, Data),
+                    Child4 = Utils.ReadSignedShort(skel.NodeListPointer + i * 0x50 + 0x08, Data),
+                    BitFlag = Utils.ReadInt(false, skel.NodeListPointer + i * 0x50 + 0x0A, Data), //Tells if the node is animated, IK'd, ???
+                    PreMatrixFloat = Utils.ReadFloat(skel.NodeListPointer + i * 0x50 + 0x0C, Data) //???
+                };
+
+                float m11 = Utils.ReadFloat(skel.NodeListPointer + i * 0x50 + 0x10, Data);
 				float m12 = Utils.ReadFloat(skel.NodeListPointer + i * 0x50 + 0x14, Data);
 				float m13 = Utils.ReadFloat(skel.NodeListPointer + i * 0x50 + 0x18, Data);
 				float m14 = Utils.ReadFloat(skel.NodeListPointer + i * 0x50 + 0x1C, Data);
@@ -1619,13 +1669,14 @@ namespace USF4_Stage_Tool
 			{
 				for (int i = 0; i < skel.IKObjectCount; i++)
 				{
-					IKNode wIK = new IKNode();
-					wIK.BoneList = new List<int>();
+                    IKNode wIK = new IKNode
+                    {
+                        BoneList = new List<int>(),
+                        BoneCount = Utils.ReadInt(true, skel.IKBoneListPointer + i * 0x08, Data),
+                        BoneListPointer = Utils.ReadInt(true, skel.IKBoneListPointer + i * 0x08 + 0x04, Data)
+                    };
 
-					wIK.BoneCount = Utils.ReadInt(true, skel.IKBoneListPointer + i * 0x08, Data);
-					wIK.BoneListPointer = Utils.ReadInt(true, skel.IKBoneListPointer + i * 0x08 + 0x04, Data);
-
-					for (int j = 0; j < wIK.BoneCount; j++)
+                    for (int j = 0; j < wIK.BoneCount; j++)
 					{
 						wIK.BoneList.Add(Utils.ReadInt(false, skel.IKBoneListPointer + i * 0x08 + wIK.BoneListPointer + j * 0x02, Data));
 					}
@@ -1644,15 +1695,16 @@ namespace USF4_Stage_Tool
 				int CurrentBlockStartPosition = skel.IKDataPointer;
 				for (int i = 0; i < skel.IKDataCount; i++)
 				{
-					IKDataBlock wIKData = new IKDataBlock();
+                    IKDataBlock wIKData = new IKDataBlock
+                    {
+                        IKShorts = new List<int>(),
+                        IKFloats = new List<float>(),
 
-					wIKData.IKShorts = new List<int>();
-					wIKData.IKFloats = new List<float>();
+                        BitFlag = Utils.ReadInt(false, CurrentBlockStartPosition, Data),
+                        Length = Utils.ReadInt(false, CurrentBlockStartPosition + 0x02, Data)
+                    };
 
-					wIKData.BitFlag = Utils.ReadInt(false, CurrentBlockStartPosition, Data);
-					wIKData.Length = Utils.ReadInt(false, CurrentBlockStartPosition + 0x02, Data);
-
-					if (wIKData.BitFlag == 0x00)
+                    if (wIKData.BitFlag == 0x00)
 					{
 						for (int j = 0; j < wIKData.Length - 0x04; j += 2)
 						{
@@ -1853,12 +1905,14 @@ namespace USF4_Stage_Tool
 
 		EMM ReadEMM(byte[] Data)
 		{
-			EMM nEMM = new EMM();
-			nEMM.HEXBytes = Data;
-			nEMM.MaterialCount = Utils.ReadInt(true, 0x10, Data);
-			nEMM.MaterialPointerList = new List<int>();
-			nEMM.Materials = new List<Material>();
-			for (int i = 0; i < nEMM.MaterialCount; i++)
+            EMM nEMM = new EMM
+            {
+                HEXBytes = Data,
+                MaterialCount = Utils.ReadInt(true, 0x10, Data),
+                MaterialPointerList = new List<int>(),
+                Materials = new List<Material>()
+            };
+            for (int i = 0; i < nEMM.MaterialCount; i++)
 			{
 				nEMM.MaterialPointerList.Add(Utils.ReadInt(true, 0x14 + i * 4, Data));
 				Material m = ReadMaterial(Utils.ChopByteArray(Data, nEMM.MaterialPointerList[i] + 0x10, Data.Length - (nEMM.MaterialPointerList[i] + 0x10)));
@@ -1903,19 +1957,20 @@ namespace USF4_Stage_Tool
 
 		EMB ReadEMB(byte[] Data)
 		{
-			EMB nEMB = new EMB();
+            EMB nEMB = new EMB
+            {
+                HEXBytes = Data,
+                NumberOfFiles = Utils.ReadInt(true, 0x0C, Data),
+                FileListPointer = Utils.ReadInt(true, 0x18, Data),
+                FileNameListPointer = Utils.ReadInt(true, 0x1C, Data),
+                FileNamePointerList = new List<int>(),
+                FileNameList = new List<byte[]>(),
+                FilePointerList = new List<int>(),
+                FileLengthList = new List<int>(),
+                DDSFiles = new List<DDS>()
+            };
 
-			nEMB.HEXBytes = Data;
-			nEMB.NumberOfFiles = Utils.ReadInt(true, 0x0C, Data);
-			nEMB.FileListPointer = Utils.ReadInt(true, 0x18, Data);
-			nEMB.FileNameListPointer = Utils.ReadInt(true, 0x1C, Data);
-			nEMB.FileNamePointerList = new List<int>();
-			nEMB.FileNameList = new List<byte[]>();
-			nEMB.FilePointerList = new List<int>();
-			nEMB.FileLengthList = new List<int>();
-			nEMB.DDSFiles = new List<DDS>();
-
-			for (int i = 0; i < nEMB.NumberOfFiles; i++)
+            for (int i = 0; i < nEMB.NumberOfFiles; i++)
 			{
 				nEMB.FilePointerList.Add(Utils.ReadInt(true, nEMB.FileListPointer + i * 8, Data));
 				nEMB.FileLengthList.Add(Utils.ReadInt(true, nEMB.FileListPointer + i * 8 + 0x04, Data));
@@ -2310,6 +2365,8 @@ namespace USF4_Stage_Tool
 
 		private void BtnOpenEMZ_Click(object sender, EventArgs e)
 		{
+			Zipstream();
+
 			diagOpenOBJ.RestoreDirectory = true;
 			diagOpenOBJ.FileName = string.Empty;
 			diagOpenOBJ.InitialDirectory = LastOpenFolder;
@@ -2366,18 +2423,20 @@ namespace USF4_Stage_Tool
 				FileStream fsSource = new FileStream(filepath, FileMode.Open, FileAccess.Read);
 				byte[] bytes;
 				using (BinaryReader br = new BinaryReader(fsSource, Encoding.ASCII)) { bytes = br.ReadBytes((int)fsSource.Length); }
-				EMZ inputEMZ = new EMZ();
-				inputEMZ.HEXBytes = bytes;
-				inputEMZ.NumberOfFiles = Utils.ReadInt(true, 0x0C, inputEMZ.HEXBytes);
-				inputEMZ.FileListPointer = Utils.ReadInt(true, 0x18, inputEMZ.HEXBytes);
-				inputEMZ.FileNameListPointer = Utils.ReadInt(true, 0x1C, inputEMZ.HEXBytes);
-				inputEMZ.FileLengthList = new List<int>();
-				inputEMZ.FilePointerList = new List<int>();
-				inputEMZ.Files = new Dictionary<int, object>();
-				inputEMZ.FileNameList = new List<byte[]>();
-				inputEMZ.FileNamePointerList = new List<int>();
+                EMZ inputEMZ = new EMZ
+                {
+                    HEXBytes = bytes,
+                    NumberOfFiles = Utils.ReadInt(true, 0x0C, bytes),
+                    FileListPointer = Utils.ReadInt(true, 0x18, bytes),
+                    FileNameListPointer = Utils.ReadInt(true, 0x1C, bytes),
+                    FileLengthList = new List<int>(),
+                    FilePointerList = new List<int>(),
+                    Files = new Dictionary<int, object>(),
+                    FileNameList = new List<byte[]>(),
+                    FileNamePointerList = new List<int>()
+                };
 
-				for (int i = 0; i < inputEMZ.NumberOfFiles; i++)
+                for (int i = 0; i < inputEMZ.NumberOfFiles; i++)
 				{
 					inputEMZ.FilePointerList.Add(Utils.ReadInt(true, inputEMZ.FileListPointer + (i * 8), inputEMZ.HEXBytes));
 					inputEMZ.FileLengthList.Add(Utils.ReadInt(true, inputEMZ.FileListPointer + (i * 8) + 4, inputEMZ.HEXBytes));
@@ -2395,8 +2454,7 @@ namespace USF4_Stage_Tool
 					}
 					else if (FileType == USF4Methods.EMM)
 					{
-						EMM nEMM = new EMM();
-						nEMM = ReadEMM(Utils.ChopByteArray(inputEMZ.HEXBytes, inputEMZ.FilePointerList[i] + inputEMZ.FileListPointer + (i * 8), inputEMZ.FileLengthList[i]));
+						EMM nEMM = ReadEMM(Utils.ChopByteArray(inputEMZ.HEXBytes, inputEMZ.FilePointerList[i] + inputEMZ.FileListPointer + (i * 8), inputEMZ.FileLengthList[i]));
 						nEMM.Name = inputEMZ.FileNameList[i];
 						nEMM.FilePosition = i;
 						inputEMZ.Files.Add(i, nEMM);
@@ -2404,11 +2462,13 @@ namespace USF4_Stage_Tool
 					}
 					else if (FileType == USF4Methods.LUA)
 					{
-						LUA nLUA = new LUA();
-						nLUA.HEXBytes = Utils.ChopByteArray(inputEMZ.HEXBytes, inputEMZ.FilePointerList[i] + inputEMZ.FileListPointer + (i * 8), inputEMZ.FileLengthList[i]);
-						nLUA.Name = inputEMZ.FileNameList[i];
-						nLUA.FilePosition = i;
-						inputEMZ.Files.Add(i, nLUA);
+                        LUA nLUA = new LUA
+                        {
+                            HEXBytes = Utils.ChopByteArray(inputEMZ.HEXBytes, inputEMZ.FilePointerList[i] + inputEMZ.FileListPointer + (i * 8), inputEMZ.FileLengthList[i]),
+                            Name = inputEMZ.FileNameList[i],
+                            FilePosition = i
+                        };
+                        inputEMZ.Files.Add(i, nLUA);
 						//Console.WriteLine("Got nLUA " + inputEMZ.Files.Count);
 					}
 					else if (FileType == USF4Methods.EMB)
@@ -2431,18 +2491,22 @@ namespace USF4_Stage_Tool
 					}
 					else if (FileType == USF4Methods.CSB)
 					{
-						CSB nCSB = new CSB();
-						nCSB.Name = inputEMZ.FileNameList[i];
-						nCSB.HEXBytes = Utils.ChopByteArray(inputEMZ.HEXBytes, inputEMZ.FilePointerList[i] + inputEMZ.FileListPointer + (i * 8), inputEMZ.FileLengthList[i]);
-						inputEMZ.Files.Add(i, nCSB);
+                        CSB nCSB = new CSB
+                        {
+                            Name = inputEMZ.FileNameList[i],
+                            HEXBytes = Utils.ChopByteArray(inputEMZ.HEXBytes, inputEMZ.FilePointerList[i] + inputEMZ.FileListPointer + (i * 8), inputEMZ.FileLengthList[i])
+                        };
+                        inputEMZ.Files.Add(i, nCSB);
 						//Console.WriteLine("Got Other " + inputEMZ.Files.Count);
 					}
 					else
 					{
-						OtherFile nOF = new OtherFile();
-						nOF.FilePosition = i;
-						nOF.HEXBytes = Utils.ChopByteArray(inputEMZ.HEXBytes, inputEMZ.FilePointerList[i] + inputEMZ.FileListPointer + (i * 8), inputEMZ.FileLengthList[i]);
-						inputEMZ.Files.Add(i, nOF);
+                        OtherFile nOF = new OtherFile
+                        {
+                            FilePosition = i,
+                            HEXBytes = Utils.ChopByteArray(inputEMZ.HEXBytes, inputEMZ.FilePointerList[i] + inputEMZ.FileListPointer + (i * 8), inputEMZ.FileLengthList[i])
+                        };
+                        inputEMZ.Files.Add(i, nOF);
 						//Console.WriteLine("Got Other " + inputEMZ.Files.Count);
 					}
 				}
@@ -3140,17 +3204,21 @@ namespace USF4_Stage_Tool
 
 		EMA SimpleEMAFromSMD(SMDModel model)
 		{
-			EMA WorkingEMA = new EMA();
-			WorkingEMA.Animations = new List<Animation>();
-			WorkingEMA.AnimationPointerList = new List<int>();
+			EMA WorkingEMA = new EMA()
+			{
+				Animations = new List<Animation>(),
+				AnimationPointerList = new List<int>(),
+				AnimationCount = 1
+			};
 			WorkingEMA.AnimationPointerList.Add(0);
-			Animation WorkingAnimation = new Animation();
 
-			WorkingEMA.AnimationCount = 1;
-			WorkingAnimation.Duration = model.Frames.Count;
-			WorkingAnimation.Name = new byte[] { 0x45, 0x4C, 0x56, 0x5F, 0x4D, 0x41, 0x4E, 0x30, 0x31, 0x5F, 0x30, 0x30, 0x30 };
+			Animation WorkingAnimation = new Animation()
+			{
+				Duration = model.Frames.Count,
+				Name = new byte[] { 0x45, 0x4C, 0x56, 0x5F, 0x4D, 0x41, 0x4E, 0x30, 0x31, 0x5F, 0x30, 0x30, 0x30 },
+				ValueList = new List<float>()
+			};
 
-			WorkingAnimation.ValueList = new List<float>();
 			Dictionary<float, int> ValueDict = new Dictionary<float, int>();
 
 			//Populate the float dictionary
@@ -3553,8 +3621,8 @@ namespace USF4_Stage_Tool
 
 		private List<string> WriteSMDNodesFromSkeleton(Skeleton skel)
 		{
-			List<string> skeldata = new List<string>();
-			skeldata.Add("nodes");
+			List<string> skeldata = new List<string>() { "nodes" };
+
 			for (int i = 0; i < skel.Nodes.Count; i++)
 			{
 
@@ -3595,11 +3663,9 @@ namespace USF4_Stage_Tool
 
 		private void EMAAnimationtoSMD(EMA ema, int index)
 		{
-			List<string> SMDData = new List<string>();
+            List<string> SMDData = new List<string> { "version 1" };
 
-			SMDData.Add("version 1");
-
-			SMDData.AddRange(WriteSMDNodesFromSkeleton(ema.Skeleton));
+            SMDData.AddRange(WriteSMDNodesFromSkeleton(ema.Skeleton));
 		}
 
 		private void InitialPoseFromEMA(EMA ema)
@@ -3721,9 +3787,7 @@ namespace USF4_Stage_Tool
 				filepath = saveFileDialog1.FileName;
 				if (filepath.Trim() != "")
 				{
-					List<string> SMDData = new List<string>();
-
-					SMDData.Add("version 1");
+					List<string> SMDData = new List<string>() { "version 1" };
 
 					SMDData.AddRange(WriteSMDNodesFromSkeleton(emo.Skeleton));
 					//SMDData.AddRange(WriteSMDNodesFromSkeleton(Anim.DuplicateSkeleton(emo.Skeleton)));
@@ -4812,6 +4876,7 @@ namespace USF4_Stage_Tool
         private void injectLUAScriptToolStripMenuItem1_Click(object sender, EventArgs e)
         {
 			CultureInfo.CurrentCulture = new CultureInfo("en-GB", false);
+
 			LUA nLUA = LUAScriptToBytecode();
 
 			WorkingEMZ.Files.Remove(LastSelectedTreeNode.Index);
@@ -4829,7 +4894,7 @@ namespace USF4_Stage_Tool
 			if (diagOpenOBJ.ShowDialog() == DialogResult.OK)
 			{
 				string filepath = diagOpenOBJ.FileName;
-				string extension = diagOpenOBJ.FileName.Split('.')[1];
+				string extension = diagOpenOBJ.FileName.Split('.').Last();
 				string name = diagOpenOBJ.SafeFileName;
 				if (filepath.Trim() != string.Empty)
 				{
@@ -4879,6 +4944,19 @@ namespace USF4_Stage_Tool
 						WorkingTEXEMZ.FileLengthList.Add(0x00);
 						WorkingTEXEMZ.FilePointerList.Add(0x00);
 						WorkingTEXEMZ.FileNameList.Add(Encoding.ASCII.GetBytes(name));
+					}
+					if (extension == "lua")
+					{
+						LUA nLUA = ReadLUA(bytes);
+						nLUA.HEXBytes = bytes;
+						nLUA.Name = Encoding.ASCII.GetBytes(name);
+						WorkingEMZ.Files.Add(WorkingEMZ.Files.Count, nLUA);
+
+						WorkingEMZ.NumberOfFiles++;
+						WorkingEMZ.FileNamePointerList.Add(0x00);
+						WorkingEMZ.FileLengthList.Add(0x00);
+						WorkingEMZ.FilePointerList.Add(0x00);
+						WorkingEMZ.FileNameList.Add(Encoding.ASCII.GetBytes(name));
 					}
 					RefreshTree(false);
 				}
