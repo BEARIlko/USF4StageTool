@@ -4240,6 +4240,11 @@ namespace USF4_Stage_Tool
 			}
 		}
 
+		static void UnluacMain(string bytefile, string plainfile)
+		{
+			unluac.Main.decompile(bytefile, plainfile);
+		}
+
 		LUA LUAScriptToBytecode()
 		{
 			string target_lua = "plaintext.lua";
@@ -5118,6 +5123,31 @@ namespace USF4_Stage_Tool
         private void dupliacteUSAMAN01BToolStripMenuItem_Click(object sender, EventArgs e)
         {
 			DuplicateUSA_MAN01_B();
+        }
+
+        private void extractLUAScriptToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			LUA nlua = (LUA)WorkingEMZ.Files[LastSelectedTreeNode.Index];
+
+			string intermediatefile = "plain_" + Encoding.ASCII.GetString(nlua.Name).Replace("\0", "");
+
+			saveFileDialog1.InitialDirectory = string.Empty;
+			saveFileDialog1.FileName = intermediatefile;
+			saveFileDialog1.Filter = LUAFileFilter;
+
+			if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+			{
+				string filepath = saveFileDialog1.FileName;
+
+				if (filepath.Trim() != string.Empty)
+				{
+					Utils.WriteDataToStream("luabytes.out", nlua.HEXBytes);
+					
+					UnluacMain("luabytes.out", "luaplain.out");
+
+					File.Copy("luaplain.out", saveFileDialog1.FileName);
+				}
+			}
         }
     }
 
