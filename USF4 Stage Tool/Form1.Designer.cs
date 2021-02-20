@@ -180,8 +180,8 @@
             // 
             // pnlOBJECTS
             // 
-            this.pnlOBJECTS.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.pnlOBJECTS.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlOBJECTS.BackColor = System.Drawing.Color.AliceBlue;
             this.pnlOBJECTS.Controls.Add(this.pSelectedTreeNodeData);
@@ -196,8 +196,8 @@
             // 
             // pSelectedTreeNodeData
             // 
-            this.pSelectedTreeNodeData.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.pSelectedTreeNodeData.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.pSelectedTreeNodeData.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pSelectedTreeNodeData.Controls.Add(this.pnlEO_MaterialEdit);
@@ -214,8 +214,8 @@
             // 
             // pnlEO_MaterialEdit
             // 
-            this.pnlEO_MaterialEdit.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.pnlEO_MaterialEdit.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlEO_MaterialEdit.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pnlEO_MaterialEdit.Controls.Add(this.btnCalculateFloat);
@@ -248,7 +248,7 @@
             // 
             // SPOutFloat
             // 
-            this.SPOutFloat.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+            this.SPOutFloat.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.SPOutFloat.Location = new System.Drawing.Point(219, 275);
             this.SPOutFloat.Name = "SPOutFloat";
@@ -275,7 +275,7 @@
             // 
             // cbShaderProperties
             // 
-            this.cbShaderProperties.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+            this.cbShaderProperties.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.cbShaderProperties.FormattingEnabled = true;
             this.cbShaderProperties.Location = new System.Drawing.Point(10, 333);
@@ -296,8 +296,8 @@
             // 
             // lvShaderProperties
             // 
-            this.lvShaderProperties.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.lvShaderProperties.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lvShaderProperties.Location = new System.Drawing.Point(6, 63);
             this.lvShaderProperties.Multiline = true;
@@ -328,7 +328,7 @@
             // 
             // cbShaders
             // 
-            this.cbShaders.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.cbShaders.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.cbShaders.FormattingEnabled = true;
             this.cbShaders.Location = new System.Drawing.Point(46, 7);
@@ -348,7 +348,7 @@
             // 
             // pnlEO_SUBMOD
             // 
-            this.pnlEO_SUBMOD.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            this.pnlEO_SUBMOD.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlEO_SUBMOD.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pnlEO_SUBMOD.Controls.Add(this.bntEO_SubModSave);
@@ -384,7 +384,7 @@
             // 
             // label1
             // 
-            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.label1.Location = new System.Drawing.Point(3, 5);
@@ -405,7 +405,7 @@
             // 
             // pnlEO_MOD
             // 
-            this.pnlEO_MOD.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            this.pnlEO_MOD.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlEO_MOD.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pnlEO_MOD.Controls.Add(this.bntEO_ModSave);
@@ -440,7 +440,7 @@
             // 
             // label10
             // 
-            this.label10.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.label10.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.label10.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.label10.Location = new System.Drawing.Point(3, 5);
@@ -461,7 +461,7 @@
             // 
             // pnlEO_EMG
             // 
-            this.pnlEO_EMG.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            this.pnlEO_EMG.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlEO_EMG.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pnlEO_EMG.Controls.Add(this.bntEO_EMGSave);
@@ -496,7 +496,7 @@
             // 
             // label9
             // 
-            this.label9.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.label9.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.label9.Location = new System.Drawing.Point(3, 5);
@@ -517,7 +517,7 @@
             // 
             // lbSelNODE_ListData
             // 
-            this.lbSelNODE_ListData.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            this.lbSelNODE_ListData.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
             this.lbSelNODE_ListData.BackColor = System.Drawing.Color.AliceBlue;
             this.lbSelNODE_ListData.BorderStyle = System.Windows.Forms.BorderStyle.None;
@@ -529,7 +529,7 @@
             // 
             // lbSelNODE_Title
             // 
-            this.lbSelNODE_Title.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.lbSelNODE_Title.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lbSelNODE_Title.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.lbSelNODE_Title.Location = new System.Drawing.Point(3, 9);
@@ -541,8 +541,8 @@
             // 
             // pbPreviewDDS
             // 
-            this.pbPreviewDDS.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.pbPreviewDDS.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.pbPreviewDDS.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.pbPreviewDDS.Location = new System.Drawing.Point(3, 3);
@@ -554,7 +554,7 @@
             // 
             // pOBJProperties
             // 
-            this.pOBJProperties.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            this.pOBJProperties.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.pOBJProperties.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pOBJProperties.Controls.Add(this.lbOBJNameProperty);
@@ -575,7 +575,7 @@
             // 
             // lbOBJNameProperty
             // 
-            this.lbOBJNameProperty.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.lbOBJNameProperty.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lbOBJNameProperty.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.lbOBJNameProperty.Location = new System.Drawing.Point(3, 42);
@@ -692,7 +692,7 @@
             // 
             // tvTree
             // 
-            this.tvTree.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            this.tvTree.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
             this.tvTree.Location = new System.Drawing.Point(11, 18);
             this.tvTree.Name = "tvTree";
@@ -703,7 +703,7 @@
             // 
             // lbLoadSteps
             // 
-            this.lbLoadSteps.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+            this.lbLoadSteps.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lbLoadSteps.BackColor = System.Drawing.Color.Transparent;
             this.lbLoadSteps.Font = new System.Drawing.Font("Verdana", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
@@ -715,7 +715,7 @@
             // 
             // progressBar1
             // 
-            this.progressBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+            this.progressBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.progressBar1.Location = new System.Drawing.Point(16, 445);
             this.progressBar1.Name = "progressBar1";
@@ -724,7 +724,7 @@
             // 
             // panel1
             // 
-            this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panel1.BackColor = System.Drawing.Color.Moccasin;
             this.panel1.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("panel1.BackgroundImage")));
@@ -747,7 +747,7 @@
             // 
             // lvStatus
             // 
-            this.lvStatus.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.lvStatus.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lvStatus.BackColor = System.Drawing.Color.AntiqueWhite;
             this.lvStatus.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
@@ -1240,7 +1240,7 @@
             this.dumpRefPoseToSMDToolStripMenuItem,
             this.rawDumpEMAToolStripMenuItem});
             this.animationContext.Name = "treeContext";
-            this.animationContext.Size = new System.Drawing.Size(198, 114);
+            this.animationContext.Size = new System.Drawing.Size(198, 136);
             this.animationContext.Text = "animationContext";
             this.animationContext.Opening += new System.ComponentModel.CancelEventHandler(this.animationContext_Opening);
             // 
@@ -1256,6 +1256,7 @@
             this.AddAnimationtoolStripMenuItem2.Name = "AddAnimationtoolStripMenuItem2";
             this.AddAnimationtoolStripMenuItem2.Size = new System.Drawing.Size(197, 22);
             this.AddAnimationtoolStripMenuItem2.Text = "Add Animation";
+            this.AddAnimationtoolStripMenuItem2.Click += new System.EventHandler(this.AddAnimationtoolStripMenuItem2_Click);
             // 
             // DeleteAnimaiontoolStripMenuItem3
             // 
@@ -1288,7 +1289,7 @@
             this.rawDumpEMOAsSMDToolStripMenuItem,
             this.rawDumpEMOToolStripMenuItem});
             this.emoContext.Name = "luaContext";
-            this.emoContext.Size = new System.Drawing.Size(259, 158);
+            this.emoContext.Size = new System.Drawing.Size(259, 136);
             this.emoContext.Opening += new System.ComponentModel.CancelEventHandler(this.emoContext_Opening);
             // 
             // insertOBJAsNewEMGToolStripMenuItem1

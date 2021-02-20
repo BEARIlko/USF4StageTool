@@ -38,6 +38,61 @@ namespace USF4_Stage_Tool
 		public List<int> FileNamePointerList;
 		public List<byte[]> FileNameList;   //No file names normally, but we can test adding names and see if it still loads
 		public byte[] HEXBytes;
+
+		public void GenerateBytes()
+        {
+			List<byte> Data = new List<byte>();
+
+			Data.AddRange(new List<byte> { 0x23, 0x45, 0x4D, 0x42, 0xFE, 0xFF, 0x20, 0x00, 0x01, 0x00, 0x01, 0x00 });
+			Utils.AddIntAsBytes(Data, DDSFiles.Count, true);
+			Utils.AddPaddingZeros(Data, 0x18, Data.Count);
+			Utils.AddIntAsBytes(Data, FileListPointer, true);
+
+			int FileNameListPointerPosition = Data.Count;
+			Utils.AddIntAsBytes(Data, FileNameListPointer, true);
+
+			List<int> FilePointerPositions = new List<int>();
+			List<int> FileLengthPositions = new List<int>();
+			List<int> FileNamePointerPositions = new List<int>();
+
+			for (int i = 0; i < DDSFiles.Count; i++)
+			{
+				FilePointerPositions.Add(Data.Count);
+				Utils.AddIntAsBytes(Data, FilePointerList[i], true);
+				FileLengthPositions.Add(Data.Count);
+				Utils.AddIntAsBytes(Data, FileLengthList[i], true);
+			}
+
+			Utils.UpdateIntAtPosition(Data, FileNameListPointerPosition, Data.Count, out FileNameListPointer);
+			for (int i = 0; i < DDSFiles.Count; i++)
+			{
+				FileNamePointerPositions.Add(Data.Count);
+				Utils.AddIntAsBytes(Data, FileNamePointerList[i], true);
+			}
+			for (int i = 0; i < DDSFiles.Count; i++)
+			{
+				Utils.AddZeroToLineEnd(Data);
+				Utils.UpdateIntAtPosition(Data, FilePointerPositions[i], Data.Count - FilePointerPositions[i]);
+				FilePointerList[i] = Data.Count - FilePointerPositions[i];
+				Utils.UpdateIntAtPosition(Data, FileLengthPositions[i], DDSFiles[i].HEXBytes.Length);
+				FileLengthList[i] = DDSFiles[i].HEXBytes.Length;
+
+				Utils.AddCopiedBytes(Data, 0x00, DDSFiles[i].HEXBytes.Length, DDSFiles[i].HEXBytes);
+			}
+			Utils.AddZeroToLineEnd(Data);
+
+			for (int i = 0; i < DDSFiles.Count; i++)
+			{
+				Utils.UpdateIntAtPosition(Data, FileNamePointerPositions[i], Data.Count);
+				FileNamePointerList[i] = Data.Count;
+				Utils.AddCopiedBytes(Data, 0x00, FileNameList[i].Length, FileNameList[i]);
+				Data.Add(0x00);
+			}
+			Utils.AddZeroToLineEnd(Data);
+
+
+			HEXBytes = Data.ToArray();
+		}
 	}
 
 	public struct DDS

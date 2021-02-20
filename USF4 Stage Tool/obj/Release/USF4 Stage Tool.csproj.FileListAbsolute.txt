@@ -134,3 +134,5 @@ E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool
 E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.csproj.CopyComplete
 E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.exe
 E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.pdb
+E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\bin\Release\Microsoft.IO.RecyclableMemoryStream.xml
+E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\bin\Release\System.Diagnostics.DiagnosticSource.xml

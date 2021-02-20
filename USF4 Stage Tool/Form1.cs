@@ -16,6 +16,7 @@ using static CSharpImageLibrary.ImageFormats;
 using System.Globalization;
 
 
+
 namespace USF4_Stage_Tool
 {
 
@@ -804,6 +805,7 @@ namespace USF4_Stage_Tool
 				BitDepth = Utils.ReadInt(false, 0x12, Data),
 				VertexListPointer = Utils.ReadInt(true, 0x14, Data),
 				ReadMode = Utils.ReadInt(false, 0x18, Data),
+				//TODO fix generic cull data
 				CullData = new byte[] { 0x00, 0x0A, 0x1B, 0x3C, 0xC3, 0xA4, 0x9E, 0x40, //Generic cull data with broad display
 										0x80, 0x89, 0x27, 0x3E, 0xF6, 0x79, 0x3E, 0x41,
 										0x50, 0x94, 0xA1, 0xC0, 0xFD, 0x14, 0x9D, 0xBF,
@@ -929,31 +931,28 @@ namespace USF4_Stage_Tool
 
 		private SubModel ReadSubModel(byte[] Data)
 		{
-			SubModel newSubModel = new SubModel();
-			newSubModel.HEXBytes = Data;
-			newSubModel.MysteryFloats = new byte[0x10]; //{  Data[0x00], 0xDF, 0xDD, 0xBC, 0xC5, 0x2A, 0x3B, 0x3E,
-											 // 0xA7, 0x68, 0x3F, 0x3C, 0x00, 0x00, 0x80, 0x3F };
-			for (int i = 0; i < 0x010; i ++) //Read in "mystery float" bytes. Not storing them as floats 'cos we don't know what they do and they might not be
+            SubModel newSubModel = new SubModel
             {
-				newSubModel.MysteryFloats[i] = Data[i];
-            }
+                HEXBytes = Data,
+                MysteryFloats = Utils.ChopByteArray(Data, 0x00, 0x10), //Read in "mystery float" bytes. Not storing them as floats 'cos we don't know what they do and they might not be floats at all
+                BoneIntegersList = new List<int>(),
+				MaterialIndex = Utils.ReadInt(false, 0x10, Data),
+				DaisyChainLength = Utils.ReadInt(false, 0x12, Data),
+				BoneIntegersCount = Utils.ReadInt(false, 0x14, Data),
+				SubModelName = Utils.ReadStringToArray(0x16, 0x20, Data, Data.Length)
+			};
 
-			newSubModel.BoneIntegersList = new List<int>();
-			newSubModel.MaterialIndex = Utils.ReadInt(false, 0x10, newSubModel.HEXBytes);
-			newSubModel.DaisyChainLength = Utils.ReadInt(false, 0x12, newSubModel.HEXBytes);
 			newSubModel.DaisyChain = new int[newSubModel.DaisyChainLength];
 			for (int i = 0; i < newSubModel.DaisyChainLength; i++)
 			{
 				newSubModel.DaisyChain[i] = Utils.ReadInt(false, 0x36 + i * 2, newSubModel.HEXBytes);
 			}
-			newSubModel.BoneIntegersCount = Utils.ReadInt(false, 0x14, newSubModel.HEXBytes);
 
 			for (int i = 0; i < newSubModel.BoneIntegersCount; i++)
 			{
 				newSubModel.BoneIntegersList.Add(Utils.ReadInt(false, 0x36 + (newSubModel.DaisyChainLength + i) * 2, Data));
 			}
 
-			newSubModel.SubModelName = Utils.ReadStringToArray(0x16, 0x20, newSubModel.HEXBytes, newSubModel.HEXBytes.Length);
 			return newSubModel;
 		}
 
@@ -1091,7 +1090,13 @@ namespace USF4_Stage_Tool
 			List<byte> Data = new List<byte>();
 			List<int> EMGIndexPositions = new List<int>();
 			List<int> NamesIndexPositions = new List<int>();
-			Data.AddRange(new List<byte> { 0x23, 0x45, 0x4D, 0x4F, 0xFE, 0xFF, 0x20, 0x00, 0x02, 0x00, 0x01, 0x00, 0x20, 0x00, 0x00, 0x00 });
+			//If there's no available HEXBytes, use default values, else copy
+			if (emo.HEXBytes == null || emo.HEXBytes.Length < 0x10)
+			{
+				Data.AddRange(new List<byte> { 0x23, 0x45, 0x4D, 0x4F, 0xFE, 0xFF, 0x20, 0x00, 0x02, 0x00, 0x01, 0x00, 0x20, 0x00, 0x00, 0x00 });
+			}
+			else Utils.AddCopiedBytes(Data, 0x00, 0x10, emo.HEXBytes);
+			
 			int SkeletonPosition = Data.Count;
 			Utils.AddIntAsBytes(Data, emo.SkeletonPointer, true);
 			Utils.AddPaddingZeros(Data, 0x20, Data.Count);
@@ -1114,7 +1119,7 @@ namespace USF4_Stage_Tool
 				Utils.AddCopiedBytes(Data, 0x00, 0x10, new byte[0x10] { 0x01, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 
 				Utils.UpdateIntAtPosition(Data, EMGIndexPositions[i], Data.Count - 0x30);
-				emo.EMGPointerList[i] = Data.Count - 0x31; //TODO Really? 0x31? Are you sure?
+				emo.EMGPointerList[i] = Data.Count - 0x31;
 				Utils.AddCopiedBytes(Data, 0x00, emo.EMGList[i].HEXBytes.Length, emo.EMGList[i].HEXBytes);
 			}
 
@@ -1559,9 +1564,6 @@ namespace USF4_Stage_Tool
                 MysteryFloat2 = Utils.ReadFloat(0x3C, Data)           //3
             };
 
-            if (skel.SecondaryMatrixPointer != 0) { Console.WriteLine("EMO WITH SECONDARY MATRIX"); }
-			else { Console.WriteLine("EMO WITHOUT SECONDARY MATRIX"); }
-
 			for (int i = 0; i < skel.NodeCount; i++)
 			{
 				skel.NodeNameIndex.Add(Utils.ReadInt(true, skel.NameIndexPointer + i * 4, Data));
@@ -2002,14 +2004,19 @@ namespace USF4_Stage_Tool
 							}
 						}
 						//nodeEMG.Text =$"{nodeEMG.Text} - [{Encoding.UTF8.GetString(emo.EMGList[j].Models[0].SubModels[0].SubModelName)} ----]";
-						
+
 					}
-					TreeNode nodeSkeleton = AddTreeNode(nodeEMO, "Skeleton", "Skeleton");
-					for (int k = 0; k < emo.Skeleton.Nodes.Count; k++)
-                    {
-						AddTreeNode(nodeSkeleton, k + " " + Encoding.ASCII.GetString(emo.Skeleton.NodeNames[k]), "Node");
-                    }
+					if (emo.Skeleton.Nodes != null)
+					{
+						TreeNode nodeSkeleton = AddTreeNode(nodeEMO, "Skeleton", "Skeleton");
+						for (int k = 0; k < emo.Skeleton.Nodes.Count; k++)
+						{
+							AddTreeNode(nodeSkeleton, k + " " + Encoding.ASCII.GetString(emo.Skeleton.NodeNames[k]), "Node");
+						}
+					}
+					else { AddTreeNode(nodeEMO, "No skeleton data", "No skeleton data"); }
 				}
+					
 				if (file.GetType() == typeof(EMM))
 				{
 					TreeNode nodeEMM = AddTreeNode(NodeEMZ, nodeName, "EMM");
@@ -2045,11 +2052,17 @@ namespace USF4_Stage_Tool
 					{
 						AddTreeNode(nodeEMA, j + "  " + Encoding.ASCII.GetString(ema.Animations[j].Name), "Animation");
 					}
-					TreeNode nodeSkeleton = AddTreeNode(nodeEMA, "Skeleton", "Skeleton");
-					for (int k = 0; k < ema.Skeleton.Nodes.Count; k++)
+
+					if (ema.Skeleton.Nodes != null)
 					{
-						AddTreeNode(nodeSkeleton, k + " " + Encoding.ASCII.GetString(ema.Skeleton.NodeNames[k]), "Node");
+						TreeNode nodeSkeleton = AddTreeNode(nodeEMA, "Skeleton", "Skeleton");
+						for (int k = 0; k < ema.Skeleton.Nodes.Count; k++)
+						{
+							AddTreeNode(nodeSkeleton, k + " " + Encoding.ASCII.GetString(ema.Skeleton.NodeNames[k]), "Node");
+						}
 					}
+                    else { AddTreeNode(nodeEMA, "No skeleton data", "No skeleton data"); }
+
 				}
 				if (file.GetType() == typeof(OtherFile))
 				{
@@ -2088,14 +2101,14 @@ namespace USF4_Stage_Tool
 			if (e.Node.Tag.ToString() == "EMZ")
 			{
 				CM = emzContext;
-				TreeDisplayEMZData();
 				SelectedEMZNumberInTree = e.Node.Index;
+				TreeDisplayEMZData();
 			}
 			if (e.Node.Tag.ToString() == "TEX")
 			{
 				CM = emzContext;
-				TreeDisplayEMZData();
 				SelectedEMZNumberInTree = e.Node.Index;
+				TreeDisplayEMZData();
 			}
 			if (e.Node.Tag.ToString() == "EMM")
 			{
@@ -2244,18 +2257,14 @@ namespace USF4_Stage_Tool
 		void TreeDisplayEMZData()
 		{
 			lbSelNODE_ListData.Items.Clear();
-			lbSelNODE_ListData.Items.Add($"EMO Count: {WorkingEMZ.Files.Count}");
-			//lbSelNODE_ListData.Items.Add($"EMM Count: {WorkingEMZ.EMMList.Count}");
-			//lbSelNODE_ListData.Items.Add($"EMO Naming List Pointer: {emo.NamingListPointer}");
-			//lbSelNODE_ListData.Items.Add($"EMO Skeleton Pointer: {emo.SkeletonPointer}");
+			if ((string)tvTree.Nodes[SelectedEMZNumberInTree].Tag == "EMZ") lbSelNODE_ListData.Items.Add($"File Count: {WorkingEMZ.Files.Count}");
+			if ((string)tvTree.Nodes[SelectedEMZNumberInTree].Tag == "TEX") lbSelNODE_ListData.Items.Add($"File Count: {WorkingTEXEMZ.Files.Count}");
 		}
 		void TreeDisplayEMOData(EMO emo)
 		{
 			lbSelNODE_ListData.Items.Clear();
 			lbSelNODE_ListData.Items.Add($"EMG Count: {emo.EMGCount}");
 			lbSelNODE_ListData.Items.Add($"EMO File Position: {emo.FilePosition}");
-			//lbSelNODE_ListData.Items.Add($"EMO Naming List Pointer: {emo.NamingListPointer}");
-			//lbSelNODE_ListData.Items.Add($"EMO Skeleton Pointer: {emo.SkeletonPointer}");
 		}
 		void TreeDisplayEMGData(EMG emg)
 		{
@@ -2272,22 +2281,22 @@ namespace USF4_Stage_Tool
 			lbSelNODE_ListData.Items.Add($"Bit Depth: {m.BitDepth}");
 			lbSelNODE_ListData.Items.Add($"---------------------------");
 			lbSelNODE_ListData.Items.Add($"Model Components:");
-			lbSelNODE_ListData.Items.Add($" ");
-			if ((m.BitFlag & 0x01) == 0x01) { lbSelNODE_ListData.Items.Add($"Vertex Co-ordinates"); }
-			if ((m.BitFlag & 0x02) == 0x02) { lbSelNODE_ListData.Items.Add($"Vertex Normals"); }
-			if ((m.BitFlag & 0x04) == 0x04) { lbSelNODE_ListData.Items.Add($"UV Map"); }
-			if ((m.BitFlag & 0x80) == 0x80) { lbSelNODE_ListData.Items.Add($"UV Map 2"); }
-			if ((m.BitFlag & 0x40) == 0x40) { lbSelNODE_ListData.Items.Add($"Vertex Color"); }
-			if ((m.BitFlag & 0x200) == 0x200) { lbSelNODE_ListData.Items.Add($"Bone Weights"); }
+			//lbSelNODE_ListData.Items.Add($" ");
+			if ((m.BitFlag & 0x01) == 0x01) { lbSelNODE_ListData.Items.Add($"    Vertex Co-ordinates"); }
+			if ((m.BitFlag & 0x02) == 0x02) { lbSelNODE_ListData.Items.Add($"    Vertex Normals"); }
+			if ((m.BitFlag & 0x04) == 0x04) { lbSelNODE_ListData.Items.Add($"    UV Map"); }
+			if ((m.BitFlag & 0x80) == 0x80) { lbSelNODE_ListData.Items.Add($"    UV Map 2"); }
+			if ((m.BitFlag & 0x40) == 0x40) { lbSelNODE_ListData.Items.Add($"    Vertex Color"); }
+			if ((m.BitFlag & 0x200) == 0x200) { lbSelNODE_ListData.Items.Add($"    Bone Weights"); }
 			lbSelNODE_ListData.Items.Add($"---------------------------");
 
 			//lbSelNODE_ListData.Items.Add($"Read Mode: {m.ReadMode}");
 			lbSelNODE_ListData.Items.Add($"Texture Count: {m.TextureCount}");
 			for (int i = 0; i < m.TextureCount; i++)
 			{
-				lbSelNODE_ListData.Items.Add($"Texture {i} Index: {m.TexturesList[i].TextureIndex[0]}");
+				lbSelNODE_ListData.Items.Add($"Texture: {i} Index: {m.TexturesList[i].TextureIndex[0]}");
 			}
-			tbEOMod_TextureIndex.Text = $"{m.TexturesList[0].TextureIndex[0]}";     //TODO Display issue?
+			tbEOMod_TextureIndex.Text = $"{m.TexturesList[0].TextureIndex[0]}";     //TODO Some way to edit "more" textures
 			lbSelNODE_ListData.Items.Add($"Vertex Count: {m.VertexCount}");
 		}
 		void TreeDisplaySubModelData(SubModel m)
@@ -2487,11 +2496,6 @@ namespace USF4_Stage_Tool
 				EMZ emptyEMZ = new EMZ();
 				return emptyEMZ;
 			}
-		}
-
-		private void BtnSaveEMZ_Click(object sender, EventArgs e)
-		{
-
 		}
 
 		void SaveEMZToFile(string Tag)
@@ -2789,6 +2793,20 @@ namespace USF4_Stage_Tool
 		{
 			pnlEO_EMG.Visible = false;
 			pnlEO_MOD.Visible = false;
+
+#if !DEBUG
+			injectSMDAsEMGExperimentalToolStripMenuItem.Visible = false;
+			duplicateEMGToolStripMenuItem.Visible = false;
+			duplicateModelToolStripMenuItem.Visible = false;
+			duplicateUSAMAN01BToolStripMenuItem.Visible = false;
+			InjectEMO.Visible = false;
+			rawDumpEMOAsSMDToolStripMenuItem.Visible = false;
+			InjectAnimationtoolStripMenuItem1.Visible = false;
+			AddAnimationtoolStripMenuItem2.Visible = false;
+			dumpRefPoseToSMDToolStripMenuItem.Visible = false;
+			rawDumpEMAToolStripMenuItem.Visible = false;
+#endif
+
 			lbSelNODE_Title.Text = string.Empty;
 			IB = new InputBox();
 			Utils.ReadShaders();
@@ -4074,6 +4092,7 @@ namespace USF4_Stage_Tool
 					dds.HEXBytes = bytes;
 					emb.DDSFiles.RemoveAt(LastSelectedTreeNode.Index);
 					emb.DDSFiles.Insert(LastSelectedTreeNode.Index, dds);
+					//emb.GenerateBytes();
 					emb.HEXBytes = HexDataFromEMB(emb);
 					WorkingTEXEMZ.Files.Remove(LastSelectedTreeNode.Parent.Index);
 					WorkingTEXEMZ.Files.Add(LastSelectedTreeNode.Parent.Index, emb);
@@ -4081,6 +4100,8 @@ namespace USF4_Stage_Tool
 					ImageEngineImage IE = new ImageEngineImage(dds.HEXBytes);
 					pbPreviewDDS.BackgroundImage = Utils.BitmapFromBytes(IE.Save(new ImageEngineFormatDetails(ImageEngineFormat.PNG), new MipHandling()));
 					IE.Dispose();
+
+					
 				}
 			}
 			catch
@@ -4960,8 +4981,6 @@ namespace USF4_Stage_Tool
 
 			EMO nEMO = targetEMO;
 
-			//nEMO.Skeleton = Anim.DuplicateSkeleton(nEMO.Skeleton, 1, 20);
-			nEMO.Skeleton.HEXBytes = HexDataFromSkeleton(nEMO.Skeleton);
 			nEMO.HEXBytes = HexDataFromEMO(nEMO);
 
 			saveFileDialog1.Filter = EMOFileFilter;
@@ -5193,6 +5212,11 @@ namespace USF4_Stage_Tool
 					File.Copy("luaplain.out", saveFileDialog1.FileName);
 				}
 			}
+        }
+
+        private void AddAnimationtoolStripMenuItem2_Click(object sender, EventArgs e)
+        {
+
         }
     }
 
