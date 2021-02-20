@@ -310,7 +310,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CodeFile1.cs" />
+    <Compile Include="ChunkSpy.cs" />
     <Compile Include="Animation Functions.cs" />
     <Compile Include="DebugOutput.cs">
       <SubType>Form</SubType>

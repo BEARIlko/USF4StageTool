@@ -21,21 +21,6 @@ namespace USF4_Stage_Tool
 
 	public partial class Form1 : Form
 	{
-		public void Zipstream()
-		{
-			FileStream fsSource = new FileStream("STG_TRN.emz.compressed", FileMode.Open, FileAccess.Read);
-			byte[] bytes;
-			using (BinaryReader br = new BinaryReader(fsSource, Encoding.ASCII)) { bytes = br.ReadBytes((int)fsSource.Length); }
-
-			bytes = Utils.ChopByteArray(bytes, 0x10, bytes.Length - 0x10);
-
-			IList<byte> ilbytes = bytes.ToList();
-
-			List<byte> defbytes = ZlibDecoder.Inflate(ilbytes);
-
-			Utils.WriteDataToStream("testout.emz", defbytes);
-		}
-
         DebugOutput debugOutputForm;
 		public string LastOpenFolder = string.Empty;
 
@@ -103,14 +88,6 @@ namespace USF4_Stage_Tool
 
 		async void BTNOpenOBJ()
 		{
-			//FileStream fsSource = new FileStream("test.ema", FileMode.Open, FileAccess.Read);
-			//byte[] bytes;
-			//using (BinaryReader br = new BinaryReader(fsSource, Encoding.ASCII)) { bytes = br.ReadBytes((int)fsSource.Length); }
-
-			//Skeleton testskel = ReadSkeleton(bytes);
-
-			//Utils.WriteDataToStream("out.ema", HexDataFromSkeleton(testskel));
-
 			diagOpenOBJ.RestoreDirectory = true;
 			diagOpenOBJ.FileName = string.Empty;
 			diagOpenOBJ.InitialDirectory = LastOpenFolder;
@@ -151,7 +128,7 @@ namespace USF4_Stage_Tool
 			string[] lines = File.ReadAllLines(obj);
 
 			Dictionary<UInt64, int> VertUVDictionary = new Dictionary<UInt64, int>();
-			Dictionary<UInt64, int> UniqueChunkDictionary = new Dictionary<UInt64, int>();
+			Dictionary<UInt64, int> UniqueChunkDictionary = new Dictionary<UInt64, int>(); //For use if we implement vert normal splitting
 
 			//Prepare Input OBJ Structure
 			WorkingObject = new ObjModel
@@ -251,11 +228,11 @@ namespace USF4_Stage_Tool
 					string vertFaces = line.Replace("f ", "").Trim(); //Remove leading f
 					string[] arFaces = vertFaces.Trim().Split(' '); //Split into chunks
 
-					string[] chunk1string;
-					string[] chunk2string;
-					string[] chunk3string;
-					//FACE FLIP HAPPENS HERE NOW
-					if (chkGeometryFlipX.Checked)
+                    string[] chunk1string;
+                    string[] chunk2string;
+                    string[] chunk3string;
+                    //FACE FLIP HAPPENS HERE NOW
+                    if (chkGeometryFlipX.Checked)
 					{
 						chunk1string = arFaces[2].Trim().Split('/');   //Split chunks into index components
 						chunk2string = arFaces[1].Trim().Split('/');
@@ -275,11 +252,8 @@ namespace USF4_Stage_Tool
 
 					/* Simpler hashing system that only respects position and UV maps */
 					//CHUNK 1
-
 					UInt64 tempHash = Utils.HashInts(chunk1[0], chunk1[1]);
-					int dummy = 0;
-
-					if (VertUVDictionary.TryGetValue(tempHash, out dummy) == false)
+                    if (VertUVDictionary.TryGetValue(tempHash, out _) == false)
 					{
 						VertUVDictionary.Add(tempHash, VertUVDictionary.Count);
 
@@ -295,9 +269,8 @@ namespace USF4_Stage_Tool
 
 					//CHUNK 2
 					tempHash = Utils.HashInts(chunk2[0], chunk2[1]);
-					dummy = 0;
 
-					if (VertUVDictionary.TryGetValue(tempHash, out dummy) == false)
+                    if (VertUVDictionary.TryGetValue(tempHash, out _) == false)
 					{
 						VertUVDictionary.Add(tempHash, VertUVDictionary.Count);
 
@@ -313,9 +286,8 @@ namespace USF4_Stage_Tool
 
 					//CHUNK 3
 					tempHash = Utils.HashInts(chunk3[0], chunk3[1]);
-					dummy = 0;
 
-					if (VertUVDictionary.TryGetValue(tempHash, out dummy) == false)
+					if (VertUVDictionary.TryGetValue(tempHash, out _) == false)
 					{
 						VertUVDictionary.Add(tempHash, VertUVDictionary.Count);
 
@@ -638,18 +610,6 @@ namespace USF4_Stage_Tool
 			progressBar1.Value = 0;
 		}
 
-		//async void EncodeTheOBJ()
-		//{
-		//	if (WorkingObject.Verts.Count > MaxVertWarning && WarnForMaxVerts)
-		//	{
-		//		DialogResult dr = MessageBox.Show($"This object has more than {MaxVertWarning} verts ({WorkingObject.Verts.Count}). This can take a long time to Encode and Output. Are you sure you want to continue?", "Confirm!", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
-		//		if (dr == DialogResult.Cancel || dr == DialogResult.No) { ClearUpStatus(); return; }
-		//	}
-
-		//          VertexDaisyChain = DaisyChainFromIndices(new List<int[]>(WorkingObject.FaceIndices));
-		//	lbLoadSteps.Text = TStrings.STR_EncodeComplete;
-		//}
-
 		async void EncodeTheOBJ()
 		{
 			EncodingInProgress = true;
@@ -662,8 +622,6 @@ namespace USF4_Stage_Tool
 				{
 					return DaisyChainFromIndices(new List<int[]>(WorkingObject.MaterialGroups[i].FaceIndices));
 				});
-
-				//tempMatGroup.DaisyChain = DaisyChainFromIndices(new List<int[]>(WorkingObject.MaterialGroups[i].FaceIndices));
 
 				WorkingObject.MaterialGroups.RemoveAt(i);
 				WorkingObject.MaterialGroups.Insert(i, tempMatGroup);
@@ -2286,7 +2244,7 @@ namespace USF4_Stage_Tool
 		void TreeDisplayEMZData()
 		{
 			lbSelNODE_ListData.Items.Clear();
-			//lbSelNODE_ListData.Items.Add($"EMO Count: {WorkingEMZ.Files.Count}");
+			lbSelNODE_ListData.Items.Add($"EMO Count: {WorkingEMZ.Files.Count}");
 			//lbSelNODE_ListData.Items.Add($"EMM Count: {WorkingEMZ.EMMList.Count}");
 			//lbSelNODE_ListData.Items.Add($"EMO Naming List Pointer: {emo.NamingListPointer}");
 			//lbSelNODE_ListData.Items.Add($"EMO Skeleton Pointer: {emo.SkeletonPointer}");
@@ -2421,6 +2379,18 @@ namespace USF4_Stage_Tool
 				FileStream fsSource = new FileStream(filepath, FileMode.Open, FileAccess.Read);
 				byte[] bytes;
 				using (BinaryReader br = new BinaryReader(fsSource, Encoding.ASCII)) { bytes = br.ReadBytes((int)fsSource.Length); }
+
+				if (Encoding.ASCII.GetString(Utils.ChopByteArray(bytes,0x00,0x04)) == "#EMZ" )
+                {
+					Console.WriteLine("File looks compressed, attempting inflation...");
+					
+					bytes = Utils.ChopByteArray(bytes, 0x10, bytes.Length - 0x10);
+
+					List<byte> zipbytes = bytes.ToList();
+
+					bytes = ZlibDecoder.Inflate(zipbytes).ToArray();
+				}
+
                 EMZ inputEMZ = new EMZ
                 {
                     HEXBytes = bytes,
@@ -2512,7 +2482,8 @@ namespace USF4_Stage_Tool
 			}
 			catch
 			{
-				MessageBox.Show("Error opening EMZ! Maybe it's compressed?", TStrings.STR_Information);
+
+				MessageBox.Show("Error opening EMZ. Please confirm file is valid.", TStrings.STR_Information);
 				EMZ emptyEMZ = new EMZ();
 				return emptyEMZ;
 			}
@@ -3127,9 +3098,7 @@ namespace USF4_Stage_Tool
 						//Read in material name and store it in the main list, so Face i uses Material i. TODO wire up a way to link MaterialName to DDS/EMM contents?
 						WorkingSMD.MaterialNames.Add(Encoding.ASCII.GetBytes(lines[i]));
 
-						int dummyVal;
-
-						if (!WorkingSMD.MaterialDictionary.TryGetValue(lines[i], out dummyVal))
+						if (!WorkingSMD.MaterialDictionary.TryGetValue(lines[i], out _))
 						{
 							WorkingSMD.MaterialDictionary.Add(lines[i], WorkingSMD.MaterialDictionary.Count);
 						}

@@ -15,16 +15,17 @@ using static CSharpImageLibrary.ImageFormats;
 
 namespace USF4_Stage_Tool
 {
-	/// <summary>
-	/// public domain zlib decode    
-	/// original: v0.2  Sean Barrett 2006-11-18
-	/// ported to C# by Tammo Hinrichs, 2012-08-02
-	/// simple implementation
-	/// - all input must be provided in an upfront buffer
-	/// - all output is written to a single output buffer
-	/// - Warning: This is SLOW. It's no miracle .NET as well as Mono implement DeflateStream natively.
-	/// </summary>
-	public class ZlibDecoder
+    #region ZlibDecoder
+    /// <summary>
+    /// public domain zlib decode    
+    /// original: v0.2  Sean Barrett 2006-11-18
+    /// ported to C# by Tammo Hinrichs, 2012-08-02
+    /// simple implementation
+    /// - all input must be provided in an upfront buffer
+    /// - all output is written to a single output buffer
+    /// - Warning: This is SLOW. It's no miracle .NET as well as Mono implement DeflateStream natively.
+    /// </summary>
+    public class ZlibDecoder
 	{
 		/// <summary>
 		/// Decode deflated data
@@ -372,8 +373,9 @@ namespace USF4_Stage_Tool
 
 		#endregion
 	}
+    #endregion
 
-	public static class Utils
+    public static class Utils
 	{
 		public static string shaderFilename = "./Shaders.dat";
 		public static string shaderPropertiesFilename = "./ShadersProperties.dat";
