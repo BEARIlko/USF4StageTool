@@ -2156,6 +2156,12 @@ namespace USF4_Stage_Tool
 				title = e.Node.Text;
 				//TreeDisplayEMBData((EMB)WorkingEMZ.Files[e.Node.Index]);
 			}
+			if (e.Node.Tag.ToString() == "EMA")
+			{
+				CM = emaContext;
+				title = e.Node.Text;
+				//TreeDisplayEMBData((EMA)WorkingEMZ.Files[e.Node.Index]);
+			}
 			if (e.Node.Tag.ToString() == "Material")
 			{
 				pnlEO_MaterialEdit.Visible = true;
@@ -2166,7 +2172,7 @@ namespace USF4_Stage_Tool
 			}
 			if (e.Node.Tag.ToString() == "Animation")
 			{
-				CM = animationContext;
+				CM = emaContext;
 				title = e.Node.Text;
 				lbSelNODE_ListData.Items.Clear();
 				//TreeDisplayEMMData((EMM)WorkingEMZ.Files[e.Node.Index]);
@@ -2298,7 +2304,7 @@ namespace USF4_Stage_Tool
 		{
 			lbSelNODE_ListData.Items.Clear();
 			lbSelNODE_ListData.Items.Add($"EMG Count: {emo.EMGCount}");
-			lbSelNODE_ListData.Items.Add($"EMO File Position: {emo.FilePosition}");
+			//lbSelNODE_ListData.Items.Add($"EMO File Position: {emo.FilePosition}");
 		}
 		void TreeDisplayEMGData(EMG emg)
 		{
@@ -2459,7 +2465,7 @@ namespace USF4_Stage_Tool
 						EMO nEMO = new EMO();
 						nEMO = ReadEMO(Utils.ChopByteArray(inputEMZ.HEXBytes, inputEMZ.FilePointerList[i] + inputEMZ.FileListPointer + (i * 8), inputEMZ.FileLengthList[i]));
 						nEMO.Name = inputEMZ.FileNameList[i];
-						nEMO.FilePosition = i;
+						//nEMO.FilePosition = i;
 						inputEMZ.Files.Add(i, nEMO);
 						//Console.WriteLine("Got EMO " + inputEMZ.Files.Count);
 					}
@@ -2467,7 +2473,7 @@ namespace USF4_Stage_Tool
 					{
 						EMM nEMM = ReadEMM(Utils.ChopByteArray(inputEMZ.HEXBytes, inputEMZ.FilePointerList[i] + inputEMZ.FileListPointer + (i * 8), inputEMZ.FileLengthList[i]));
 						nEMM.Name = inputEMZ.FileNameList[i];
-						nEMM.FilePosition = i;
+						//nEMM.FilePosition = i;
 						inputEMZ.Files.Add(i, nEMM);
 						//Console.WriteLine("Got EMM " + inputEMZ.Files.Count);
 					}
@@ -2477,7 +2483,7 @@ namespace USF4_Stage_Tool
                         {
                             HEXBytes = Utils.ChopByteArray(inputEMZ.HEXBytes, inputEMZ.FilePointerList[i] + inputEMZ.FileListPointer + (i * 8), inputEMZ.FileLengthList[i]),
                             Name = inputEMZ.FileNameList[i],
-                            FilePosition = i
+                            //FilePosition = i
                         };
                         inputEMZ.Files.Add(i, nLUA);
 						//Console.WriteLine("Got nLUA " + inputEMZ.Files.Count);
@@ -2487,7 +2493,7 @@ namespace USF4_Stage_Tool
 						EMB nEMB = new EMB();
 						nEMB = ReadEMB(Utils.ChopByteArray(inputEMZ.HEXBytes, inputEMZ.FilePointerList[i] + inputEMZ.FileListPointer + (i * 8), inputEMZ.FileLengthList[i]));
 						nEMB.Name = inputEMZ.FileNameList[i];
-						nEMB.FilePosition = i;
+						//nEMB.FilePosition = i;
 						inputEMZ.Files.Add(i, nEMB);
 						//Console.WriteLine("Got nEMB " + inputEMZ.Files.Count);
 					}
@@ -2496,7 +2502,7 @@ namespace USF4_Stage_Tool
 						EMA nEMA = new EMA();
 						nEMA = ReadEMA(Utils.ChopByteArray(inputEMZ.HEXBytes, inputEMZ.FilePointerList[i] + inputEMZ.FileListPointer + (i * 8), inputEMZ.FileLengthList[i]));
 						nEMA.Name = inputEMZ.FileNameList[i];
-						nEMA.FilePosition = i;
+						//nEMA.FilePosition = i;
 						inputEMZ.Files.Add(i, nEMA);
 						//Console.WriteLine("Got nEMA " + inputEMZ.Files.Count);
 					}
@@ -2514,7 +2520,7 @@ namespace USF4_Stage_Tool
 					{
                         OtherFile nOF = new OtherFile
                         {
-                            FilePosition = i,
+                            //FilePosition = i,
                             HEXBytes = Utils.ChopByteArray(inputEMZ.HEXBytes, inputEMZ.FilePointerList[i] + inputEMZ.FileListPointer + (i * 8), inputEMZ.FileLengthList[i])
                         };
                         inputEMZ.Files.Add(i, nOF);
@@ -2725,7 +2731,7 @@ namespace USF4_Stage_Tool
 			}
 		}
 
-		void ExtractCSB()
+		void RawDumpCSB()
 		{
 			CSB csb = (CSB)WorkingEMZ.Files[LastSelectedTreeNode.Index];
 			saveFileDialog1.Filter = CSBFileFilter;
@@ -2860,7 +2866,7 @@ namespace USF4_Stage_Tool
 				Tooltips.tooltips.TryGetValue(ts.Name, out string tooltip);
 				ts.ToolTipText = tooltip;
 			}
-			foreach (ToolStripItem ts in animationContext.Items)
+			foreach (ToolStripItem ts in emaContext.Items)
 			{
 				Tooltips.tooltips.TryGetValue(ts.Name, out string tooltip);
 				ts.ToolTipText = tooltip;
@@ -2925,10 +2931,11 @@ namespace USF4_Stage_Tool
 
 		private void DeleteEMGToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			DialogResult = MessageBox.Show("Are you sure?", TStrings.STR_Information, MessageBoxButtons.OKCancel);
+			DialogResult = MessageBox.Show("Delete EMG?", TStrings.STR_Information, MessageBoxButtons.OKCancel);
 			if (DialogResult == DialogResult.OK)
 			{
 				DeleteEMG((EMO)WorkingEMZ.Files[SelectedEMONumberInTree], SelectedEMGNumberInTree);
+				AddStatus("EMG deleted.");
 			}
 		}
 
@@ -4099,8 +4106,16 @@ namespace USF4_Stage_Tool
 
 		private void CloseEMZToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			if ((string)tvTree.Nodes[SelectedEMZNumberInTree].Tag == "EMZ") WorkingEMZ = new EMZ();
-			if ((string)tvTree.Nodes[SelectedEMZNumberInTree].Tag == "TEX") WorkingTEXEMZ = new EMZ();
+			if ((string)tvTree.Nodes[SelectedEMZNumberInTree].Tag == "EMZ")
+			{
+				WorkingEMZ = new EMZ();
+				AddStatus(".EMZ closed.");
+			}
+			if ((string)tvTree.Nodes[SelectedEMZNumberInTree].Tag == "TEX")
+			{
+				WorkingTEXEMZ = new EMZ();
+				AddStatus(".TEX.EMZ closed.");
+			}
 			tvTree.Nodes.RemoveAt(SelectedEMZNumberInTree);
 		}
 
@@ -4515,12 +4530,12 @@ namespace USF4_Stage_Tool
 				string SubFolder = Encoding.ASCII.GetString(emb.Name);
 				SubFolder = SubFolder.Substring(0, SubFolder.Length - 4); 
 				Directory.CreateDirectory($"{BasePath}\\{SubFolder}"); //Create a sub folder witht the EMB name without .emb at the end
-				ExtractAllDDSFromEMB(emb, $"{BasePath}\\{SubFolder}");
+				ExtractAllDDSFromEMB(emb, $"{BasePath}\\{SubFolder}", true);
 			}
 		}
 
 		/// <summary>Extract All DDS textures from the supplied EMB and write them to the target path</summary>
-		void ExtractAllDDSFromEMB(EMB emb, string InputPath)
+		void ExtractAllDDSFromEMB(EMB emb, string InputPath, bool alltex = false)
 		{
 			string FullFilePath;
 			for (int i = 0; i < emb.DDSFiles.Count; i++)
@@ -4532,7 +4547,7 @@ namespace USF4_Stage_Tool
 				FullFilePath = $"{InputPath}\\{DDSName}";
 				if (File.Exists(FullFilePath)) DDSName = $"{i} {DDSName}";
 				ExtractDDSFromEMB(dds.HEXBytes, $"{InputPath}\\{DDSName}");
-				AddStatus($"DDS {DDSName} Extracted");
+				if(!alltex) AddStatus($"DDS {DDSName} Extracted");
 			}
 		}
 
@@ -4565,22 +4580,23 @@ namespace USF4_Stage_Tool
 			}
 		}
 
-		private void exctractTEXEMZTexturesToolStripMenuItem_Click(object sender, EventArgs e)
+		private void extractTEXEMZTexturesToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (WorkingTEXEMZ.HEXBytes == null)
 			{
-				MessageBox.Show("There is no tex.emz texture pack loaded.", TStrings.STR_Error);
+				MessageBox.Show("No .tex.emz texture pack loaded.", TStrings.STR_Error);
 				return;
 			}
 			if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
 			{
 				ExtractTEXEMZ(folderBrowserDialog1.SelectedPath);
+				AddStatus($"All textures exported to {folderBrowserDialog1.SelectedPath}");
 			}
 		}
 
-		private void extractCSBToolStripMenuItem_Click(object sender, EventArgs e)
+		private void rawDumpCSBToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			ExtractCSB();
+			RawDumpCSB();
 		}
 
 		private void injectCSBToolStripMenuItem_Click(object sender, EventArgs e)
@@ -4592,15 +4608,21 @@ namespace USF4_Stage_Tool
         {
 			extractModelAsOBJToolStripMenuItem.Visible = true;
 			extractSubmodelAsOBJToolStripMenuItem.Visible = true;
+			rawDumpEMGToolStripMenuItem.Visible = true;
 
 			if ((string)LastSelectedTreeNode.Tag == "EMG")
             {
 				extractModelAsOBJToolStripMenuItem.Visible = false;
 				extractSubmodelAsOBJToolStripMenuItem.Visible = false;
             }
-			else if((string)LastSelectedTreeNode.Tag == "Model")
+			else if ((string)LastSelectedTreeNode.Tag == "Model")
             {
 				extractSubmodelAsOBJToolStripMenuItem.Visible = false;
+				rawDumpEMGToolStripMenuItem.Visible = false;
+			}
+			else if ((string)LastSelectedTreeNode.Tag == "SubModel")
+            {
+				rawDumpEMGToolStripMenuItem.Visible = false;
 			}
 		}
 
@@ -4611,8 +4633,16 @@ namespace USF4_Stage_Tool
 
         private void animationContext_Opening(object sender, System.ComponentModel.CancelEventArgs e)
         {
+			bool emaclick = false;
 
-        }
+			if ((string)LastSelectedTreeNode.Tag == "EMA")
+			{
+				emaclick = true;
+			}
+
+			DeleteAnimaiontoolStripMenuItem3.Visible = !emaclick;
+			InjectAnimationtoolStripMenuItem1.Visible = !emaclick;
+		}
 
         private void DeleteAnimaiontoolStripMenuItem3_Click(object sender, EventArgs e)
         {
@@ -4882,7 +4912,7 @@ namespace USF4_Stage_Tool
 			EMOtoRefSMD(emo);
 		}
 
-        private void extractLUABytecodeToolStripMenuItem_Click(object sender, EventArgs e)
+        private void rawDumpLUAToolStripMenuItem_Click(object sender, EventArgs e)
         {
 			LUA lua = (LUA)WorkingEMZ.Files[LastSelectedTreeNode.Index];
 			saveFileDialog1.Filter = LUAFileFilter;
@@ -4973,86 +5003,26 @@ namespace USF4_Stage_Tool
 
 		private void injectFileExperimentalToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			diagOpenOBJ.RestoreDirectory = true;
-			diagOpenOBJ.FileName = string.Empty;
-			diagOpenOBJ.InitialDirectory = LastOpenFolder;
-			diagOpenOBJ.Filter = String.Empty;
-
-			if (diagOpenOBJ.ShowDialog() == DialogResult.OK)
-			{
-				string filepath = diagOpenOBJ.FileName;
-				string extension = diagOpenOBJ.FileName.Split('.').Last();
-				string name = diagOpenOBJ.SafeFileName;
-				if (filepath.Trim() != string.Empty)
-				{
-					FileStream fsSource = new FileStream(diagOpenOBJ.FileName, FileMode.Open, FileAccess.Read);
-					byte[] bytes;
-					using (BinaryReader br = new BinaryReader(fsSource, Encoding.ASCII)) { bytes = br.ReadBytes((int)fsSource.Length); }
-					
-					if(extension == "emo")
-                    {
-						EMO nEMO = ReadEMO(bytes);
-						WorkingEMZ.Files.Add(WorkingEMZ.Files.Count, nEMO);
-
-						WorkingEMZ.NumberOfFiles++;
-						WorkingEMZ.FileNamePointerList.Add(0x00);
-						WorkingEMZ.FileLengthList.Add(0x00);
-						WorkingEMZ.FilePointerList.Add(0x00);
-						WorkingEMZ.FileNameList.Add(Encoding.ASCII.GetBytes(name));
-					}
-					if (extension == "emm")
-					{
-						EMM nEMM = ReadEMM(bytes);
-						WorkingEMZ.Files.Add(WorkingEMZ.Files.Count, nEMM);
-
-						WorkingEMZ.NumberOfFiles++;
-						WorkingEMZ.FileNamePointerList.Add(0x00);
-						WorkingEMZ.FileLengthList.Add(0x00);
-						WorkingEMZ.FilePointerList.Add(0x00);
-						WorkingEMZ.FileNameList.Add(Encoding.ASCII.GetBytes(name));
-					}
-					if (extension == "ema")
-					{
-						EMA nEMA = ReadEMA(bytes);
-						WorkingEMZ.Files.Add(WorkingEMZ.Files.Count, nEMA);
-
-						WorkingEMZ.NumberOfFiles++;
-						WorkingEMZ.FileNamePointerList.Add(0x00);
-						WorkingEMZ.FileLengthList.Add(0x00);
-						WorkingEMZ.FilePointerList.Add(0x00);
-						WorkingEMZ.FileNameList.Add(Encoding.ASCII.GetBytes(name));
-					}
-					if (extension == "emb")
-					{
-						EMB nEMB = ReadEMB(bytes);
-						WorkingTEXEMZ.Files.Add(WorkingTEXEMZ.Files.Count, nEMB);
-						WorkingTEXEMZ.NumberOfFiles++;
-						WorkingTEXEMZ.FileNamePointerList.Add(0x00);
-						WorkingTEXEMZ.FileLengthList.Add(0x00);
-						WorkingTEXEMZ.FilePointerList.Add(0x00);
-						WorkingTEXEMZ.FileNameList.Add(Encoding.ASCII.GetBytes(name));
-					}
-					if (extension == "lua")
-					{
-						LUA nLUA = ReadLUA(bytes);
-						nLUA.HEXBytes = bytes;
-						nLUA.Name = Encoding.ASCII.GetBytes(name);
-						WorkingEMZ.Files.Add(WorkingEMZ.Files.Count, nLUA);
-
-						WorkingEMZ.NumberOfFiles++;
-						WorkingEMZ.FileNamePointerList.Add(0x00);
-						WorkingEMZ.FileLengthList.Add(0x00);
-						WorkingEMZ.FilePointerList.Add(0x00);
-						WorkingEMZ.FileNameList.Add(Encoding.ASCII.GetBytes(name));
-					}
-					RefreshTree(false);
-				}
-			}
+	
 		}
 
-        private void emzContext_Opening(object sender, System.ComponentModel.CancelEventArgs e)
+		private void emzContext_Opening(object sender, System.ComponentModel.CancelEventArgs e)
         {
+			bool emzclick = false;
 
+			if((string)LastSelectedTreeNode.Tag == "EMZ")
+            {
+				emzclick = true;
+            }
+
+			addEMOToolStripMenuItem.Visible = emzclick;
+			addEMMToolStripMenuItem.Visible = emzclick;
+			addEMAToolStripMenuItem.Visible = emzclick;
+			addCSBToolStripMenuItem.Visible = emzclick;
+			addLuaScriptToolStripMenuItem.Visible = emzclick;
+
+			addEMBToolStripMenuItem.Visible = !emzclick;
+			extractTEXEMZTexturesToolStripMenuItem.Visible = !emzclick;
         }
 
         private void addLUAScriptToolStripMenuItem_Click(object sender, EventArgs e)
@@ -5364,6 +5334,7 @@ namespace USF4_Stage_Tool
 				}
 
 				File.WriteAllLines(saveFileDialog1.FileName, lines);
+				AddStatus($"{Encoding.ASCII.GetString(emo.Name).Split('\0')[0]} extracted to {saveFileDialog1.FileName}");
 			}
 		}
 		
@@ -5418,6 +5389,289 @@ namespace USF4_Stage_Tool
 			}
 		}
 
+        private void rawDumpEMGToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+		private void AddFile(string filetype)
+        {
+			diagOpenOBJ.RestoreDirectory = true;
+			diagOpenOBJ.FileName = string.Empty;
+			diagOpenOBJ.InitialDirectory = LastOpenFolder;
+			diagOpenOBJ.Filter = filetype;
+
+			if (diagOpenOBJ.ShowDialog() == DialogResult.OK)
+			{
+				string filepath = diagOpenOBJ.FileName;
+				string extension = diagOpenOBJ.FileName.Split('.').Last();
+				string name = diagOpenOBJ.SafeFileName;
+				if (filepath.Trim() != string.Empty)
+				{
+					FileStream fsSource = new FileStream(diagOpenOBJ.FileName, FileMode.Open, FileAccess.Read);
+					byte[] bytes;
+					using (BinaryReader br = new BinaryReader(fsSource, Encoding.ASCII)) { bytes = br.ReadBytes((int)fsSource.Length); }
+
+					if (extension == "emo")
+					{
+						EMO nEMO = ReadEMO(bytes);
+						WorkingEMZ.Files.Add(WorkingEMZ.Files.Count, nEMO);
+
+						WorkingEMZ.NumberOfFiles++;
+						WorkingEMZ.FileNamePointerList.Add(0x00);
+						WorkingEMZ.FileLengthList.Add(0x00);
+						WorkingEMZ.FilePointerList.Add(0x00);
+						WorkingEMZ.FileNameList.Add(Encoding.ASCII.GetBytes(name));
+					}
+					if (extension == "emm")
+					{
+						EMM nEMM = ReadEMM(bytes);
+						WorkingEMZ.Files.Add(WorkingEMZ.Files.Count, nEMM);
+
+						WorkingEMZ.NumberOfFiles++;
+						WorkingEMZ.FileNamePointerList.Add(0x00);
+						WorkingEMZ.FileLengthList.Add(0x00);
+						WorkingEMZ.FilePointerList.Add(0x00);
+						WorkingEMZ.FileNameList.Add(Encoding.ASCII.GetBytes(name));
+					}
+					if (extension == "ema")
+					{
+						EMA nEMA = ReadEMA(bytes);
+						WorkingEMZ.Files.Add(WorkingEMZ.Files.Count, nEMA);
+
+						WorkingEMZ.NumberOfFiles++;
+						WorkingEMZ.FileNamePointerList.Add(0x00);
+						WorkingEMZ.FileLengthList.Add(0x00);
+						WorkingEMZ.FilePointerList.Add(0x00);
+						WorkingEMZ.FileNameList.Add(Encoding.ASCII.GetBytes(name));
+					}
+					if (extension == "csb")
+					{
+						CSB nCSB = new CSB()
+						{
+							HEXBytes = bytes,
+							Name = Encoding.ASCII.GetBytes(diagOpenOBJ.SafeFileName)
+						};
+						WorkingTEXEMZ.Files.Add(WorkingTEXEMZ.Files.Count, nCSB);
+						WorkingTEXEMZ.NumberOfFiles++;
+						WorkingTEXEMZ.FileNamePointerList.Add(0x00);
+						WorkingTEXEMZ.FileLengthList.Add(0x00);
+						WorkingTEXEMZ.FilePointerList.Add(0x00);
+						WorkingTEXEMZ.FileNameList.Add(Encoding.ASCII.GetBytes(name));
+					}
+					if (extension == "lua")
+					{
+
+						LUA nLUA = new LUA();
+
+						//Check if the file has a bytecode header
+						if (Encoding.ASCII.GetString(Utils.ChopByteArray(bytes, 1, 4)) == "LuaQ")
+						{
+							nLUA.HEXBytes = bytes;
+							nLUA.Name = Encoding.ASCII.GetBytes(name);
+                        }
+						//Else assume it's a plaintext
+						else nLUA = LUAScriptToBytecode(diagOpenOBJ.FileName);
+
+						WorkingEMZ.Files.Add(WorkingEMZ.Files.Count, nLUA);
+						WorkingEMZ.NumberOfFiles++;
+						WorkingEMZ.FileNamePointerList.Add(0x00);
+						WorkingEMZ.FileLengthList.Add(0x00);
+						WorkingEMZ.FilePointerList.Add(0x00);
+						WorkingEMZ.FileNameList.Add(Encoding.ASCII.GetBytes(name));
+					}
+					if (extension == "emb")
+					{
+						EMB nEMB = ReadEMB(bytes);
+						WorkingTEXEMZ.Files.Add(WorkingTEXEMZ.Files.Count, nEMB);
+						WorkingTEXEMZ.NumberOfFiles++;
+						WorkingTEXEMZ.FileNamePointerList.Add(0x00);
+						WorkingTEXEMZ.FileLengthList.Add(0x00);
+						WorkingTEXEMZ.FilePointerList.Add(0x00);
+						WorkingTEXEMZ.FileNameList.Add(Encoding.ASCII.GetBytes(name));
+						AddStatus($"File {name} added to .TEX.EMZ");
+					}
+					if (extension == "emb") AddStatus($"File {name} added to .TEX.EMZ");
+					else AddStatus($"File {name} added to .EMZ");
+
+					RefreshTree(false);
+				}
+			}
+		}
+
+        private void addLuaScriptToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			AddFile(LUAFileFilter);
+        }
+
+        private void addEMOToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			AddFile(EMOFileFilter);
+		}
+
+        private void addEMMToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			AddFile(EMMFileFilter);
+		}
+
+        private void addEMAToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			AddFile(EMMFileFilter);
+		}
+
+        private void addCSBToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			AddFile(EMMFileFilter);
+		}
+
+        private void addEMBToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			AddFile(EMMFileFilter);
+		}
+
+        
+
+		private void DeleteFileEMZ(int index)
+        {
+			WorkingEMZ.Files.Remove(index);
+
+			Dictionary<int, object> temp = new Dictionary<int, object>();
+			for (int i = 0; i < index; i++)
+            {
+				temp.Add(i, WorkingEMZ.Files[i]);
+            }
+			for (int i = index; i < WorkingEMZ.Files.Count; i++)
+			{
+				temp.Add(i, WorkingEMZ.Files[i+1]);
+			}
+
+			WorkingEMZ.Files = temp;
+
+			WorkingEMZ.FileNameList.RemoveAt(index);
+			WorkingEMZ.FileLengthList.RemoveAt(index);
+			WorkingEMZ.FileNamePointerList.RemoveAt(index);
+			WorkingEMZ.FilePointerList.RemoveAt(index);
+			WorkingEMZ.NumberOfFiles--;
+        }
+
+		private void DeleteFileTEXEMZ(int index)
+		{
+			WorkingTEXEMZ.Files.Remove(index);
+
+			Dictionary<int, object> temp = new Dictionary<int, object>();
+			for (int i = 0; i < index; i++)
+			{
+				temp.Add(i, WorkingTEXEMZ.Files[i]);
+			}
+			for (int i = index; i < WorkingTEXEMZ.Files.Count; i++)
+			{
+				temp.Add(i, WorkingTEXEMZ.Files[i + 1]);
+			}
+
+			WorkingTEXEMZ.Files = temp;
+
+			WorkingTEXEMZ.FileNameList.RemoveAt(index);
+			WorkingTEXEMZ.FileLengthList.RemoveAt(index);
+			WorkingTEXEMZ.FileNamePointerList.RemoveAt(index);
+			WorkingTEXEMZ.FilePointerList.RemoveAt(index);
+			WorkingTEXEMZ.NumberOfFiles--;
+		}
+
+		private void deleteEMAToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			DialogResult = MessageBox.Show("Delete EMA?", TStrings.STR_Information, MessageBoxButtons.OKCancel);
+			if (DialogResult == DialogResult.OK)
+			{
+				AddStatus($"{Encoding.ASCII.GetString(WorkingEMZ.FileNameList[LastSelectedTreeNode.Index]).Split('\0')[0]} deleted from .EMZ");
+				DeleteFileEMZ(LastSelectedTreeNode.Index);
+				RefreshTree(false);
+			}
+		}
+
+		private void deleteEMMToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			DialogResult = MessageBox.Show("Delete EMM?", TStrings.STR_Information, MessageBoxButtons.OKCancel);
+			if (DialogResult == DialogResult.OK)
+			{
+				AddStatus($"{Encoding.ASCII.GetString(WorkingEMZ.FileNameList[LastSelectedTreeNode.Index]).Split('\0')[0]} deleted from .EMZ");
+				DeleteFileEMZ(LastSelectedTreeNode.Index);
+				RefreshTree(false);
+			}
+		}
+
+        private void deleteEMOToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			DialogResult = MessageBox.Show("Delete EMO?", TStrings.STR_Information, MessageBoxButtons.OKCancel);
+			if (DialogResult == DialogResult.OK)
+			{
+				AddStatus($"{Encoding.ASCII.GetString(WorkingEMZ.FileNameList[LastSelectedTreeNode.Index]).Split('\0')[0]} deleted from .EMZ");
+				DeleteFileEMZ(LastSelectedTreeNode.Index);
+				RefreshTree(false);
+			}
+		}
+
+        private void deleteEMBToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			DialogResult = MessageBox.Show("Delete EMB?", TStrings.STR_Information, MessageBoxButtons.OKCancel);
+			if (DialogResult == DialogResult.OK)
+			{
+				AddStatus($"{Encoding.ASCII.GetString(WorkingTEXEMZ.FileNameList[LastSelectedTreeNode.Index]).Split('\0')[0]} deleted from .TEX.EMZ");
+				DeleteFileTEXEMZ(LastSelectedTreeNode.Index);
+				RefreshTree(false);
+			}
+		}
+
+        private void deleteLUAToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			DialogResult = MessageBox.Show("Delete LUA?", TStrings.STR_Information, MessageBoxButtons.OKCancel);
+			if (DialogResult == DialogResult.OK)
+			{
+				AddStatus($"{Encoding.ASCII.GetString(WorkingEMZ.FileNameList[LastSelectedTreeNode.Index]).Split('\0')[0]} deleted from .EMZ");
+				DeleteFileEMZ(LastSelectedTreeNode.Index);
+				RefreshTree(false);
+			}
+		}
+
+        private void deleteCSBToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			DialogResult = MessageBox.Show("Delete CSB?", TStrings.STR_Information, MessageBoxButtons.OKCancel);
+			if (DialogResult == DialogResult.OK)
+			{
+				AddStatus($"{Encoding.ASCII.GetString(WorkingEMZ.FileNameList[LastSelectedTreeNode.Index]).Split('\0')[0]} deleted from .EMZ");
+				DeleteFileEMZ(LastSelectedTreeNode.Index);
+				RefreshTree(false);
+			}
+		}
+
+        private void rawDumpEMMToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			EMM emm = (EMM)WorkingEMZ.Files[LastSelectedTreeNode.Index];
+
+			emm.HEXBytes = HexDataFromEMM(emm);
+
+			saveFileDialog1.Filter = EMMFileFilter;
+			saveFileDialog1.FileName = Encoding.ASCII.GetString(emm.Name);
+			if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+			{
+				Utils.WriteDataToStream(saveFileDialog1.FileName, emm.HEXBytes);
+				AddStatus($"Extracted {Encoding.ASCII.GetString(emm.Name)}");
+			}
+		}
+
+        private void rawDumpEMBToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			EMB emb = (EMB)WorkingTEXEMZ.Files[LastSelectedTreeNode.Index];
+
+			emb.HEXBytes = HexDataFromEMB(emb);
+
+			saveFileDialog1.Filter = EMBFileFilter;
+			saveFileDialog1.FileName = Encoding.ASCII.GetString(emb.Name);
+			if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+			{
+				Utils.WriteDataToStream(saveFileDialog1.FileName, emb.HEXBytes);
+				AddStatus($"Extracted {Encoding.ASCII.GetString(emb.Name)}");
+			}
+		}
     }
 
 }

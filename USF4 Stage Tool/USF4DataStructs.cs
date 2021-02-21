@@ -8,7 +8,6 @@ namespace USF4_Stage_Tool
 
 	public struct OtherFile
 	{
-		public int FilePosition;
 		public byte[] HEXBytes;
 	}
 
@@ -27,7 +26,6 @@ namespace USF4_Stage_Tool
 
 	public struct EMB
 	{
-		public int FilePosition;
 		public byte[] Name;
 		public int NumberOfFiles;
 		public int FileListPointer;
@@ -103,14 +101,12 @@ namespace USF4_Stage_Tool
 
 	public struct LUA
 	{
-		public int FilePosition;
 		public byte[] HEXBytes;
 		public byte[] Name;
 	}
 
 	public struct EMM
 	{
-		public int FilePosition;
 		public byte[] HEXBytes;
 		public byte[] Name;
 		public int MaterialCount;
@@ -120,7 +116,6 @@ namespace USF4_Stage_Tool
 
 	public struct EME
     {
-		public int FilePosition;
 		public byte[] HEXBytes;
 		public byte[] Name;
 		public int EffectCount;
@@ -141,7 +136,6 @@ namespace USF4_Stage_Tool
 
 	public struct EMA
 	{
-		public int FilePosition;
 		public byte[] HEXBytes;
 		public byte[] Name;
 		public int SkeletonPointer;
@@ -197,7 +191,6 @@ namespace USF4_Stage_Tool
 
 	public struct EMO //Header
 	{
-		public int FilePosition;
 		public int SkeletonPointer;
 		public int EMGCount;
 		public byte[] Name;

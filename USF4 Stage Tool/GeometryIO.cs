@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace USF4_Stage_Tool
 {
     public static class GeometryIO
     {
+        //TODO find somewhere better to put this method?
         public static List<int[]> FaceIndicesFromDaisyChain(int[] DaisyChain)
         {
             List<int[]> FaceIndices = new List<int[]>();
