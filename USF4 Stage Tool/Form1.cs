@@ -14,6 +14,7 @@ using System.Windows.Forms;
 using static KopiLua.Lua;
 using static CSharpImageLibrary.ImageFormats;
 using System.Globalization;
+using Collada141;
 
 
 
@@ -977,6 +978,39 @@ namespace USF4_Stage_Tool
 			length = length + nEMG.ModelPointerList[nEMG.ModelPointerList.Count - 1];
 			nEMG.HEXBytes = Utils.ChopByteArray(nEMG.HEXBytes, 0, length);
 			return nEMG;
+		}
+
+		public static List<int[]> FaceIndicesFromDaisyChain(int[] DaisyChain)
+		{
+			List<int[]> FaceIndices = new List<int[]>();
+
+			Boolean bForwards = true;
+
+			for (int i = 0; i < DaisyChain.Length - 0x02; i++)
+			{
+				if (bForwards)
+				{
+					int[] temp = new int[] { DaisyChain[i], DaisyChain[i + 1], DaisyChain[i + 2] };
+
+					if (temp[0] != temp[1] && temp[1] != temp[2] && temp[2] != temp[0])
+					{
+						FaceIndices.Add(temp);
+					}
+				}
+				else
+				{
+					int[] temp = new int[] { DaisyChain[i + 2], DaisyChain[i + 1], DaisyChain[i] };
+
+					if (temp[0] != temp[1] && temp[1] != temp[2] && temp[2] != temp[0])
+					{
+						FaceIndices.Add(temp);
+					}
+				}
+
+				bForwards = !bForwards;
+			}
+
+			return FaceIndices;
 		}
 
 		EMG NewEMGFromOBJ(EMG template, bool AddNewName)
@@ -2791,21 +2825,76 @@ namespace USF4_Stage_Tool
 
 		private void Form1_Load(object sender, EventArgs e)
 		{
+			
 			pnlEO_EMG.Visible = false;
 			pnlEO_MOD.Visible = false;
 
+            #region Set up tooltips
+            foreach (ToolStripItem ts in emgContext.Items)
+			{
+					Tooltips.tooltips.TryGetValue(ts.Name, out string tooltip);
+					ts.ToolTipText = tooltip;
+			}
+			foreach (ToolStripItem ts in emzContext.Items)
+			{
+				Tooltips.tooltips.TryGetValue(ts.Name, out string tooltip);
+				ts.ToolTipText = tooltip;
+			}
+			foreach (ToolStripItem ts in emmContext.Items)
+			{
+				Tooltips.tooltips.TryGetValue(ts.Name, out string tooltip);
+				ts.ToolTipText = tooltip;
+			}
+			foreach (ToolStripItem ts in emoContext.Items)
+			{
+				Tooltips.tooltips.TryGetValue(ts.Name, out string tooltip);
+				ts.ToolTipText = tooltip;
+			}
+			foreach (ToolStripItem ts in embContext.Items)
+			{
+				Tooltips.tooltips.TryGetValue(ts.Name, out string tooltip);
+				ts.ToolTipText = tooltip;
+			}
+			foreach (ToolStripItem ts in ddsContext.Items)
+			{
+				Tooltips.tooltips.TryGetValue(ts.Name, out string tooltip);
+				ts.ToolTipText = tooltip;
+			}
+			foreach (ToolStripItem ts in animationContext.Items)
+			{
+				Tooltips.tooltips.TryGetValue(ts.Name, out string tooltip);
+				ts.ToolTipText = tooltip;
+			}
+			foreach (ToolStripItem ts in luaContext.Items)
+			{
+				Tooltips.tooltips.TryGetValue(ts.Name, out string tooltip);
+				ts.ToolTipText = tooltip;
+			}
+			foreach (ToolStripItem ts in csbContext.Items)
+			{
+                    Tooltips.tooltips.TryGetValue(ts.Name, out string tooltip);
+                    ts.ToolTipText = tooltip;
+            }
+			foreach (ToolStripItem ts in matContext.Items)
+			{
+				Tooltips.tooltips.TryGetValue(ts.Name, out string tooltip);
+				ts.ToolTipText = tooltip;
+			}
+
+			#endregion
+
 #if !DEBUG
 			injectSMDAsEMGExperimentalToolStripMenuItem.Visible = false;
-			duplicateEMGToolStripMenuItem.Visible = false;
-			duplicateModelToolStripMenuItem.Visible = false;
-			duplicateUSAMAN01BToolStripMenuItem.Visible = false;
-			InjectEMO.Visible = false;
-			rawDumpEMOAsSMDToolStripMenuItem.Visible = false;
-			InjectAnimationtoolStripMenuItem1.Visible = false;
-			AddAnimationtoolStripMenuItem2.Visible = false;
-			dumpRefPoseToSMDToolStripMenuItem.Visible = false;
-			rawDumpEMAToolStripMenuItem.Visible = false;
-#endif
+				duplicateEMGToolStripMenuItem.Visible = false;
+				duplicateModelToolStripMenuItem.Visible = false;
+				duplicateUSAMAN01BToolStripMenuItem.Visible = false;
+				InjectEMO.Visible = false;
+				rawDumpEMOAsSMDToolStripMenuItem.Visible = false;
+				InjectAnimationtoolStripMenuItem1.Visible = false;
+				AddAnimationtoolStripMenuItem2.Visible = false;
+				dumpRefPoseToSMDToolStripMenuItem.Visible = false;
+				rawDumpEMAToolStripMenuItem.Visible = false;
+			#endif
 
 			lbSelNODE_Title.Text = string.Empty;
 			IB = new InputBox();
@@ -3787,7 +3876,7 @@ namespace USF4_Stage_Tool
 							for (int k = 0; k < emo.EMGList[i].Models[j].SubModels.Count; k++)
 							{
 								SubModel wSM = wMod.SubModels[k];
-								List<int[]> smFaces = FaceIndicesFromDaisyChain(wSM.DaisyChain);
+								List<int[]> smFaces = GeometryIO.FaceIndicesFromDaisyChain(wSM.DaisyChain);
 
 								for (int f = 0; f < smFaces.Count; f++)
 								{
@@ -3864,40 +3953,6 @@ namespace USF4_Stage_Tool
 			}
 
 
-		}
-
-
-		List<int[]> FaceIndicesFromDaisyChain(int[] DaisyChain)
-		{
-			List<int[]> FaceIndices = new List<int[]>();
-
-			Boolean bForwards = true;
-
-			for (int i = 0; i < DaisyChain.Length - 0x02; i++)
-			{
-				if (bForwards)
-				{
-					int[] temp = new int[] { DaisyChain[i], DaisyChain[i + 1], DaisyChain[i + 2] };
-
-					if (temp[0] != temp[1] && temp[1] != temp[2] && temp[2] != temp[0])
-					{
-						FaceIndices.Add(temp);
-					}
-				}
-				else
-				{
-					int[] temp = new int[] { DaisyChain[i + 2], DaisyChain[i + 1], DaisyChain[i] };
-
-					if (temp[0] != temp[1] && temp[1] != temp[2] && temp[2] != temp[0])
-					{
-						FaceIndices.Add(temp);
-					}
-				}
-
-				bForwards = !bForwards;
-			}
-
-			return FaceIndices;
 		}
 
 		EMO EMOFromSMD(SMDModel model)
@@ -4295,79 +4350,92 @@ namespace USF4_Stage_Tool
 		static void UnluacMain(string bytefile, string plainfile)
 		{
 			unluac.Main.decompile(bytefile, plainfile);
+			//string[] args = { $"{bytefile}"};
+			//unluac.Main.main(args);
 		}
 
-		LUA LUAScriptToBytecode()
+		LUA LUAScriptToBytecode(string target_lua)
 		{
-			string target_lua = "plaintext.lua";
             string ChunkSpy_script = CodeStrings.ChunkSpy1;
 
 			lua_State L = null;
 			LUA nLUA = (LUA)WorkingEMZ.Files[LastSelectedTreeNode.Index];
 
 			try
-			{
-				
+			{	
+				string[] lines = File.ReadAllLines(diagOpenOBJ.FileName);
 
-				diagOpenOBJ.RestoreDirectory = true;
-				diagOpenOBJ.FileName = string.Empty;
-				diagOpenOBJ.InitialDirectory = LastOpenFolder;
-				diagOpenOBJ.Filter = LUAFileFilter;
-				if (diagOpenOBJ.ShowDialog() == DialogResult.OK)
+				File.WriteAllLines(diagOpenOBJ.SafeFileName, lines, Encoding.ASCII);
+
+				//this is the loadfile method
+				string luac_script =
+						@"f=assert(io.open(""native_lua_chunk.out"",""wb""))" +
+						@"assert(f:write(string.dump(assert(loadfile(""" + diagOpenOBJ.SafeFileName + @""")))))" +
+						"assert(f:close())";
+
+				//LUAC implementation
+				try
 				{
-					
-					string[] lines = File.ReadAllLines(diagOpenOBJ.FileName);
+					// initialization
+					L = lua_open();
+					luaL_openlibs(L);
 
-					File.WriteAllLines("plaintext.lua", lines, Encoding.ASCII);
+					int loaderror = luaL_loadbuffer(L, luac_script, (uint)luac_script.Length, "program");
+					int error = lua_pcall(L, 0, 0, 0);
 
-					//target_lua = diagOpenOBJ.SafeFileName;
-
-					//this is the loadfile method
-					string luac_script =
-							@"f=assert(io.open(""native_lua_chunk.out"",""wb""))" +
-							@"assert(f:write(string.dump(assert(loadfile(""" + target_lua + @""")))))" +
-							"assert(f:close())";
-
-					//LUAC implementation
-					try
+					if(loaderror == 0 && loaderror == 0)
+                    {
+						AddStatus("Luascript compiled to bytecode...");
+                    }
+					else if (loaderror != 0 || error != 0)
 					{
-						// initialization
-						L = lua_open();
-						luaL_openlibs(L);
-
-						int loaderror = luaL_loadbuffer(L, luac_script, (uint)luac_script.Length, "program");
-						int error = lua_pcall(L, 0, 0, 0);
+						AddStatus("Luascript failed to compile.");
 					}
-					finally
-					{
-						// cleanup
-						lua_close(L);
-					}
-
-					//ChunkSpy implementation
-					try
-					{
-						// initialization
-						L = lua_open();
-						luaL_openlibs(L);
-
-						int loaderror = luaL_loadbuffer(L, ChunkSpy_script, (uint)ChunkSpy_script.Length, "program");
-						int error = lua_pcall(L, 0, 0, 0);
-					}
-					finally
-					{
-						// cleanup
-						lua_close(L);
-					}
-
-					//Read in the newly created bytecode file and inject into EMZ
-					FileStream fsSource = new FileStream("output_usf4.out", FileMode.Open, FileAccess.Read);
-					byte[] bytes;
-					using (BinaryReader br = new BinaryReader(fsSource, Encoding.ASCII)) { bytes = br.ReadBytes((int)fsSource.Length); }
-					nLUA.HEXBytes = bytes;
-					nLUA.Name = Encoding.ASCII.GetBytes(target_lua);
-
 				}
+				finally
+				{
+					// cleanup
+					lua_close(L);
+					File.Delete("plaintext.lua");
+				}
+
+
+				//ChunkSpy implementation
+				try
+				{
+					// initialization
+					L = lua_open();
+					luaL_openlibs(L);
+
+					int loaderror = luaL_loadbuffer(L, ChunkSpy_script, (uint)ChunkSpy_script.Length, "program");
+					int error = lua_pcall(L, 0, 0, 0);
+
+					if (loaderror == 0 && loaderror == 0)
+					{
+						AddStatus("Bytecode converted to USF4-native format...");
+					}
+					else if (loaderror != 0 || error != 0)
+					{
+						AddStatus("Bytecode conversion failed.");
+					}
+				}
+				finally
+				{
+					// cleanup
+					lua_close(L);
+					File.Delete(CodeStrings.infile);
+				}
+
+				//Read in the newly created bytecode file and inject into EMZ
+				FileStream fsSource = new FileStream("output_usf4.out", FileMode.Open, FileAccess.Read);
+				byte[] bytes;
+				using (BinaryReader br = new BinaryReader(fsSource, Encoding.ASCII)) { bytes = br.ReadBytes((int)fsSource.Length); }
+				nLUA.HEXBytes = bytes;
+				nLUA.Name = Encoding.ASCII.GetBytes(target_lua);
+
+				File.Delete(CodeStrings.outfile);
+
+				
 			}
 			catch
 			{
@@ -4522,8 +4590,19 @@ namespace USF4_Stage_Tool
 
 		private void emgContext_Opening(object sender, System.ComponentModel.CancelEventArgs e)
         {
+			extractModelAsOBJToolStripMenuItem.Visible = true;
+			extractSubmodelAsOBJToolStripMenuItem.Visible = true;
 
-        }
+			if ((string)LastSelectedTreeNode.Tag == "EMG")
+            {
+				extractModelAsOBJToolStripMenuItem.Visible = false;
+				extractSubmodelAsOBJToolStripMenuItem.Visible = false;
+            }
+			else if((string)LastSelectedTreeNode.Tag == "Model")
+            {
+				extractSubmodelAsOBJToolStripMenuItem.Visible = false;
+			}
+		}
 
         private void csbContext_Opening(object sender, System.ComponentModel.CancelEventArgs e)
         {
@@ -4572,6 +4651,7 @@ namespace USF4_Stage_Tool
 				diagOpenOBJ.FileName = string.Empty;
 				diagOpenOBJ.InitialDirectory = LastOpenFolder;
 				diagOpenOBJ.Filter = LUAFileFilter;
+
 				if (diagOpenOBJ.ShowDialog() == DialogResult.OK)
 				{
 					FileStream fsSource = new FileStream(diagOpenOBJ.FileName, FileMode.Open, FileAccess.Read);
@@ -4865,11 +4945,30 @@ namespace USF4_Stage_Tool
         {
 			CultureInfo.CurrentCulture = new CultureInfo("en-GB", false);
 
-			LUA nLUA = LUAScriptToBytecode();
+			LUA lua = (LUA)WorkingEMZ.Files[LastSelectedTreeNode.Index];
 
-			WorkingEMZ.Files.Remove(LastSelectedTreeNode.Index);
-			WorkingEMZ.Files.Add(LastSelectedTreeNode.Index, nLUA);
-			RefreshTree(false);
+			try
+			{
+				diagOpenOBJ.RestoreDirectory = true;
+				diagOpenOBJ.FileName = string.Empty;
+				diagOpenOBJ.InitialDirectory = LastOpenFolder;
+				diagOpenOBJ.Filter = LUAFileFilter;
+				if (diagOpenOBJ.ShowDialog() == DialogResult.OK)
+				{
+
+					lua = LUAScriptToBytecode(diagOpenOBJ.SafeFileName);
+
+					WorkingEMZ.Files.Remove(LastSelectedTreeNode.Index);
+					WorkingEMZ.Files.Add(LastSelectedTreeNode.Index, lua);
+					RefreshTree(false);
+					AddStatus($"Bytecode injected into {Encoding.ASCII.GetString(WorkingEMZ.FileNameList[LastSelectedTreeNode.Index])}.");
+				}
+			}
+			catch
+			{
+				MessageBox.Show("Couldn't open file.", TStrings.STR_Error);
+			}
+
 		}
 
 		private void injectFileExperimentalToolStripMenuItem_Click(object sender, EventArgs e)
@@ -4958,16 +5057,37 @@ namespace USF4_Stage_Tool
 
         private void addLUAScriptToolStripMenuItem_Click(object sender, EventArgs e)
         {
-			LUA nLUA = LUAScriptToBytecode();
-			WorkingEMZ.Files.Add(WorkingEMZ.Files.Count, nLUA);
+			LUA lua = new LUA();
 
-			WorkingEMZ.NumberOfFiles++;
-			WorkingEMZ.FileNamePointerList.Add(0x00);
-			WorkingEMZ.FileLengthList.Add(0x00);
-			WorkingEMZ.FilePointerList.Add(0x00);
-			WorkingEMZ.FileNameList.Add(nLUA.Name);
+			try
+			{
+				diagOpenOBJ.RestoreDirectory = true;
+				diagOpenOBJ.FileName = string.Empty;
+				diagOpenOBJ.InitialDirectory = LastOpenFolder;
+				diagOpenOBJ.Filter = LUAFileFilter;
+				if (diagOpenOBJ.ShowDialog() == DialogResult.OK)
+				{
 
-			RefreshTree(false);
+					lua = LUAScriptToBytecode(diagOpenOBJ.SafeFileName);
+					lua.Name = Encoding.ASCII.GetBytes(diagOpenOBJ.SafeFileName);
+
+					WorkingEMZ.Files.Add(WorkingEMZ.Files.Count, lua);
+
+					WorkingEMZ.NumberOfFiles++;
+					WorkingEMZ.FileNamePointerList.Add(0x00);
+					WorkingEMZ.FileLengthList.Add(0x00);
+					WorkingEMZ.FilePointerList.Add(0x00);
+					WorkingEMZ.FileNameList.Add(lua.Name);
+
+					AddStatus($"Bytecode added as {diagOpenOBJ.SafeFileName}");
+
+					RefreshTree(false);
+				}
+			}
+			catch
+			{
+				MessageBox.Show("Couldn't open file.", TStrings.STR_Error);
+			}
 		}
 
         private void emoContext_Opening(object sender, System.ComponentModel.CancelEventArgs e)
@@ -5082,7 +5202,7 @@ namespace USF4_Stage_Tool
 			targetSM.DaisyChainLength = daisychain1.Count;
 
 			//Duplicate daisychain - convert back to indices, double the indices, re-daisychain
-			//List<int[]> daisychain = FaceIndicesFromDaisyChain(targetEMG.Models[0].SubModels[0].DaisyChain);
+			//List<int[]> daisychain = ObjIO.FaceIndicesFromDaisyChain(targetEMG.Models[0].SubModels[0].DaisyChain);
 			//int dc_length = daisychain.Count;
 
 			//daisychain.Add(daisychain[daisychain.Count]);
@@ -5205,19 +5325,99 @@ namespace USF4_Stage_Tool
 
 				if (filepath.Trim() != string.Empty)
 				{
-					Utils.WriteDataToStream("luabytes.out", nlua.HEXBytes);
-					
-					UnluacMain("luabytes.out", "luaplain.out");
+					string tempfile1 = "temp_luabytes.out";
+					string tempfile2 = "temp_luaplain.out";
 
-					File.Copy("luaplain.out", saveFileDialog1.FileName);
+					Utils.WriteDataToStream(tempfile1, nlua.HEXBytes);
+					
+					UnluacMain(tempfile1, tempfile2);
+
+					if (File.Exists(tempfile2))
+					{
+						File.WriteAllLines(saveFileDialog1.FileName, File.ReadAllLines(tempfile2));
+						AddStatus("Lua bytecode extracted to plain text.");
+					}
 				}
 			}
-        }
+		}
 
         private void AddAnimationtoolStripMenuItem2_Click(object sender, EventArgs e)
         {
 
         }
+
+		private void extractEMOAsOBJToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			EMO emo = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
+
+			saveFileDialog1.InitialDirectory = string.Empty;
+			saveFileDialog1.FileName = string.Empty;
+			saveFileDialog1.Filter = OBJFileFilter;
+
+			if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+			{
+				List<string> lines = new List<string>();
+
+				for (int i = 0; i < emo.EMGList.Count; i++)
+				{
+					lines.AddRange(GeometryIO.EMGtoOBJ(emo.EMGList[i], Encoding.ASCII.GetString(emo.Name).Split('\0')[0] + $"_EMG_{i}", true));
+				}
+
+				File.WriteAllLines(saveFileDialog1.FileName, lines);
+			}
+		}
+		
+		private void extractEMGAsOBJToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			EMO emo = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
+			EMG emg = emo.EMGList[SelectedEMGNumberInTree];
+
+			saveFileDialog1.InitialDirectory = string.Empty;
+			saveFileDialog1.FileName = string.Empty;
+			saveFileDialog1.Filter = OBJFileFilter;
+
+			if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+			{
+				List<string> lines = GeometryIO.EMGtoOBJ(emg, Encoding.ASCII.GetString(emo.Name).Split('\0')[0] + $"_EMG_{SelectedEMGNumberInTree}");
+
+				File.WriteAllLines(saveFileDialog1.FileName, lines);
+			}
+		}
+
+        private void extractModelAsOBJToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			EMO emo = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
+			EMG emg = emo.EMGList[SelectedEMGNumberInTree];
+
+			saveFileDialog1.InitialDirectory = string.Empty;
+			saveFileDialog1.FileName = string.Empty;
+			saveFileDialog1.Filter = OBJFileFilter;
+
+			if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+			{
+				List<string> lines = GeometryIO.ModeltoOBJ(emg, SelectedModelNumberInTree, Encoding.ASCII.GetString(emo.Name).Split('\0')[0] + $"_EMG_{SelectedEMGNumberInTree}");
+
+				File.WriteAllLines(saveFileDialog1.FileName, lines);
+			}
+		}
+
+        private void extractSubmodelAsOBJToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			EMO emo = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
+			EMG emg = emo.EMGList[SelectedEMGNumberInTree];
+
+			saveFileDialog1.InitialDirectory = string.Empty;
+			saveFileDialog1.FileName = string.Empty;
+			saveFileDialog1.Filter = OBJFileFilter;
+
+			if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+			{
+				List<string> lines = GeometryIO.SubmodeltoOBJ(emg, SelectedModelNumberInTree, SelectedSubModelNumberInTree, true);
+
+				File.WriteAllLines(saveFileDialog1.FileName, lines);
+			}
+		}
+
     }
 
 }

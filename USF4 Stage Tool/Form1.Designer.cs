@@ -104,6 +104,9 @@
             this.injectSMDAsEMGExperimentalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.duplicateEMGToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.duplicateModelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.extractEMGAsOBJToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.extractModelAsOBJToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.extractSubmodelAsOBJToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.emzContext = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.saveEMZToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.closeEMZToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -150,6 +153,7 @@
             this.InjectEMO = new System.Windows.Forms.ToolStripMenuItem();
             this.rawDumpEMOAsSMDToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.rawDumpEMOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.extractEMOAsOBJToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pnlOBJECTS.SuspendLayout();
             this.pSelectedTreeNodeData.SuspendLayout();
             this.pnlEO_MaterialEdit.SuspendLayout();
@@ -944,9 +948,12 @@
             this.deleteEMGToolStripMenuItem,
             this.injectSMDAsEMGExperimentalToolStripMenuItem,
             this.duplicateEMGToolStripMenuItem,
-            this.duplicateModelToolStripMenuItem});
+            this.duplicateModelToolStripMenuItem,
+            this.extractEMGAsOBJToolStripMenuItem,
+            this.extractModelAsOBJToolStripMenuItem,
+            this.extractSubmodelAsOBJToolStripMenuItem});
             this.emgContext.Name = "treeContext";
-            this.emgContext.Size = new System.Drawing.Size(254, 136);
+            this.emgContext.Size = new System.Drawing.Size(254, 202);
             this.emgContext.Opening += new System.ComponentModel.CancelEventHandler(this.emgContext_Opening);
             // 
             // emgContextInjectOBJ
@@ -990,6 +997,27 @@
             this.duplicateModelToolStripMenuItem.Size = new System.Drawing.Size(253, 22);
             this.duplicateModelToolStripMenuItem.Text = "Duplicate Model";
             this.duplicateModelToolStripMenuItem.Click += new System.EventHandler(this.duplicateModelToolStripMenuItem_Click);
+            // 
+            // extractEMGAsOBJToolStripMenuItem
+            // 
+            this.extractEMGAsOBJToolStripMenuItem.Name = "extractEMGAsOBJToolStripMenuItem";
+            this.extractEMGAsOBJToolStripMenuItem.Size = new System.Drawing.Size(253, 22);
+            this.extractEMGAsOBJToolStripMenuItem.Text = "Extract EMG as OBJ";
+            this.extractEMGAsOBJToolStripMenuItem.Click += new System.EventHandler(this.extractEMGAsOBJToolStripMenuItem_Click);
+            // 
+            // extractModelAsOBJToolStripMenuItem
+            // 
+            this.extractModelAsOBJToolStripMenuItem.Name = "extractModelAsOBJToolStripMenuItem";
+            this.extractModelAsOBJToolStripMenuItem.Size = new System.Drawing.Size(253, 22);
+            this.extractModelAsOBJToolStripMenuItem.Text = "Extract Model as OBJ";
+            this.extractModelAsOBJToolStripMenuItem.Click += new System.EventHandler(this.extractModelAsOBJToolStripMenuItem_Click);
+            // 
+            // extractSubmodelAsOBJToolStripMenuItem
+            // 
+            this.extractSubmodelAsOBJToolStripMenuItem.Name = "extractSubmodelAsOBJToolStripMenuItem";
+            this.extractSubmodelAsOBJToolStripMenuItem.Size = new System.Drawing.Size(253, 22);
+            this.extractSubmodelAsOBJToolStripMenuItem.Text = "Extract Submodel as OBJ";
+            this.extractSubmodelAsOBJToolStripMenuItem.Click += new System.EventHandler(this.extractSubmodelAsOBJToolStripMenuItem_Click);
             // 
             // emzContext
             // 
@@ -1099,11 +1127,11 @@
             this.luaContext.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.injectLUAScriptToolStripMenuItem1,
             this.extractLUAScriptToolStripMenuItem,
+            this.addLUAScriptToolStripMenuItem,
             this.injectLUAScriptToolStripMenuItem,
-            this.extractLUABytecodeToolStripMenuItem,
-            this.addLUAScriptToolStripMenuItem});
+            this.extractLUABytecodeToolStripMenuItem});
             this.luaContext.Name = "luaContext";
-            this.luaContext.Size = new System.Drawing.Size(188, 114);
+            this.luaContext.Size = new System.Drawing.Size(188, 136);
             // 
             // injectLUAScriptToolStripMenuItem1
             // 
@@ -1240,7 +1268,7 @@
             this.dumpRefPoseToSMDToolStripMenuItem,
             this.rawDumpEMAToolStripMenuItem});
             this.animationContext.Name = "treeContext";
-            this.animationContext.Size = new System.Drawing.Size(198, 136);
+            this.animationContext.Size = new System.Drawing.Size(198, 114);
             this.animationContext.Text = "animationContext";
             this.animationContext.Opening += new System.ComponentModel.CancelEventHandler(this.animationContext_Opening);
             // 
@@ -1287,9 +1315,10 @@
             this.collapseAllToolStripMenuItem,
             this.InjectEMO,
             this.rawDumpEMOAsSMDToolStripMenuItem,
-            this.rawDumpEMOToolStripMenuItem});
+            this.rawDumpEMOToolStripMenuItem,
+            this.extractEMOAsOBJToolStripMenuItem});
             this.emoContext.Name = "luaContext";
-            this.emoContext.Size = new System.Drawing.Size(259, 136);
+            this.emoContext.Size = new System.Drawing.Size(259, 158);
             this.emoContext.Opening += new System.ComponentModel.CancelEventHandler(this.emoContext_Opening);
             // 
             // insertOBJAsNewEMGToolStripMenuItem1
@@ -1333,6 +1362,13 @@
             this.rawDumpEMOToolStripMenuItem.Size = new System.Drawing.Size(258, 22);
             this.rawDumpEMOToolStripMenuItem.Text = "Raw Dump EMO";
             this.rawDumpEMOToolStripMenuItem.Click += new System.EventHandler(this.rawDumpEMOToolStripMenuItem_Click);
+            // 
+            // extractEMOAsOBJToolStripMenuItem
+            // 
+            this.extractEMOAsOBJToolStripMenuItem.Name = "extractEMOAsOBJToolStripMenuItem";
+            this.extractEMOAsOBJToolStripMenuItem.Size = new System.Drawing.Size(258, 22);
+            this.extractEMOAsOBJToolStripMenuItem.Text = "Extract EMO as OBJ";
+            this.extractEMOAsOBJToolStripMenuItem.Click += new System.EventHandler(this.extractEMOAsOBJToolStripMenuItem_Click);
             // 
             // Form1
             // 
@@ -1501,6 +1537,10 @@
         private System.Windows.Forms.ToolStripMenuItem duplicateEMGToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem duplicateModelToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem duplicateUSAMAN01BToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem extractEMGAsOBJToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem extractModelAsOBJToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem extractSubmodelAsOBJToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem extractEMOAsOBJToolStripMenuItem;
     }
 }
 

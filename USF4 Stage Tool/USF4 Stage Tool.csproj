@@ -312,6 +312,7 @@
   <ItemGroup>
     <Compile Include="ChunkSpy.cs" />
     <Compile Include="Animation Functions.cs" />
+    <Compile Include="Collada141.cs" />
     <Compile Include="DebugOutput.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -331,6 +332,8 @@
     <Compile Include="InputBox.Designer.cs">
       <DependentUpon>InputBox.cs</DependentUpon>
     </Compile>
+    <Compile Include="GeometryIO.cs" />
+    <Compile Include="Tooltips.cs" />
     <Compile Include="TreeViewExtensions.cs" />
     <Compile Include="USF4DataStructs.cs" />
     <Compile Include="Program.cs" />
