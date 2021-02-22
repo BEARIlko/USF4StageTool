@@ -118,7 +118,6 @@
             this.addCSBToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addLuaScriptToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addEMBToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.extractTEXEMZTexturesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.duplicateUSAMAN01BToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.cmEmpty = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -167,6 +166,7 @@
             this.deleteEMOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.InjectEMO = new System.Windows.Forms.ToolStripMenuItem();
             this.rawDumpEMOAsSMDToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.updateLegacyStageFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pnlOBJECTS.SuspendLayout();
             this.pSelectedTreeNodeData.SuspendLayout();
             this.pnlEO_MaterialEdit.SuspendLayout();
@@ -1045,11 +1045,11 @@
             this.saveEMZToolStripMenuItem,
             this.closeEMZToolStripMenuItem,
             this.AddFileToolStripMenuItem,
-            this.toolStripSeparator1,
             this.extractTEXEMZTexturesToolStripMenuItem,
-            this.duplicateUSAMAN01BToolStripMenuItem});
+            this.duplicateUSAMAN01BToolStripMenuItem,
+            this.updateLegacyStageFileToolStripMenuItem});
             this.emzContext.Name = "emzContext";
-            this.emzContext.Size = new System.Drawing.Size(207, 120);
+            this.emzContext.Size = new System.Drawing.Size(207, 136);
             this.emzContext.Opening += new System.ComponentModel.CancelEventHandler(this.emzContext_Opening);
             // 
             // saveEMZToolStripMenuItem
@@ -1121,11 +1121,6 @@
             this.addEMBToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.addEMBToolStripMenuItem.Text = "EMB";
             this.addEMBToolStripMenuItem.Click += new System.EventHandler(this.addEMBToolStripMenuItem_Click);
-            // 
-            // toolStripSeparator1
-            // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(203, 6);
             // 
             // extractTEXEMZTexturesToolStripMenuItem
             // 
@@ -1487,6 +1482,13 @@
             this.rawDumpEMOAsSMDToolStripMenuItem.Text = "Dump EMO as SMD (Experimental)";
             this.rawDumpEMOAsSMDToolStripMenuItem.Click += new System.EventHandler(this.rawDumpEMOAsSMDToolStripMenuItem_Click);
             // 
+            // updateLegacyStageFileToolStripMenuItem
+            // 
+            this.updateLegacyStageFileToolStripMenuItem.Name = "updateLegacyStageFileToolStripMenuItem";
+            this.updateLegacyStageFileToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
+            this.updateLegacyStageFileToolStripMenuItem.Text = "Update Legacy Stage File";
+            this.updateLegacyStageFileToolStripMenuItem.Click += new System.EventHandler(this.updateLegacyStageFileToolStripMenuItem_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1547,7 +1549,6 @@
         private System.Windows.Forms.ToolStripMenuItem informationToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem uSF4ModdingDocumentToolStripMenuItem;
         private System.Windows.Forms.PictureBox pictureBox2;
-        private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.Label lbLoadSteps;
         private System.Windows.Forms.TreeView tvTree;
         private System.Windows.Forms.Button btnOpenEMZ;
@@ -1608,7 +1609,6 @@
         private System.Windows.Forms.ContextMenuStrip matContext;
         private System.Windows.Forms.ToolStripMenuItem addMaterialToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem deleteMaterialToolStripMenuItem1;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripMenuItem deleteDDSToolStripMenuItem;
         private System.Windows.Forms.Button btnSaveEMZ;
         private System.Windows.Forms.Button btnSaveTEXEMZ;
@@ -1671,6 +1671,8 @@
         private System.Windows.Forms.ToolStripMenuItem deleteCSBToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem rawDumpEMMToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem rawDumpEMBToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem updateLegacyStageFileToolStripMenuItem;
+        public System.Windows.Forms.ProgressBar progressBar1;
     }
 }
 

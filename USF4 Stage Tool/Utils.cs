@@ -377,6 +377,7 @@ namespace USF4_Stage_Tool
 
     public static class Utils
 	{
+
 		public static string shaderFilename = "./Shaders.dat";
 		public static string shaderPropertiesFilename = "./ShadersProperties.dat";
 		public static Dictionary<string, int> Shaders = new Dictionary<string, int>();
