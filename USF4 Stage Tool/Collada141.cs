@@ -25,10 +25,6 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Serialization;
 
-//COLLADA coll = COLLADA.Load("truck.dae");
-
-//coll.Save("truck2.dae");
-
 namespace Collada141
 {
     // 

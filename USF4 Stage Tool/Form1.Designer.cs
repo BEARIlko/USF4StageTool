@@ -120,6 +120,7 @@
             this.addEMBToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.extractTEXEMZTexturesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.duplicateUSAMAN01BToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.updateLegacyStageFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.cmEmpty = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.emmContext = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.addNewMaterialToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -166,7 +167,7 @@
             this.deleteEMOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.InjectEMO = new System.Windows.Forms.ToolStripMenuItem();
             this.rawDumpEMOAsSMDToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.updateLegacyStageFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.injectColladaAsEMGExperimentalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pnlOBJECTS.SuspendLayout();
             this.pSelectedTreeNodeData.SuspendLayout();
             this.pnlEO_MaterialEdit.SuspendLayout();
@@ -965,77 +966,78 @@
             this.deleteEMGToolStripMenuItem,
             this.injectSMDAsEMGExperimentalToolStripMenuItem,
             this.duplicateModelToolStripMenuItem,
-            this.duplicateEMGToolStripMenuItem});
+            this.duplicateEMGToolStripMenuItem,
+            this.injectColladaAsEMGExperimentalToolStripMenuItem});
             this.emgContext.Name = "treeContext";
-            this.emgContext.Size = new System.Drawing.Size(254, 224);
+            this.emgContext.Size = new System.Drawing.Size(269, 268);
             this.emgContext.Opening += new System.ComponentModel.CancelEventHandler(this.emgContext_Opening);
             // 
             // emgContextInjectOBJ
             // 
             this.emgContextInjectOBJ.Name = "emgContextInjectOBJ";
-            this.emgContextInjectOBJ.Size = new System.Drawing.Size(253, 22);
+            this.emgContextInjectOBJ.Size = new System.Drawing.Size(268, 22);
             this.emgContextInjectOBJ.Text = "Insert Encoded OBJ (overwrite)";
             this.emgContextInjectOBJ.Click += new System.EventHandler(this.TreeContextInjectOBJ_Click);
             // 
             // insertOBJAsNewEMGToolStripMenuItem
             // 
             this.insertOBJAsNewEMGToolStripMenuItem.Name = "insertOBJAsNewEMGToolStripMenuItem";
-            this.insertOBJAsNewEMGToolStripMenuItem.Size = new System.Drawing.Size(253, 22);
+            this.insertOBJAsNewEMGToolStripMenuItem.Size = new System.Drawing.Size(268, 22);
             this.insertOBJAsNewEMGToolStripMenuItem.Text = "Insert Encoded OBJ (as new EMG)";
             this.insertOBJAsNewEMGToolStripMenuItem.Click += new System.EventHandler(this.InsertOBJAsNewEMGToolStripMenuItem_Click);
             // 
             // rawDumpEMGToolStripMenuItem
             // 
             this.rawDumpEMGToolStripMenuItem.Name = "rawDumpEMGToolStripMenuItem";
-            this.rawDumpEMGToolStripMenuItem.Size = new System.Drawing.Size(253, 22);
+            this.rawDumpEMGToolStripMenuItem.Size = new System.Drawing.Size(268, 22);
             this.rawDumpEMGToolStripMenuItem.Text = "Raw Dump EMG";
             // 
             // extractEMGAsOBJToolStripMenuItem
             // 
             this.extractEMGAsOBJToolStripMenuItem.Name = "extractEMGAsOBJToolStripMenuItem";
-            this.extractEMGAsOBJToolStripMenuItem.Size = new System.Drawing.Size(253, 22);
+            this.extractEMGAsOBJToolStripMenuItem.Size = new System.Drawing.Size(268, 22);
             this.extractEMGAsOBJToolStripMenuItem.Text = "Extract EMG as OBJ";
             this.extractEMGAsOBJToolStripMenuItem.Click += new System.EventHandler(this.extractEMGAsOBJToolStripMenuItem_Click);
             // 
             // extractModelAsOBJToolStripMenuItem
             // 
             this.extractModelAsOBJToolStripMenuItem.Name = "extractModelAsOBJToolStripMenuItem";
-            this.extractModelAsOBJToolStripMenuItem.Size = new System.Drawing.Size(253, 22);
+            this.extractModelAsOBJToolStripMenuItem.Size = new System.Drawing.Size(268, 22);
             this.extractModelAsOBJToolStripMenuItem.Text = "Extract Model as OBJ";
             this.extractModelAsOBJToolStripMenuItem.Click += new System.EventHandler(this.extractModelAsOBJToolStripMenuItem_Click);
             // 
             // extractSubmodelAsOBJToolStripMenuItem
             // 
             this.extractSubmodelAsOBJToolStripMenuItem.Name = "extractSubmodelAsOBJToolStripMenuItem";
-            this.extractSubmodelAsOBJToolStripMenuItem.Size = new System.Drawing.Size(253, 22);
+            this.extractSubmodelAsOBJToolStripMenuItem.Size = new System.Drawing.Size(268, 22);
             this.extractSubmodelAsOBJToolStripMenuItem.Text = "Extract Submodel as OBJ";
             this.extractSubmodelAsOBJToolStripMenuItem.Click += new System.EventHandler(this.extractSubmodelAsOBJToolStripMenuItem_Click);
             // 
             // deleteEMGToolStripMenuItem
             // 
             this.deleteEMGToolStripMenuItem.Name = "deleteEMGToolStripMenuItem";
-            this.deleteEMGToolStripMenuItem.Size = new System.Drawing.Size(253, 22);
+            this.deleteEMGToolStripMenuItem.Size = new System.Drawing.Size(268, 22);
             this.deleteEMGToolStripMenuItem.Text = "Delete EMG";
             this.deleteEMGToolStripMenuItem.Click += new System.EventHandler(this.DeleteEMGToolStripMenuItem_Click);
             // 
             // injectSMDAsEMGExperimentalToolStripMenuItem
             // 
             this.injectSMDAsEMGExperimentalToolStripMenuItem.Name = "injectSMDAsEMGExperimentalToolStripMenuItem";
-            this.injectSMDAsEMGExperimentalToolStripMenuItem.Size = new System.Drawing.Size(253, 22);
+            this.injectSMDAsEMGExperimentalToolStripMenuItem.Size = new System.Drawing.Size(268, 22);
             this.injectSMDAsEMGExperimentalToolStripMenuItem.Text = "Inject SMD as EMG (Experimental)";
             this.injectSMDAsEMGExperimentalToolStripMenuItem.Click += new System.EventHandler(this.injectSMDAsEMGExperimentalToolStripMenuItem_Click);
             // 
             // duplicateModelToolStripMenuItem
             // 
             this.duplicateModelToolStripMenuItem.Name = "duplicateModelToolStripMenuItem";
-            this.duplicateModelToolStripMenuItem.Size = new System.Drawing.Size(253, 22);
+            this.duplicateModelToolStripMenuItem.Size = new System.Drawing.Size(268, 22);
             this.duplicateModelToolStripMenuItem.Text = "Duplicate Model";
             this.duplicateModelToolStripMenuItem.Click += new System.EventHandler(this.duplicateModelToolStripMenuItem_Click);
             // 
             // duplicateEMGToolStripMenuItem
             // 
             this.duplicateEMGToolStripMenuItem.Name = "duplicateEMGToolStripMenuItem";
-            this.duplicateEMGToolStripMenuItem.Size = new System.Drawing.Size(253, 22);
+            this.duplicateEMGToolStripMenuItem.Size = new System.Drawing.Size(268, 22);
             this.duplicateEMGToolStripMenuItem.Text = "Duplicate EMG";
             this.duplicateEMGToolStripMenuItem.Click += new System.EventHandler(this.duplicateEMGToolStripMenuItem_Click);
             // 
@@ -1135,6 +1137,13 @@
             this.duplicateUSAMAN01BToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
             this.duplicateUSAMAN01BToolStripMenuItem.Text = "Duplicate USA_MAN01_B";
             this.duplicateUSAMAN01BToolStripMenuItem.Click += new System.EventHandler(this.dupliacteUSAMAN01BToolStripMenuItem_Click);
+            // 
+            // updateLegacyStageFileToolStripMenuItem
+            // 
+            this.updateLegacyStageFileToolStripMenuItem.Name = "updateLegacyStageFileToolStripMenuItem";
+            this.updateLegacyStageFileToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
+            this.updateLegacyStageFileToolStripMenuItem.Text = "Update Legacy Stage File";
+            this.updateLegacyStageFileToolStripMenuItem.Click += new System.EventHandler(this.updateLegacyStageFileToolStripMenuItem_Click);
             // 
             // cmEmpty
             // 
@@ -1482,12 +1491,12 @@
             this.rawDumpEMOAsSMDToolStripMenuItem.Text = "Dump EMO as SMD (Experimental)";
             this.rawDumpEMOAsSMDToolStripMenuItem.Click += new System.EventHandler(this.rawDumpEMOAsSMDToolStripMenuItem_Click);
             // 
-            // updateLegacyStageFileToolStripMenuItem
+            // injectColladaAsEMGExperimentalToolStripMenuItem
             // 
-            this.updateLegacyStageFileToolStripMenuItem.Name = "updateLegacyStageFileToolStripMenuItem";
-            this.updateLegacyStageFileToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
-            this.updateLegacyStageFileToolStripMenuItem.Text = "Update Legacy Stage File";
-            this.updateLegacyStageFileToolStripMenuItem.Click += new System.EventHandler(this.updateLegacyStageFileToolStripMenuItem_Click);
+            this.injectColladaAsEMGExperimentalToolStripMenuItem.Name = "injectColladaAsEMGExperimentalToolStripMenuItem";
+            this.injectColladaAsEMGExperimentalToolStripMenuItem.Size = new System.Drawing.Size(268, 22);
+            this.injectColladaAsEMGExperimentalToolStripMenuItem.Text = "Inject Collada as EMG (Experimental)";
+            this.injectColladaAsEMGExperimentalToolStripMenuItem.Click += new System.EventHandler(this.injectColladaAsEMGExperimentalToolStripMenuItem_Click);
             // 
             // Form1
             // 
@@ -1673,6 +1682,7 @@
         private System.Windows.Forms.ToolStripMenuItem rawDumpEMBToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem updateLegacyStageFileToolStripMenuItem;
         public System.Windows.Forms.ProgressBar progressBar1;
+        private System.Windows.Forms.ToolStripMenuItem injectColladaAsEMGExperimentalToolStripMenuItem;
     }
 }
 

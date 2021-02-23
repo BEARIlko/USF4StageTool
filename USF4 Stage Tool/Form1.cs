@@ -521,6 +521,9 @@ namespace USF4_Stage_Tool
 		{
 			SetupProgress(nIndices.Count);
 
+			int compression = nIndices.Count * 3;
+			int compression_zero = compression;
+
 			List<int> Chain = new List<int>();
 			bool bForwards = false;
 			int count = nIndices.Count;
@@ -540,6 +543,7 @@ namespace USF4_Stage_Tool
 						int[] workingArray = Utils.Rotate3Array(nIndices[i], j);
 						if (bForwards == true && workingArray[1] == buffer1 && workingArray[0] == buffer2)
 						{
+							compression -= 2;
 							buffer2 = buffer1;
 							buffer1 = workingArray[2];
 							Chain.Add(buffer1);
@@ -552,6 +556,7 @@ namespace USF4_Stage_Tool
 						}
 						if (bForwards == false && workingArray[1] == buffer1 && workingArray[2] == buffer2)
 						{
+							compression -= 2;
 							buffer2 = buffer1;
 							buffer1 = workingArray[0];
 							Chain.Add(buffer1);
@@ -568,6 +573,7 @@ namespace USF4_Stage_Tool
 				//No match found - if we've run out of faces, great, if not, re-initialise
 				if (nIndices.Count > 0)
 				{
+					compression += 2;
 					Chain.Add(buffer1);
 					if (bForwards)
 					{
@@ -602,7 +608,9 @@ namespace USF4_Stage_Tool
 			progressBar1.Value = progressBar1.Maximum;
 
 			if (Chain.Count > 0xFFFF) AddStatus("Warning - Encoded object has too many faces. Consider splitting into smaller sub-models to ensure correct loading.");
-			
+
+			Console.WriteLine($"Compression {compression}/{compression_zero} = {100 * compression / compression_zero}%");
+
 			return Chain;
 		}
 
@@ -993,7 +1001,7 @@ namespace USF4_Stage_Tool
 			int RootBone = template.RootBone;
 			byte[] ModelName;
 			if (AddNewName)
-				ModelName = MakeModelName(lbOBJNameProperty.Text.Substring(0, lbOBJNameProperty.Text.Length - 4));
+				ModelName = Utils.MakeModelName(lbOBJNameProperty.Text.Substring(0, lbOBJNameProperty.Text.Length - 4));
 			else
 				ModelName = template.Models[0].SubModels[0].SubModelName;
 			//EMG Header
@@ -2765,24 +2773,6 @@ namespace USF4_Stage_Tool
 			}
 		}
 
-		byte[] MakeModelName(string Name)
-		{
-			byte[] bytes = new byte[0x20];
-			byte[] stringBytes = Encoding.ASCII.GetBytes(Name);
-			for (int i = 0; i < bytes.Length; i++)
-			{
-				if (i < stringBytes.Length)
-				{
-					bytes[i] = stringBytes[i];
-				}
-				else
-				{
-					bytes[i] = 0x00;
-				}
-			}
-			return bytes;
-		}
-
 		private void InsertOBJAsNewEMGToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			AddOBJAsNewEMG();
@@ -2836,10 +2826,6 @@ namespace USF4_Stage_Tool
 
 		private void Form1_Load(object sender, EventArgs e)
 		{
-            //COLLADA coll = COLLADA.Load("USAman.dae");
-
-            //coll.Save("USAman2.dae");
-
             pnlEO_EMG.Visible = false;
 			pnlEO_MOD.Visible = false;
 
@@ -2897,7 +2883,7 @@ namespace USF4_Stage_Tool
 
 			#endregion
 
-			#if !DEBUG
+#if !DEBUG
 				injectSMDAsEMGExperimentalToolStripMenuItem.Visible = false;
 				duplicateEMGToolStripMenuItem.Visible = false;
 				duplicateModelToolStripMenuItem.Visible = false;
@@ -2909,7 +2895,8 @@ namespace USF4_Stage_Tool
 				dumpRefPoseToSMDToolStripMenuItem.Visible = false;
 				rawDumpEMAToolStripMenuItem.Visible = false;
 				updateLegacyStageFileToolStripMenuItem.Visible = false;
-			#endif
+				injectColladaAsEMGExperimentalToolStripMenuItem.Visible = false;
+#endif
 
 			lbSelNODE_Title.Text = string.Empty;
 			IB = new InputBox();
@@ -2980,7 +2967,7 @@ namespace USF4_Stage_Tool
 			if (tbEO_SubModName.Text.Trim() != string.Empty)
 			{
 				string value = tbEO_SubModName.Text.Trim();
-				byte[] newName = MakeModelName(value);
+				byte[] newName = Utils.MakeModelName(value);
 				byte[] oldName;
 				EMO emo = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
 				EMG emg = emo.EMGList[SelectedEMGNumberInTree];
@@ -4089,7 +4076,7 @@ namespace USF4_Stage_Tool
 					sm.BoneIntegersList.Add(j);
 				}
 
-				sm.SubModelName = MakeModelName(smd.MaterialDictionary.ElementAt(i).Key);
+				sm.SubModelName = Utils.MakeModelName(smd.MaterialDictionary.ElementAt(i).Key);
 
 				nModel.SubModels.Add(sm);
 			}
@@ -4284,7 +4271,7 @@ namespace USF4_Stage_Tool
 			{
 				if (PropertyLines[i].Trim() == string.Empty) continue;
 				string[] Property = Regex.Split(PropertyLines[i], " ");
-				newMat.PropertyNames.Add(MakeModelName(Property[0]));
+				newMat.PropertyNames.Add(Utils.MakeModelName(Property[0]));
 				newMat.PropertyValues.Add(Utils.StringToHexBytes(Property[1], 0x08));
 			}
 			newMat.PropertyCount = newMat.PropertyNames.Count;
@@ -4329,8 +4316,8 @@ namespace USF4_Stage_Tool
 				emm = (EMM)WorkingEMZ.Files[emmNode.Index];
 
 				Material newMat = new Material();
-				newMat.Name = MakeModelName(IB.EnteredValue.Trim());
-				newMat.Shader = MakeModelName("T1"); //Default shader
+				newMat.Name = Utils.MakeModelName(IB.EnteredValue.Trim());
+				newMat.Shader = Utils.MakeModelName("T1"); //Default shader
 				newMat.PropertyNames = new List<byte[]>();
 				newMat.PropertyValues = new List<byte[]>();
 				newMat.GenerateBytes();
@@ -4567,7 +4554,7 @@ namespace USF4_Stage_Tool
 		void AddStatus(string Value)
 		{
 			DateTime dt =DateTime.Now;
-			lvStatus.Items.Add("["+dt.ToString("hh:mm:ss") + "] " +  Value);
+			lvStatus.Items.Add("["+dt.ToString("HH:mm:ss") + "] " +  Value);
 			lvStatus.SelectedIndex = lvStatus.Items.Count - 1;
 			lvStatus.ClearSelected();
 		}
@@ -4669,7 +4656,7 @@ namespace USF4_Stage_Tool
 
 			WorkingEMZ.Files.Remove(LastSelectedTreeNode.Parent.Index);
 			WorkingEMZ.Files.Add(LastSelectedTreeNode.Parent.Index, ema);
-
+			AddStatus("Animation deleted.");
 			RefreshTree(false);
         }
 
@@ -4699,6 +4686,7 @@ namespace USF4_Stage_Tool
 					WorkingEMZ.Files.Remove(LastSelectedTreeNode.Index);
 					WorkingEMZ.Files.Add(LastSelectedTreeNode.Index, lua);
 					RefreshTree(false);
+					AddStatus("Lua bytecode injected.");
 				}
 			}
 			catch
@@ -5536,8 +5524,6 @@ namespace USF4_Stage_Tool
 			AddFile(EMMFileFilter);
 		}
 
-        
-
 		private void DeleteFileEMZ(int index)
         {
 			WorkingEMZ.Files.Remove(index);
@@ -5683,6 +5669,20 @@ namespace USF4_Stage_Tool
         private void updateLegacyStageFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
 			GeometryIO.UpdateLegacyStage(WorkingEMZ);
+        }
+
+        private void injectColladaAsEMGExperimentalToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			EMO emo = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
+			
+			EMG emg = GeometryIO.ReadColladaStruct();
+
+			emo.EMGList.RemoveAt(SelectedEMGNumberInTree);
+			emo.EMGList.Insert(SelectedEMGNumberInTree, emg);
+			emo.GenerateBytes();
+			WorkingEMZ.Files.Remove(SelectedEMONumberInTree);
+			WorkingEMZ.Files.Add(SelectedEMONumberInTree, emo);
+			RefreshTree(false);
         }
     }
 

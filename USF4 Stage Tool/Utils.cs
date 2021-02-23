@@ -383,6 +383,24 @@ namespace USF4_Stage_Tool
 		public static Dictionary<string, int> Shaders = new Dictionary<string, int>();
 		public static Dictionary<string, string> ShadersProperties = new Dictionary<string, string>();
 
+		public static byte[] MakeModelName(string Name)
+		{
+			byte[] bytes = new byte[0x20];
+			byte[] stringBytes = Encoding.ASCII.GetBytes(Name);
+			for (int i = 0; i < bytes.Length; i++)
+			{
+				if (i < stringBytes.Length)
+				{
+					bytes[i] = stringBytes[i];
+				}
+				else
+				{
+					bytes[i] = 0x00;
+				}
+			}
+			return bytes;
+		}
+
 		public static UInt64 HashInts(int x, int y)
 		{
 			UInt64 ux = Convert.ToUInt64(x);

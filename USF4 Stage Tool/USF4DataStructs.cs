@@ -399,7 +399,6 @@ namespace USF4_Stage_Tool
 		public byte[] Name;
 		public int EffectCount;
 		public List<Effect> Effects;
-
 	}
 
 	public struct Effect
@@ -1270,6 +1269,7 @@ namespace USF4_Stage_Tool
 
 	public struct Node
 	{
+		public string Name;
 		public int Parent;
 		public int Child1;
 		public int Sibling; //sibling??
@@ -1279,6 +1279,7 @@ namespace USF4_Stage_Tool
 		public float PreMatrixFloat;
 		public Matrix4x4 NodeMatrix;
 		public Matrix4x4 SecondaryMatrix;
+		public List<string> child_strings; //Used to rebuild tree relationships from Collada imports
 	}
 
 	public struct IKNode
@@ -1823,6 +1824,12 @@ namespace USF4_Stage_Tool
 		public float nX;
 		public float nY;
 		public float nZ;
+	}
+
+	public struct Weights
+    {
+		public List<int> BoneID;
+		public List<float> BoneWeights;
 	}
 
 	public struct CSB
