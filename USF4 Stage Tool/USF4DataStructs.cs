@@ -1674,6 +1674,7 @@ namespace USF4_Stage_Tool
 		public int BoneIntegersCount;                           //Another mystery!!!! ?? 'TODO find out what the heck?
 		public byte[] SubModelName;             //Need to be 32 characters in length
 		public List<int> BoneIntegersList;
+		//public Dictionary<int, int> BoneIntDict;
 		public byte[] MysteryFloats;
 
 		public SubModel(byte[] Data)

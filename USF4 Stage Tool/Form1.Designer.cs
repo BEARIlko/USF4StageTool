@@ -29,10 +29,22 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.diagOpenOBJ = new System.Windows.Forms.OpenFileDialog();
             this.pnlOBJECTS = new System.Windows.Forms.Panel();
             this.pSelectedTreeNodeData = new System.Windows.Forms.Panel();
+            this.pnlEO_MOD = new System.Windows.Forms.Panel();
+            this.modelTextureGrid = new System.Windows.Forms.DataGridView();
+            this.Index = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Layer = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.tindex = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.uscale = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.vscale = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.bntEO_ModSave = new System.Windows.Forms.Button();
+            this.tbEOMod_TextureIndex = new System.Windows.Forms.TextBox();
+            this.label10 = new System.Windows.Forms.Label();
+            this.label11 = new System.Windows.Forms.Label();
             this.pnlEO_MaterialEdit = new System.Windows.Forms.Panel();
             this.btnCalculateFloat = new System.Windows.Forms.Button();
             this.SPOutFloat = new System.Windows.Forms.TextBox();
@@ -50,11 +62,6 @@
             this.tbEO_SubModName = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.label12 = new System.Windows.Forms.Label();
-            this.pnlEO_MOD = new System.Windows.Forms.Panel();
-            this.bntEO_ModSave = new System.Windows.Forms.Button();
-            this.tbEOMod_TextureIndex = new System.Windows.Forms.TextBox();
-            this.label10 = new System.Windows.Forms.Label();
-            this.label11 = new System.Windows.Forms.Label();
             this.pnlEO_EMG = new System.Windows.Forms.Panel();
             this.bntEO_EMGSave = new System.Windows.Forms.Button();
             this.tbEMGRootBone = new System.Windows.Forms.TextBox();
@@ -108,6 +115,7 @@
             this.injectSMDAsEMGExperimentalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.duplicateModelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.duplicateEMGToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.injectColladaAsEMGExperimentalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.emzContext = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.saveEMZToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.closeEMZToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -167,12 +175,12 @@
             this.deleteEMOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.InjectEMO = new System.Windows.Forms.ToolStripMenuItem();
             this.rawDumpEMOAsSMDToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.injectColladaAsEMGExperimentalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pnlOBJECTS.SuspendLayout();
             this.pSelectedTreeNodeData.SuspendLayout();
+            this.pnlEO_MOD.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.modelTextureGrid)).BeginInit();
             this.pnlEO_MaterialEdit.SuspendLayout();
             this.pnlEO_SUBMOD.SuspendLayout();
-            this.pnlEO_MOD.SuspendLayout();
             this.pnlEO_EMG.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbPreviewDDS)).BeginInit();
             this.pOBJProperties.SuspendLayout();
@@ -218,9 +226,9 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.pSelectedTreeNodeData.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pSelectedTreeNodeData.Controls.Add(this.pnlEO_MOD);
             this.pSelectedTreeNodeData.Controls.Add(this.pnlEO_MaterialEdit);
             this.pSelectedTreeNodeData.Controls.Add(this.pnlEO_SUBMOD);
-            this.pSelectedTreeNodeData.Controls.Add(this.pnlEO_MOD);
             this.pSelectedTreeNodeData.Controls.Add(this.pnlEO_EMG);
             this.pSelectedTreeNodeData.Controls.Add(this.lbSelNODE_ListData);
             this.pSelectedTreeNodeData.Controls.Add(this.lbSelNODE_Title);
@@ -229,6 +237,142 @@
             this.pSelectedTreeNodeData.Name = "pSelectedTreeNodeData";
             this.pSelectedTreeNodeData.Size = new System.Drawing.Size(451, 407);
             this.pSelectedTreeNodeData.TabIndex = 24;
+            // 
+            // pnlEO_MOD
+            // 
+            this.pnlEO_MOD.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.pnlEO_MOD.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pnlEO_MOD.Controls.Add(this.modelTextureGrid);
+            this.pnlEO_MOD.Controls.Add(this.bntEO_ModSave);
+            this.pnlEO_MOD.Controls.Add(this.tbEOMod_TextureIndex);
+            this.pnlEO_MOD.Controls.Add(this.label10);
+            this.pnlEO_MOD.Controls.Add(this.label11);
+            this.pnlEO_MOD.Location = new System.Drawing.Point(237, 31);
+            this.pnlEO_MOD.Name = "pnlEO_MOD";
+            this.pnlEO_MOD.Size = new System.Drawing.Size(209, 369);
+            this.pnlEO_MOD.TabIndex = 53;
+            // 
+            // modelTextureGrid
+            // 
+            this.modelTextureGrid.AllowUserToResizeColumns = false;
+            this.modelTextureGrid.AllowUserToResizeRows = false;
+            this.modelTextureGrid.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
+            this.modelTextureGrid.BackgroundColor = System.Drawing.SystemColors.ButtonHighlight;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.modelTextureGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
+            this.modelTextureGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.modelTextureGrid.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.Index,
+            this.Layer,
+            this.tindex,
+            this.uscale,
+            this.vscale});
+            this.modelTextureGrid.Cursor = System.Windows.Forms.Cursors.IBeam;
+            this.modelTextureGrid.Location = new System.Drawing.Point(8, 33);
+            this.modelTextureGrid.Name = "modelTextureGrid";
+            this.modelTextureGrid.RowHeadersVisible = false;
+            this.modelTextureGrid.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
+            this.modelTextureGrid.ScrollBars = System.Windows.Forms.ScrollBars.None;
+            this.modelTextureGrid.Size = new System.Drawing.Size(192, 284);
+            this.modelTextureGrid.TabIndex = 53;
+            this.modelTextureGrid.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.modelTextureGrid_CellValueChanged);
+            // 
+            // Index
+            // 
+            this.Index.HeaderText = "ID";
+            this.Index.MaxInputLength = 2;
+            this.Index.Name = "Index";
+            this.Index.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.Index.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.Index.Width = 27;
+            // 
+            // Layer
+            // 
+            this.Layer.HeaderText = "Layer";
+            this.Layer.MaxInputLength = 2;
+            this.Layer.Name = "Layer";
+            this.Layer.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.Layer.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.Layer.Width = 40;
+            // 
+            // tindex
+            // 
+            this.tindex.HeaderText = "Index";
+            this.tindex.MaxInputLength = 2;
+            this.tindex.Name = "tindex";
+            this.tindex.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.tindex.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.tindex.Width = 40;
+            // 
+            // uscale
+            // 
+            this.uscale.HeaderText = "Scale U";
+            this.uscale.MaxInputLength = 7;
+            this.uscale.Name = "uscale";
+            this.uscale.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.uscale.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.uscale.Width = 41;
+            // 
+            // vscale
+            // 
+            this.vscale.HeaderText = "Scale V";
+            this.vscale.MaxInputLength = 7;
+            this.vscale.Name = "vscale";
+            this.vscale.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.vscale.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.vscale.Width = 41;
+            // 
+            // bntEO_ModSave
+            // 
+            this.bntEO_ModSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.bntEO_ModSave.Location = new System.Drawing.Point(8, 323);
+            this.bntEO_ModSave.Name = "bntEO_ModSave";
+            this.bntEO_ModSave.Size = new System.Drawing.Size(191, 38);
+            this.bntEO_ModSave.TabIndex = 52;
+            this.bntEO_ModSave.Text = "Save Model Edits";
+            this.bntEO_ModSave.UseVisualStyleBackColor = true;
+            this.bntEO_ModSave.Click += new System.EventHandler(this.BntEO_ModSave_Click);
+            // 
+            // tbEOMod_TextureIndex
+            // 
+            this.tbEOMod_TextureIndex.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbEOMod_TextureIndex.Location = new System.Drawing.Point(88, 33);
+            this.tbEOMod_TextureIndex.Name = "tbEOMod_TextureIndex";
+            this.tbEOMod_TextureIndex.Size = new System.Drawing.Size(43, 20);
+            this.tbEOMod_TextureIndex.TabIndex = 51;
+            this.tbEOMod_TextureIndex.TabStop = false;
+            this.tbEOMod_TextureIndex.Visible = false;
+            this.tbEOMod_TextureIndex.WordWrap = false;
+            // 
+            // label10
+            // 
+            this.label10.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label10.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label10.Location = new System.Drawing.Point(3, 5);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(202, 16);
+            this.label10.TabIndex = 50;
+            this.label10.Text = "Edit Texture Data";
+            this.label10.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(10, 36);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(72, 13);
+            this.label11.TabIndex = 0;
+            this.label11.Text = "Texture Index";
+            this.label11.Visible = false;
             // 
             // pnlEO_MaterialEdit
             // 
@@ -420,62 +564,6 @@
             this.label12.Size = new System.Drawing.Size(79, 13);
             this.label12.TabIndex = 0;
             this.label12.Text = "Rename Model";
-            // 
-            // pnlEO_MOD
-            // 
-            this.pnlEO_MOD.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.pnlEO_MOD.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pnlEO_MOD.Controls.Add(this.bntEO_ModSave);
-            this.pnlEO_MOD.Controls.Add(this.tbEOMod_TextureIndex);
-            this.pnlEO_MOD.Controls.Add(this.label10);
-            this.pnlEO_MOD.Controls.Add(this.label11);
-            this.pnlEO_MOD.Location = new System.Drawing.Point(237, 31);
-            this.pnlEO_MOD.Name = "pnlEO_MOD";
-            this.pnlEO_MOD.Size = new System.Drawing.Size(209, 369);
-            this.pnlEO_MOD.TabIndex = 53;
-            // 
-            // bntEO_ModSave
-            // 
-            this.bntEO_ModSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.bntEO_ModSave.Location = new System.Drawing.Point(8, 323);
-            this.bntEO_ModSave.Name = "bntEO_ModSave";
-            this.bntEO_ModSave.Size = new System.Drawing.Size(191, 38);
-            this.bntEO_ModSave.TabIndex = 52;
-            this.bntEO_ModSave.Text = "Save Model Edits";
-            this.bntEO_ModSave.UseVisualStyleBackColor = true;
-            this.bntEO_ModSave.Click += new System.EventHandler(this.BntEO_ModSave_Click);
-            // 
-            // tbEOMod_TextureIndex
-            // 
-            this.tbEOMod_TextureIndex.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbEOMod_TextureIndex.Location = new System.Drawing.Point(88, 33);
-            this.tbEOMod_TextureIndex.Name = "tbEOMod_TextureIndex";
-            this.tbEOMod_TextureIndex.Size = new System.Drawing.Size(43, 20);
-            this.tbEOMod_TextureIndex.TabIndex = 51;
-            this.tbEOMod_TextureIndex.TabStop = false;
-            this.tbEOMod_TextureIndex.WordWrap = false;
-            // 
-            // label10
-            // 
-            this.label10.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.label10.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label10.Location = new System.Drawing.Point(3, 5);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(202, 16);
-            this.label10.TabIndex = 50;
-            this.label10.Text = "Edit Options";
-            this.label10.TextAlign = System.Drawing.ContentAlignment.TopCenter;
-            // 
-            // label11
-            // 
-            this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(10, 36);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(72, 13);
-            this.label11.TabIndex = 0;
-            this.label11.Text = "Texture Index";
             // 
             // pnlEO_EMG
             // 
@@ -969,7 +1057,7 @@
             this.duplicateEMGToolStripMenuItem,
             this.injectColladaAsEMGExperimentalToolStripMenuItem});
             this.emgContext.Name = "treeContext";
-            this.emgContext.Size = new System.Drawing.Size(269, 268);
+            this.emgContext.Size = new System.Drawing.Size(269, 246);
             this.emgContext.Opening += new System.ComponentModel.CancelEventHandler(this.emgContext_Opening);
             // 
             // emgContextInjectOBJ
@@ -1040,6 +1128,13 @@
             this.duplicateEMGToolStripMenuItem.Size = new System.Drawing.Size(268, 22);
             this.duplicateEMGToolStripMenuItem.Text = "Duplicate EMG";
             this.duplicateEMGToolStripMenuItem.Click += new System.EventHandler(this.duplicateEMGToolStripMenuItem_Click);
+            // 
+            // injectColladaAsEMGExperimentalToolStripMenuItem
+            // 
+            this.injectColladaAsEMGExperimentalToolStripMenuItem.Name = "injectColladaAsEMGExperimentalToolStripMenuItem";
+            this.injectColladaAsEMGExperimentalToolStripMenuItem.Size = new System.Drawing.Size(268, 22);
+            this.injectColladaAsEMGExperimentalToolStripMenuItem.Text = "Inject Collada as EMG (Experimental)";
+            this.injectColladaAsEMGExperimentalToolStripMenuItem.Click += new System.EventHandler(this.injectColladaAsEMGExperimentalToolStripMenuItem_Click);
             // 
             // emzContext
             // 
@@ -1491,13 +1586,6 @@
             this.rawDumpEMOAsSMDToolStripMenuItem.Text = "Dump EMO as SMD (Experimental)";
             this.rawDumpEMOAsSMDToolStripMenuItem.Click += new System.EventHandler(this.rawDumpEMOAsSMDToolStripMenuItem_Click);
             // 
-            // injectColladaAsEMGExperimentalToolStripMenuItem
-            // 
-            this.injectColladaAsEMGExperimentalToolStripMenuItem.Name = "injectColladaAsEMGExperimentalToolStripMenuItem";
-            this.injectColladaAsEMGExperimentalToolStripMenuItem.Size = new System.Drawing.Size(268, 22);
-            this.injectColladaAsEMGExperimentalToolStripMenuItem.Text = "Inject Collada as EMG (Experimental)";
-            this.injectColladaAsEMGExperimentalToolStripMenuItem.Click += new System.EventHandler(this.injectColladaAsEMGExperimentalToolStripMenuItem_Click);
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1512,12 +1600,13 @@
             this.Load += new System.EventHandler(this.Form1_Load);
             this.pnlOBJECTS.ResumeLayout(false);
             this.pSelectedTreeNodeData.ResumeLayout(false);
+            this.pnlEO_MOD.ResumeLayout(false);
+            this.pnlEO_MOD.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.modelTextureGrid)).EndInit();
             this.pnlEO_MaterialEdit.ResumeLayout(false);
             this.pnlEO_MaterialEdit.PerformLayout();
             this.pnlEO_SUBMOD.ResumeLayout(false);
             this.pnlEO_SUBMOD.PerformLayout();
-            this.pnlEO_MOD.ResumeLayout(false);
-            this.pnlEO_MOD.PerformLayout();
             this.pnlEO_EMG.ResumeLayout(false);
             this.pnlEO_EMG.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbPreviewDDS)).EndInit();
@@ -1683,6 +1772,12 @@
         private System.Windows.Forms.ToolStripMenuItem updateLegacyStageFileToolStripMenuItem;
         public System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.ToolStripMenuItem injectColladaAsEMGExperimentalToolStripMenuItem;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Index;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Layer;
+        private System.Windows.Forms.DataGridViewTextBoxColumn tindex;
+        private System.Windows.Forms.DataGridViewTextBoxColumn uscale;
+        private System.Windows.Forms.DataGridViewTextBoxColumn vscale;
+        public System.Windows.Forms.DataGridView modelTextureGrid;
     }
 }
 

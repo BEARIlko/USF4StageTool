@@ -518,14 +518,14 @@ namespace USF4_Stage_Tool
                 }) ;
             }
 
-            for(int i = 0; i < VertexList.Count; i++)
-            {
-                for(int j = 0; j < VertexList[i].BoneCount; j++)
-                {
-                    VertexList[i].BoneIDs.Add((i + j) * 2);
-                    VertexList[i].BoneWeights.Add(Convert.ToSingle(bone_floats[(i + j) * 2 + 1]));
-                }
-            }
+            //for(int i = 0; i < VertexList.Count; i++)
+            //{
+            //    for(int j = 0; j < VertexList[i].BoneCount; j++)
+            //    {
+            //        VertexList[i].BoneIDs.Add((i + j) * 2);
+            //        VertexList[i].BoneWeights.Add(Convert.ToSingle(bone_floats[(i + j) * 2 + 1]));
+            //    }
+            //}
 
             for(int i = 0; i < tri_indices.Count / 3; i++)
             {
@@ -545,7 +545,7 @@ namespace USF4_Stage_Tool
 
             EMG emg = new EMG()
             {
-                RootBone = 0x03,
+                RootBone = 0x01,
                 ModelCount = 1,
                 HEXBytes = new byte[0],
                 ModelPointerList = new List<int>() { 0x00 },
@@ -554,8 +554,8 @@ namespace USF4_Stage_Tool
                     new Model()
                     {
                         HEXBytes = new byte[0],
-                        BitFlag = 0x05,
-                        BitDepth = 0x14,
+                        BitFlag = 0x0247,
+                        BitDepth = 0x32,
                         TextureCount = 1,
                         TextureListPointer = 0x00,
                         VertexCount = VertexList.Count,

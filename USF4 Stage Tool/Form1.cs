@@ -33,6 +33,7 @@ namespace USF4_Stage_Tool
 		public const string TEXEMZFileFilter = "TEX.EMZ (.tex.emz)|*.tex.emz";
 		public const string EMGFileFilter = "EMG (.emg)|*.emg";
 		public const string EMOFileFilter = "EMO (.emo)|*.emo";
+		public const string EMAFileFilter = "EMO (.ema)|*.ema";
 		public const string EMMFileFilter = "EMO (.emm)|*.emm";
 		public const string EMBFileFilter = "EMZ (.emb)|*.emb";
 		public const string LUAFileFilter = "LUA (.lua)|*.lua";
@@ -68,6 +69,8 @@ namespace USF4_Stage_Tool
 		public string NameSuffix = "_HeX Encoded.txt";
 		public string ConsoleLineSpacer = "__________________________________";
 		public InputBox IB;
+
+		public EMB matchingemb = new EMB(); //Used to show DDS names on the model texture edit tooltips
 
 		public Form1()
 		{
@@ -2311,14 +2314,66 @@ namespace USF4_Stage_Tool
 
 			lbSelNODE_ListData.Items.Add($"Read Mode: {m.ReadMode}");
 			lbSelNODE_ListData.Items.Add($"Texture Count: {m.TextureCount}");
+
+			
 			for (int i = 0; i < m.TextureCount; i++)
 			{
-				lbSelNODE_ListData.Items.Add($"Texture: {i} Index: {m.TexturesList[i].TextureIndex[0]}");
+				string s = string.Empty;
+				for(int j = 0; j < m.TexturesList[i].TextureLayers; j++)
+                {
+					if(j == m.TexturesList[i].TextureLayers -1) s += $"{m.TexturesList[i].TextureIndex[j]}";
+					else s += $"{m.TexturesList[i].TextureIndex[j]} / ";
+				}
+				lbSelNODE_ListData.Items.Add($"Texture: {i} Index: {s}");
 			}
-			if(m.TexturesList.Count > 0) tbEOMod_TextureIndex.Text = $"{m.TexturesList[0].TextureIndex[0]}";     //TODO Some way to edit "more" textures
+			//if(m.TexturesList.Count > 0) tbEOMod_TextureIndex.Text = $"{m.TexturesList[0].TextureIndex[0]}";     //DONE Some way to edit "more" textures
+
+			//Try to find the EMB matching the current model...
+			matchingemb = new EMB();
+
+			if (WorkingTEXEMZ.Files != null)
+			{
+				for (int i = 0; i < WorkingTEXEMZ.Files.Count; i++)
+				{
+					object file = WorkingTEXEMZ.Files[i];
+					if (file.GetType() == typeof(EMB))
+					{
+						byte[] targetemo = Utils.ChopByteArray(WorkingEMZ.FileNameList[SelectedEMONumberInTree], 0x04, 0x03);
+						byte[] targetemb = Utils.ChopByteArray(WorkingTEXEMZ.FileNameList[i], 0x04, 0x03);
+
+						if (Encoding.ASCII.GetString(targetemo) == Encoding.ASCII.GetString(targetemb))
+						{
+							matchingemb = (EMB)WorkingTEXEMZ.Files[i];
+						}
+					}
+				}
+			}
+			//Clear the grid and re-populate
+			modelTextureGrid.Rows.Clear();			
+			if (m.TexturesList.Count > 0)
+            {
+				for (int i = 0; i < m.TextureCount; i++)
+				{
+					for(int j = 0; j < m.TexturesList[i].TextureLayers; j++)
+                    {
+						string[] row = { $"{i}", $"{j}", $"{m.TexturesList[i].TextureIndex[j]}", $"{m.TexturesList[i].Scales_U[j]}", $"{m.TexturesList[i].Scales_V[j]}" };
+						modelTextureGrid.Rows.Add(row);
+						//If we have a matching EMB, set the tooltip to be the indexed DDS name
+						try
+						{
+							if (matchingemb.FileNameList != null)
+							{
+								modelTextureGrid.Rows[i + j].Cells[2].ToolTipText = Encoding.ASCII.GetString(matchingemb.FileNameList[m.TexturesList[i].TextureIndex[j]]).Replace('\0', ' ').Trim();
+							}
+						}//If the index is out of range (ie higher than number of DDSs in the emb) catch and clear the string
+                        catch { modelTextureGrid.Rows[i + j].Cells[2].ToolTipText = string.Empty; }
+                    }
+				}
+			}
 			lbSelNODE_ListData.Items.Add($"Vertex Count: {m.VertexCount}");
 			lbSelNODE_ListData.Items.Add($"Face encoding mode: {m.ReadMode}");
 		}
+
 		void TreeDisplaySubModelData(SubModel m)
 		{
 			lbSelNODE_ListData.Items.Clear();
@@ -2829,8 +2884,8 @@ namespace USF4_Stage_Tool
             pnlEO_EMG.Visible = false;
 			pnlEO_MOD.Visible = false;
 
-            #region Set up tooltips
-            foreach (ToolStripItem ts in emgContext.Items)
+			#region Set up tooltips
+			foreach (ToolStripItem ts in emgContext.Items)
 			{
 					Tooltips.tooltips.TryGetValue(ts.Name, out string tooltip);
 					ts.ToolTipText = tooltip;
@@ -2908,23 +2963,103 @@ namespace USF4_Stage_Tool
 
 		private void BntEO_ModSave_Click(object sender, EventArgs e)
 		{
-			if (tbEOMod_TextureIndex.Text.Trim() != string.Empty)
-			{
-				int newTextureIndex = int.Parse(tbEOMod_TextureIndex.Text.Trim());
-				EMO emo = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
-				EMG emg = emo.EMGList[SelectedEMGNumberInTree];
-				Model model = emg.Models[SelectedModelNumberInTree];
-				model.TexturesList[0].TextureIndex[0] = newTextureIndex;
-				emg.Models.RemoveAt(SelectedModelNumberInTree);
-				emg.Models.Insert(SelectedModelNumberInTree, model);
-				emg.GenerateBytes();
-				emo.EMGList.RemoveAt(SelectedEMGNumberInTree);
-				emo.EMGList.Insert(SelectedEMGNumberInTree, emg);
-				emo.GenerateBytes();
-				WorkingEMZ.Files.Remove(SelectedEMONumberInTree);
-				WorkingEMZ.Files.Add(SelectedEMONumberInTree, emo);
-				TreeDisplayModelData(model);
+			//if (tbEOMod_TextureIndex.Text.Trim() != string.Empty)
+			//{
+			//	int newTextureIndex = int.Parse(tbEOMod_TextureIndex.Text.Trim());
+			//	EMO emo = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
+			//	EMG emg = emo.EMGList[SelectedEMGNumberInTree];
+			//	Model model = emg.Models[SelectedModelNumberInTree];
+			//	model.TexturesList[0].TextureIndex[0] = newTextureIndex;
+			//	emg.Models.RemoveAt(SelectedModelNumberInTree);
+			//	emg.Models.Insert(SelectedModelNumberInTree, model);
+			//	emg.GenerateBytes();
+			//	emo.EMGList.RemoveAt(SelectedEMGNumberInTree);
+			//	emo.EMGList.Insert(SelectedEMGNumberInTree, emg);
+			//	emo.GenerateBytes();
+			//	WorkingEMZ.Files.Remove(SelectedEMONumberInTree);
+			//	WorkingEMZ.Files.Add(SelectedEMONumberInTree, emo);
+			//	TreeDisplayModelData(model);
+			//}
+
+			EMO emo = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
+			EMG emg = emo.EMGList[SelectedEMGNumberInTree];
+			Model model = emg.Models[SelectedModelNumberInTree];
+
+			List<EMGTexture> temptexlist = new List<EMGTexture>();
+			List<int> temppointerlist = new List<int>();
+
+			EMGTexture tex = new EMGTexture() { TextureIndex = new List<int>(), TextureLayers = 0, Scales_U = new List<float>(), Scales_V = new List<float>() };
+			int lastID = 0;
+
+            for (int i = 0; i < modelTextureGrid.Rows.Count -1; i++)
+            {
+                bool IDtest = int.TryParse((string)modelTextureGrid.Rows[i].Cells[0].Value, out int ID);
+                bool Layerstest = int.TryParse((string)modelTextureGrid.Rows[i].Cells[1].Value, out int Layers);
+				bool Indextest = int.TryParse((string)modelTextureGrid.Rows[i].Cells[2].Value, out int Index);
+				bool Utest = float.TryParse((string)modelTextureGrid.Rows[i].Cells[3].Value, out float U);
+				bool Vtest = float.TryParse((string)modelTextureGrid.Rows[i].Cells[4].Value, out float V);
+
+				if (IDtest && Layerstest && Indextest && Utest && Vtest && Layers < 2)
+				{
+					if (tex.TextureLayers == 0)
+					{
+						tex.TextureLayers++;
+						tex.TextureIndex.Add(Index);
+						tex.Scales_U.Add(U);
+						tex.Scales_V.Add(V);
+
+						lastID = ID;
+					}
+					else if (ID == lastID)
+					{
+						tex.TextureLayers++;
+						tex.TextureIndex.Add(Index);
+						tex.Scales_U.Add(U);
+						tex.Scales_V.Add(V);
+					}
+					else
+					{
+						temptexlist.Add(tex);
+						temppointerlist.Add(0);
+						tex = new EMGTexture() { TextureIndex = new List<int>(), TextureLayers = 0, Scales_U = new List<float>(), Scales_V = new List<float>() };
+						tex.TextureLayers++;
+						tex.TextureIndex.Add(Index);
+						tex.Scales_U.Add(U);
+						tex.Scales_V.Add(V);
+
+						lastID = ID;
+					}
+				}
+				else
+				{
+					AddStatus("Unable to save model changes due to formatting error. Reverted to previous values.");
+					if(Layers > 2) { AddStatus("Texture entry can't have more than 2 layers."); }
+					TreeDisplayModelData(model);
+					return;
+				}
+
 			}
+
+			if (tex.TextureLayers > 0)
+			{
+				temptexlist.Add(tex);
+				temppointerlist.Add(0);
+			}
+
+			model.TexturesList = temptexlist;
+			model.TextureCount = model.TexturesList.Count;
+			model.TexturePointer = temppointerlist;
+
+			emg.Models.RemoveAt(SelectedModelNumberInTree);
+			emg.Models.Insert(SelectedModelNumberInTree, model);
+			emg.GenerateBytes();
+			emo.EMGList.RemoveAt(SelectedEMGNumberInTree);
+			emo.EMGList.Insert(SelectedEMGNumberInTree, emg);
+			emo.GenerateBytes();
+			WorkingEMZ.Files.Remove(SelectedEMONumberInTree);
+			WorkingEMZ.Files.Add(SelectedEMONumberInTree, emo);
+			TreeDisplayModelData(model);
+			AddStatus("Model changes saved.");
 		}
 
 		private void DeleteEMGToolStripMenuItem_Click(object sender, EventArgs e)
@@ -5511,17 +5646,17 @@ namespace USF4_Stage_Tool
 
         private void addEMAToolStripMenuItem_Click(object sender, EventArgs e)
         {
-			AddFile(EMMFileFilter);
+			AddFile(EMAFileFilter);
 		}
 
         private void addCSBToolStripMenuItem_Click(object sender, EventArgs e)
         {
-			AddFile(EMMFileFilter);
+			AddFile(CSBFileFilter);
 		}
 
         private void addEMBToolStripMenuItem_Click(object sender, EventArgs e)
         {
-			AddFile(EMMFileFilter);
+			AddFile(EMBFileFilter);
 		}
 
 		private void DeleteFileEMZ(int index)
@@ -5684,7 +5819,29 @@ namespace USF4_Stage_Tool
 			WorkingEMZ.Files.Add(SelectedEMONumberInTree, emo);
 			RefreshTree(false);
         }
+
+        private void modelTextureGrid_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+			if(e.RowIndex >= 0 && e.ColumnIndex >= 0)
+            {
+				if (matchingemb.FileNameList != null)
+				{
+					for(int i = 0; i < modelTextureGrid.Rows.Count - 1; i++)
+                    {
+						try
+						{
+							modelTextureGrid.Rows[i].Cells[2].ToolTipText = Encoding.ASCII.GetString(matchingemb.FileNameList[int.Parse((string)modelTextureGrid.Rows[i].Cells[2].Value)]).Replace('\0', ' ').Trim();
+						}
+						catch
+                        {
+							modelTextureGrid.Rows[i].Cells[2].ToolTipText = string.Empty;
+						}
+					}
+				}
+			}
+        }
     }
 
 }
+
 
