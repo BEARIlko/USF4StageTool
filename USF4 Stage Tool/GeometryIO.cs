@@ -120,9 +120,9 @@ namespace USF4_Stage_Tool
                 Boolean bForwards = true;
                 for (int i = 0; i < DaisyChain.Length - 2; i++)
                 {
-                    if (bForwards)
+                    if (bForwards) //This seems to be backwards?? But it works.
                     {
-                        int[] temp = new int[] { DaisyChain[i], DaisyChain[i + 1], DaisyChain[i + 2] };
+                        int[] temp = new int[] { DaisyChain[i + 2], DaisyChain[i + 1], DaisyChain[i] };
 
                         if (temp[0] != temp[1] && temp[1] != temp[2] && temp[2] != temp[0])
                         {
@@ -131,7 +131,7 @@ namespace USF4_Stage_Tool
                     }
                     else
                     {
-                        int[] temp = new int[] { DaisyChain[i + 2], DaisyChain[i + 1], DaisyChain[i] };
+                        int[] temp = new int[] { DaisyChain[i], DaisyChain[i + 1], DaisyChain[i + 2] };
 
                         if (temp[0] != temp[1] && temp[1] != temp[2] && temp[2] != temp[0])
                         {
@@ -251,9 +251,9 @@ namespace USF4_Stage_Tool
                 if (emz.Files[i] is EMO)
                 {
                     EMO emo = (EMO)emz.Files[i];
-                    for (int j = 0; j < emo.EMGList.Count; j++)
+                    for (int j = 0; j < emo.EMGs.Count; j++)
                     {
-                        EMG emg = emo.EMGList[j];
+                        EMG emg = emo.EMGs[j];
 
                         for (int k = 0; k < emg.Models.Count; k++)
                         {
@@ -278,8 +278,8 @@ namespace USF4_Stage_Tool
                         }
 
                         emo.GenerateBytes();
-                        emo.EMGList.RemoveAt(j);
-                        emo.EMGList.Insert(j, emg);
+                        emo.EMGs.RemoveAt(j);
+                        emo.EMGs.Insert(j, emg);
                     }
 
                     emz.Files.Remove(i);
@@ -453,6 +453,15 @@ namespace USF4_Stage_Tool
             }
 
             //Compile indexes - these are the equivalent of OBJ V/VN/VT indexes
+
+
+
+            //TRY BUILDING A BONE DICTIONARY
+
+            //IN: "true" BONE INTEGER
+            //OUT: "local" SUBMODEL BONE INTEGER
+
+
             int pointer = 0;
             for (int i = 0; i < position_floats.Count/3; i++)
             {
@@ -548,7 +557,7 @@ namespace USF4_Stage_Tool
                 RootBone = 0x01,
                 ModelCount = 1,
                 HEXBytes = new byte[0],
-                ModelPointerList = new List<int>() { 0x00 },
+                ModelPointersList = new List<int>() { 0x00 },
                 Models = new List<Model>()
                 {
                     new Model()
@@ -563,8 +572,8 @@ namespace USF4_Stage_Tool
                         ReadMode = 0,
                         //ReadMode = 1,
                         SubModelsCount = 1,
-                        SubModeListPointer = 1,
-                        SubModelList = new List<int>() { 0x00 },
+                        SubModelsListPointer = 1,
+                        SubModelPointersList = new List<int>() { 0x00 },
                         SubModels = new List<SubModel>
                         {
                             new SubModel()
@@ -582,15 +591,15 @@ namespace USF4_Stage_Tool
                                 HEXBytes = new byte[0]
                             }
                         },
-                        TexturePointer = new List<int>() { 0x00 },
-                        TexturesList = new List<EMGTexture>()
+                        TexturePointersList = new List<int>() { 0x00 },
+                        Textures = new List<EMGTexture>()
                         {
                             new EMGTexture
                             {
                                 TextureLayers = 1,
-                                TextureIndex = new List<int> { 1 },
-                                Scales_U = new List<float> { 1f },
-                                Scales_V = new List<float> { 1f }
+                                TextureIndicesList = new List<int> { 1 },
+                                Scales_UList = new List<float> { 1f },
+                                Scales_VList = new List<float> { 1f }
                             }
                         },
                         CullData = new byte[]

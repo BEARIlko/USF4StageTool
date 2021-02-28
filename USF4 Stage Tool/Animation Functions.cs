@@ -37,7 +37,7 @@ namespace USF4_Stage_Tool
                 //Node updated, add it to the list.
                 skel.Nodes.Add(nNode);
                 skel.NodeCount++;
-                skel.NodeNameIndex.Add(0x00);
+                skel.NodeNamePointersList.Add(0x00);
                 skel.NodeNames.Add(skel.NodeNames[i]);
                 skel.FFList.Add(skel.FFList[i]);
                 
@@ -57,10 +57,10 @@ namespace USF4_Stage_Tool
 
                 cmd.BitFlag = anim.CMDTracks[i].BitFlag;
                 cmd.BoneID = anim.CMDTracks[i].BoneID;
-                cmd.IndiceList = new List<int> (anim.CMDTracks[i].IndiceList);
-                cmd.IndiceListPointer = anim.CMDTracks[i].IndiceListPointer;
+                cmd.IndicesList = new List<int> (anim.CMDTracks[i].IndicesList);
+                cmd.IndicesListPointer = anim.CMDTracks[i].IndicesListPointer;
                 cmd.StepCount = anim.CMDTracks[i].StepCount;
-                cmd.StepList = new List<int>(anim.CMDTracks[i].StepList);
+                cmd.StepsList = new List<int>(anim.CMDTracks[i].StepsList);
                 cmd.TransformType = anim.CMDTracks[i].TransformType;
 
                 if (cmd.BoneID >= first)
@@ -72,9 +72,9 @@ namespace USF4_Stage_Tool
                         int Steps = cmd.StepCount;
                         for(int j = 0; j < Steps; j++)
                         {
-                            anim.ValueList.Add(anim.ValueList[cmd.IndiceList[j]] + 2f);
+                            anim.ValuesList.Add(anim.ValuesList[cmd.IndicesList[j]] + 2f);
                             anim.ValueCount++;
-                            cmd.IndiceList[j] = anim.ValueList.Count;
+                            cmd.IndicesList[j] = anim.ValuesList.Count;
                         }
                     }
                     //else if (cmd.TransformType == 0 && (cmd.BitFlag & 0x03) == 0 && (cmd.BitFlag & 0x10) == 1)
@@ -90,7 +90,7 @@ namespace USF4_Stage_Tool
                     //}
                     anim.CMDTracks.Add(cmd);
                     anim.CmdTrackCount++;
-                    anim.CmdTrackPointerList.Add(0x00);
+                    anim.CmdTrackPointersList.Add(0x00);
                 }
             }
 

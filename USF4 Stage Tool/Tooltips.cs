@@ -33,7 +33,7 @@ namespace USF4_Stage_Tool
             ["exctractAllDDSToolStripMenuItem"] = "Extract the contents of the .EMB to individual .DDS files",
             //LUA Context
             ["injectLUAScriptToolStripMenuItem1"] = "Takes a plaintext LUA file and attempts to compile it into USF4's native bytecode. This will overwrite the selected LUA file",
-            ["extractLUAScriptToolStripMenuItem"] = "Takes a plaintext LUA file and attempts to compile it into USF4's native bytecode. Adds it to the EMZ as a new LUA file",
+            ["extractLUAScriptToolStripMenuItem"] = "Converts the selected LUA bytecode file into plain text and saves it.",
             ["injectLUAScriptToolStripMenuItem"] = "Overwrites the selected LUA file with another bytecode file. Not for use with plaintext LUA files",
             ["extractLUABytecodeToolStripMenuItem"] = "Extract the selected LUA file as bytecode. No conversion to plaintext",
             //DDS Context
