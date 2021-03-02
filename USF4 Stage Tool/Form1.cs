@@ -63,6 +63,7 @@ namespace USF4_Stage_Tool
 
 		EMZ WorkingEMZ;
 		EMZ WorkingTEXEMZ;
+		ObjFile WorkingObjFile;
 		ObjModel WorkingObject;
 		string WorkingFileName;
 		public bool InjectObjAfterOpen;
@@ -123,629 +124,525 @@ namespace USF4_Stage_Tool
 			}
 		}
 
-		void ReadOBJ(string obj)
-		{
-			ConsoleWrite(ConsoleLineSpacer);
-			ConsoleWrite($"Opening OBJ file:  {obj}");
-			VertexDaisyChain = new List<int>();
-			ConsoleWrite(" ");
-			ClearUpStatus();
-			string[] lines = File.ReadAllLines(obj);
-
-			Dictionary<UInt64, int> VertUVDictionary = new Dictionary<UInt64, int>();
-			Dictionary<UInt64, int> UniqueChunkDictionary = new Dictionary<UInt64, int>(); //For use if we implement vert normal splitting
-
-			//Prepare Input OBJ Structure
-			WorkingObject = new ObjModel
-			{
-				Verts = new List<Vertex>(),
-				Textures = new List<UVMap>(),
-				Normals = new List<Normal>(),
-				FaceIndices = new List<int[]>(),
-				UniqueVerts = new List<Vertex>(),
-				MaterialGroups = new List<ObjMatGroup>()
-			};
-
-			ObjMatGroup WorkingMat = new ObjMatGroup()
-			{
-				FaceIndices = new List<int[]>(),
-				lines = new List<string>(),
-				DaisyChain = new List<int>()
-			};
-
-			for (int i = 0; i < lines.Length; i++)
-			{
-				string line = lines[i];
-
-				if (line.StartsWith("v "))
-				{
-					float flip = 1f;
-					if (chkGeometryFlipX.Checked) { flip = -1f; }
-
-					string vertCoords = line.Replace("v ", "").Trim();
-					string[] vertProps = vertCoords.Trim().Split(' ');
-					Vertex vert = new Vertex()
-					{
-						X = flip * float.Parse(Utils.FixFloatingPoint(vertProps[0])),
-						Y = float.Parse(Utils.FixFloatingPoint(vertProps[1])),
-						Z = float.Parse(Utils.FixFloatingPoint(vertProps[2]))
-					};
-					WorkingObject.Verts.Add(vert);
-				}
-				if (line.StartsWith("vt "))
-				{
-					string vertTextures = line.Replace("vt ", "").Trim();
-					vertTextures = Utils.FixFloatingPoint(vertTextures);
-					string[] vertTex = vertTextures.Trim().Split(' ');
-					UVMap tex = new UVMap()
-					{
-						U = float.Parse(vertTex[0]),
-						V = float.Parse(vertTex[1])
-					};
-
-					WorkingObject.Textures.Add(tex);
-				}
-				if (line.StartsWith("vn "))
-				{   //TODO test if we need to flip normals
-					string normCoords = line.Replace("vn ", "").Trim();
-					string[] normProps = normCoords.Trim().Split(' ');
-					Normal norm = new Normal()
-					{
-						nX = float.Parse(Utils.FixFloatingPoint(normProps[0])),
-						nY = float.Parse(Utils.FixFloatingPoint(normProps[1])),
-						nZ = float.Parse(Utils.FixFloatingPoint(normProps[2]))
-					};
-					WorkingObject.Normals.Add(norm);
-				}
-				if (line.StartsWith("usemtl") || line.StartsWith("o "))
-				{
-					//Starting a new material group, add the old material to the WorkingObj if needed
-					if (WorkingMat.lines.Count > 0)
-					{
-						WorkingMat.endvert = WorkingObject.Verts.Count;
-						WorkingObject.MaterialGroups.Add(WorkingMat);
-					}
-					//Initialise a new MatGroup
-					WorkingMat = new ObjMatGroup
-					{
-						FaceIndices = new List<int[]>(),
-						lines = new List<string>(),
-						DaisyChain = new List<int>()
-					};
-				}
-				if (line.StartsWith("f "))
-				{   //If we find a face line, add it to our current material group
-					WorkingMat.lines.Add(line);
-				}
-			}
-			//Once we reach the end of the file, add the final group to the OBJ
-			if (WorkingMat.lines.Count > 0) 
-			{
-				WorkingMat.endvert = WorkingObject.Verts.Count;
-				WorkingObject.MaterialGroups.Add(WorkingMat); 
-			}
-
-			foreach (ObjMatGroup omg in WorkingObject.MaterialGroups)
-			{
-				for (int i = 0; i < omg.lines.Count; i++)
-				{
-					string line = omg.lines[i];
-					int[] tempFaceArray = new int[3];
-
-					if (!line.Contains("/"))
-					{
-						MessageBox.Show("Invalid Face data format", "Error");
-						return;
-					}
-					string vertFaces = line.Replace("f ", "").Trim(); //Remove leading f
-					string[] arFaces = vertFaces.Trim().Split(' '); //Split into chunks
-
-					string[] chunk1string;
-					string[] chunk2string;
-					string[] chunk3string;
-					//FACE FLIP HAPPENS HERE NOW
-					if (chkGeometryFlipX.Checked)
-					{
-						chunk1string = arFaces[2].Trim().Split('/');   //Split chunks into index components
-						chunk2string = arFaces[1].Trim().Split('/');
-						chunk3string = arFaces[0].Trim().Split('/');
-					}
-					else
-					{
-						chunk1string = arFaces[0].Trim().Split('/');
-						chunk2string = arFaces[1].Trim().Split('/');
-						chunk3string = arFaces[2].Trim().Split('/');
-					}
-
-					//Parse components to int MINUS ONE BECAUSE OF ZERO INDEXING
-					int[] chunk1 = new int[] { int.Parse(chunk1string[0]) - 1, int.Parse(chunk1string[1]) - 1, int.Parse(chunk1string[2]) - 1 };
-					int[] chunk2 = new int[] { int.Parse(chunk2string[0]) - 1, int.Parse(chunk2string[1]) - 1, int.Parse(chunk2string[2]) - 1 };
-					int[] chunk3 = new int[] { int.Parse(chunk3string[0]) - 1, int.Parse(chunk3string[1]) - 1, int.Parse(chunk3string[2]) - 1 };
-
-					for (int j = 0; j < 3; j++)
-					{
-						if (chunk1[j] < 0) chunk1[j] += omg.endvert + 1;
-						if (chunk2[j] < 0) chunk2[j] += omg.endvert + 1;
-						if (chunk3[j] < 0) chunk3[j] += omg.endvert + 1;
-
-						if (chunk1[j] < 0)
-						{
-							Console.Write("Uhoh");
-						}
-						if (chunk2[j] < 0)
-						{
-							Console.Write("Uhoh");
-						}
-						if (chunk3[j] < 0)
-						{
-							Console.Write("Uhoh");
-						}
-					}
-
-					/* Simpler hashing system that only respects position and UV maps */
-					//CHUNK 1
-					UInt64 tempHash = Utils.HashInts(chunk1[0], chunk1[1]);
-					if (VertUVDictionary.TryGetValue(tempHash, out _) == false)
-					{
-						VertUVDictionary.Add(tempHash, VertUVDictionary.Count);
-
-						Vertex WorkingVert = new Vertex();
-						WorkingVert.UpdatePosition(WorkingObject.Verts[chunk1[0]]);
-						WorkingVert.UpdateUV(WorkingObject.Textures[chunk1[1]]);
-						WorkingVert.UpdateNormals(WorkingObject.Normals[chunk1[2]]);
-
-						WorkingObject.UniqueVerts.Add(WorkingVert);
-					}
-
-					tempFaceArray[0] = VertUVDictionary[tempHash];
-
-					//CHUNK 2
-					tempHash = Utils.HashInts(chunk2[0], chunk2[1]);
-
-					if (VertUVDictionary.TryGetValue(tempHash, out _) == false)
-					{
-						VertUVDictionary.Add(tempHash, VertUVDictionary.Count);
-
-						Vertex WorkingVert = new Vertex();
-						WorkingVert.UpdatePosition(WorkingObject.Verts[chunk2[0]]);
-						WorkingVert.UpdateUV(WorkingObject.Textures[chunk2[1]]);
-						WorkingVert.UpdateNormals(WorkingObject.Normals[chunk2[2]]);
-
-						WorkingObject.UniqueVerts.Add(WorkingVert);
-					}
-
-					tempFaceArray[1] = VertUVDictionary[tempHash];
-
-					//CHUNK 3
-					tempHash = Utils.HashInts(chunk3[0], chunk3[1]);
-
-					if (VertUVDictionary.TryGetValue(tempHash, out _) == false)
-					{
-						VertUVDictionary.Add(tempHash, VertUVDictionary.Count);
-
-						Vertex WorkingVert = new Vertex();
-						WorkingVert.UpdatePosition(WorkingObject.Verts[chunk3[0]]);
-						WorkingVert.UpdateUV(WorkingObject.Textures[chunk3[1]]);
-						WorkingVert.UpdateNormals(WorkingObject.Normals[chunk3[2]]);
-
-						WorkingObject.UniqueVerts.Add(WorkingVert);
-					}
-
-					tempFaceArray[2] = VertUVDictionary[tempHash];
-
-					//ADD TEMP FACE TO THE LIST
-					omg.FaceIndices.Add(tempFaceArray);
-				}
-			}
-		}
-
-		//void ReadOBJ(string obj)
-		//{
-		//	ConsoleWrite(ConsoleLineSpacer);
-		//	ConsoleWrite($"Opening OBJ file:  {obj}");
-		//	VertexDaisyChain = new List<int>();
-		//	ConsoleWrite(" ");
-		//	ClearUpStatus();
-		//	string[] lines = File.ReadAllLines(obj);
-
-		//	Dictionary<UInt64, int> VertUVDictionary = new Dictionary<UInt64, int>();
-		//	Dictionary<UInt64, int> UniqueChunkDictionary = new Dictionary<UInt64, int>(); //For use if we implement vert normal splitting
-
-		//	//Prepare Input OBJ Structure
-		//	WorkingObject = new ObjModel
-		//	{
-		//		Verts = new List<Vertex>(),
-		//		Textures = new List<UVMap>(),
-		//		Normals = new List<Normal>(),
-		//		FaceIndices = new List<int[]>(),
-		//		UniqueVerts = new List<Vertex>(),
-		//		MaterialGroups = new List<ObjMatGroup>()
-		//	};
-
-		//	ObjMatGroup WorkingMat = new ObjMatGroup()
-		//	{
-		//		FaceIndices = new List<int[]>(),
-		//		lines = new List<string>(),
-		//		DaisyChain = new List<int>()
-		//	};
-
-		//	for (int i = 0; i < lines.Length; i++)
-		//	{
-		//		string line = lines[i];
-		//		if (line.StartsWith("v "))
-		//		{
-		//			float flip = 1f;
-		//			if (chkGeometryFlipX.Checked) { flip = -1f; }
-
-		//			string vertCoords = line.Replace("v ", "").Trim();
-		//			string[] vertProps = vertCoords.Trim().Split(' ');
-		//			Vertex vert = new Vertex()
-		//			{
-		//				X = flip * float.Parse(Utils.FixFloatingPoint(vertProps[0])),
-		//				Y = float.Parse(Utils.FixFloatingPoint(vertProps[1])),
-		//				Z = float.Parse(Utils.FixFloatingPoint(vertProps[2]))
-		//			};
-		//			WorkingObject.Verts.Add(vert);
-		//		}
-		//		if (line.StartsWith("vt "))
-		//		{
-		//			string vertTextures = line.Replace("vt ", "").Trim();
-		//			vertTextures = Utils.FixFloatingPoint(vertTextures);
-		//			string[] vertTex = vertTextures.Trim().Split(' ');
-		//			UVMap tex = new UVMap()
-		//			{
-		//				U = float.Parse(vertTex[0]),
-		//				V = float.Parse(vertTex[1])
-		//			};
-
-		//			WorkingObject.Textures.Add(tex);
-		//		}
-		//		if (line.StartsWith("vn "))
-		//		{   //TODO test if we need to flip normals
-		//			string normCoords = line.Replace("vn ", "").Trim();
-		//			string[] normProps = normCoords.Trim().Split(' ');
-		//			Normal norm = new Normal()
-		//			{
-		//				nX = float.Parse(Utils.FixFloatingPoint(normProps[0])),
-		//				nY = float.Parse(Utils.FixFloatingPoint(normProps[1])),
-		//				nZ = float.Parse(Utils.FixFloatingPoint(normProps[2]))
-		//			};
-		//			WorkingObject.Normals.Add(norm);
-		//		}
-		//		if (line.StartsWith("usemtl"))
-		//		{
-		//			//Starting a new material group, add the old material to the WorkingObj if needed
-		//			if (WorkingMat.lines.Count > 0)
-		//			{
-		//				WorkingMat.endvert = WorkingObject.Verts.Count;
-		//				WorkingObject.MaterialGroups.Add(WorkingMat);
-		//			}
-  //                  //Initialise a new MatGroup
-  //                  WorkingMat = new ObjMatGroup
-  //                  {
-  //                      FaceIndices = new List<int[]>(),
-  //                      lines = new List<string>(),
-  //                      DaisyChain = new List<int>()
-  //                  };
-  //              }
-		//		if (line.StartsWith("f "))
-		//		{   //If we find a face line, add it to our current material group
-		//			WorkingMat.lines.Add(line);
-		//		}
-		//	}
-		//	//Once we reach the end of the file, add the final group to the OBJ
-		//	if (WorkingMat.lines.Count > 0) { WorkingObject.MaterialGroups.Add(WorkingMat); }
-
-		//	foreach (ObjMatGroup omg in WorkingObject.MaterialGroups)
-		//	{
-		//		for (int i = 0; i < omg.lines.Count; i++)
-		//		{
-		//			string line = omg.lines[i];
-		//			int[] tempFaceArray = new int[3];
-
-		//			if (!line.Contains("/"))
-		//			{
-		//				MessageBox.Show("Invalid Face data format", "Error");
-		//				return;
-		//			}
-		//			string vertFaces = line.Replace("f ", "").Trim(); //Remove leading f
-		//			string[] arFaces = vertFaces.Trim().Split(' '); //Split into chunks
-
-  //                  string[] chunk1string;
-  //                  string[] chunk2string;
-  //                  string[] chunk3string;
-  //                  //FACE FLIP HAPPENS HERE NOW
-  //                  if (chkGeometryFlipX.Checked)
-		//			{
-		//				chunk1string = arFaces[2].Trim().Split('/');   //Split chunks into index components
-		//				chunk2string = arFaces[1].Trim().Split('/');
-		//				chunk3string = arFaces[0].Trim().Split('/');
-		//			}
-		//			else
-		//			{
-		//				chunk1string = arFaces[0].Trim().Split('/');
-		//				chunk2string = arFaces[1].Trim().Split('/');
-		//				chunk3string = arFaces[2].Trim().Split('/');
-		//			}
-
-		//			//Parse components to int MINUS ONE BECAUSE OF ZERO INDEXING
-		//			int[] chunk1 = new int[] { int.Parse(chunk1string[0]) - 1, int.Parse(chunk1string[1]) - 1, int.Parse(chunk1string[2]) - 1 };
-		//			int[] chunk2 = new int[] { int.Parse(chunk2string[0]) - 1, int.Parse(chunk2string[1]) - 1, int.Parse(chunk2string[2]) - 1 };
-		//			int[] chunk3 = new int[] { int.Parse(chunk3string[0]) - 1, int.Parse(chunk3string[1]) - 1, int.Parse(chunk3string[2]) - 1 };
-
-		//			for(int j = 0; j < 3; j++)
-  //                  {
-		//				if (chunk1[j] < 0) chunk1[j] += omg.endvert;
-		//				if (chunk2[j] < 0) chunk2[j] += omg.endvert;
-		//				if (chunk3[j] < 0) chunk3[j] += omg.endvert;
-		//			}
-
-		//			/* Simpler hashing system that only respects position and UV maps */
-		//			//CHUNK 1
-		//			UInt64 tempHash = Utils.HashInts(chunk1[0], chunk1[1]);
-  //                  if (VertUVDictionary.TryGetValue(tempHash, out _) == false)
-		//			{
-		//				VertUVDictionary.Add(tempHash, VertUVDictionary.Count);
-
-		//				Vertex WorkingVert = new Vertex();
-		//				WorkingVert.UpdatePosition(WorkingObject.Verts[chunk1[0]]);
-		//				WorkingVert.UpdateUV(WorkingObject.Textures[chunk1[1]]);
-		//				WorkingVert.UpdateNormals(WorkingObject.Normals[chunk1[2]]);
-
-		//				WorkingObject.UniqueVerts.Add(WorkingVert);
-		//			}
-
-		//			tempFaceArray[0] = VertUVDictionary[tempHash];
-
-		//			//CHUNK 2
-		//			tempHash = Utils.HashInts(chunk2[0], chunk2[1]);
-
-  //                  if (VertUVDictionary.TryGetValue(tempHash, out _) == false)
-		//			{
-		//				VertUVDictionary.Add(tempHash, VertUVDictionary.Count);
-
-		//				Vertex WorkingVert = new Vertex();
-		//				WorkingVert.UpdatePosition(WorkingObject.Verts[chunk2[0]]);
-		//				WorkingVert.UpdateUV(WorkingObject.Textures[chunk2[1]]);
-		//				WorkingVert.UpdateNormals(WorkingObject.Normals[chunk2[2]]);
-
-		//				WorkingObject.UniqueVerts.Add(WorkingVert);
-		//			}
-
-		//			tempFaceArray[1] = VertUVDictionary[tempHash];
-
-		//			//CHUNK 3
-		//			tempHash = Utils.HashInts(chunk3[0], chunk3[1]);
-
-		//			if (VertUVDictionary.TryGetValue(tempHash, out _) == false)
-		//			{
-		//				VertUVDictionary.Add(tempHash, VertUVDictionary.Count);
-
-		//				Vertex WorkingVert = new Vertex();
-		//				WorkingVert.UpdatePosition(WorkingObject.Verts[chunk3[0]]);
-		//				WorkingVert.UpdateUV(WorkingObject.Textures[chunk3[1]]);
-		//				WorkingVert.UpdateNormals(WorkingObject.Normals[chunk3[2]]);
-
-		//				WorkingObject.UniqueVerts.Add(WorkingVert);
-		//			}
-
-		//			tempFaceArray[2] = VertUVDictionary[tempHash];
-
-		//			//ADD TEMP FACE TO THE LIST
-		//			omg.FaceIndices.Add(tempFaceArray);
-		//		}
-		//	}
-		//}
-
-		//void ReadOBJBACKUP(string obj)
-		//{
-		//	ConsoleWrite(ConsoleLineSpacer);
-		//	ConsoleWrite($"Opening OBJ file:  {obj}");
-		//	VertexDaisyChain = new List<int>();
-		//	ConsoleWrite(" ");
-		//	ClearUpStatus();
-		//	string[] lines = File.ReadAllLines(obj);
-
-		//	Dictionary<UInt64, int> VertUVDictionary = new Dictionary<UInt64, int>();
-		//	Dictionary<UInt64, int> UniqueChunkDictionary = new Dictionary<UInt64, int>();
-
-		//	//Prepare Input OBJ Structure
-		//	WorkingObject = new ObjModel();
-		//	WorkingObject.Verts = new List<Vertex>();
-		//	WorkingObject.Textures = new List<UVMap>();
-		//	WorkingObject.Normals = new List<Normal>();
-		//	WorkingObject.FaceIndices = new List<int[]>();
-		//	WorkingObject.UniqueVerts = new List<Vertex>();
-		//	WorkingObject.MaterialGroups = new List<ObjMatGroup>();
-
-		//	ObjMatGroup WorkingMat = new ObjMatGroup();
-		//	WorkingMat.FaceIndices = new List<int[]>();
-		//	WorkingMat.lines = new List<string>();
-		//	WorkingMat.DaisyChain = new List<int>();
-
-		//	for (int i = 0; i < lines.Length; i++)
-		//	{
-		//		string line = lines[i];
-		//		if (line.StartsWith("v "))
-		//		{
-		//			float flip = 1f;
-		//			if (chkGeometryFlipX.Checked) { flip = -1f; }
-
-		//			string vertCoords = line.Replace("v ", "").Trim();
-		//			string[] vertProps = vertCoords.Trim().Split(' ');
-		//			Vertex vert = new Vertex();
-		//			vert.X = flip * float.Parse(Utils.FixFloatingPoint(vertProps[0]));
-		//			vert.Y = float.Parse(Utils.FixFloatingPoint(vertProps[1]));
-		//			vert.Z = float.Parse(Utils.FixFloatingPoint(vertProps[2]));
-		//			WorkingObject.Verts.Add(vert);
-		//		}
-		//		if (line.StartsWith("vt "))
-		//		{
-		//			string vertTextures = line.Replace("vt ", "").Trim();
-		//			vertTextures = Utils.FixFloatingPoint(vertTextures);
-		//			string[] vertTex = vertTextures.Trim().Split(' ');
-		//			UVMap tex = new UVMap();
-		//			tex.U = (float.Parse(vertTex[0]));
-		//			tex.V = (float.Parse(vertTex[1]));
-		//			WorkingObject.Textures.Add(tex);
-		//		}
-		//		if (line.StartsWith("vn "))
-		//		{   //TODO test if we need to flip normals
-		//			string normCoords = line.Replace("vn ", "").Trim();
-		//			string[] normProps = normCoords.Trim().Split(' ');
-		//			Normal norm = new Normal();
-		//			norm.nX = float.Parse(Utils.FixFloatingPoint(normProps[0]));
-		//			norm.nY = float.Parse(Utils.FixFloatingPoint(normProps[1]));
-		//			norm.nZ = float.Parse(Utils.FixFloatingPoint(normProps[2]));
-		//			WorkingObject.Normals.Add(norm);
-		//		}
-		//		if (line.StartsWith("usemtl"))
-		//		{   //Starting a new material group, add the old material to the WorkingObj if needed
-		//			if (WorkingMat.lines.Count > 0)
-		//			{
-		//				WorkingObject.MaterialGroups.Add(WorkingMat);
-		//			}
-		//			//Initialise a new MatGroup
-		//			WorkingMat = new ObjMatGroup();
-		//			WorkingMat.FaceIndices = new List<int[]>();
-		//			WorkingMat.lines = new List<string>();
-		//			WorkingMat.DaisyChain = new List<int>();
-		//		}
-		//		if (line.StartsWith("f "))
-		//		{   //If we find a face line, add it to our current material group
-		//			WorkingMat.lines.Add(line);
-		//		}
-		//	}
-		//	//Once we reach the end of the file, add the final group to the OBJ
-		//	WorkingObject.MaterialGroups.Add(WorkingMat);
-
-		//	foreach (ObjMatGroup omg in WorkingObject.MaterialGroups)
-		//	{
-		//		for (int i = 0; i < omg.lines.Count; i++)
-		//		{
-		//			string line = omg.lines[i];
-		//			int[] tempFaceArray = new int[3];
-
-		//			if (!line.Contains("/"))
-		//			{
-		//				MessageBox.Show("Invalid Face data format", "Error");
-		//				return;
-		//			}
-		//			string vertFaces = line.Replace("f ", "").Trim(); //Remove leading f
-		//			string[] arFaces = vertFaces.Trim().Split(' '); //Split into chunks
-
-		//			string[] chunk1string;
-		//			string[] chunk2string;
-		//			string[] chunk3string;
-		//			//FACE FLIP HAPPENS HERE NOW
-		//			if (chkGeometryFlipX.Checked)
-		//			{
-		//				chunk1string = arFaces[2].Trim().Split('/');   //Split chunks into index components
-		//				chunk2string = arFaces[1].Trim().Split('/');
-		//				chunk3string = arFaces[0].Trim().Split('/');
-		//			}
-		//			else
-		//			{
-		//				chunk1string = arFaces[0].Trim().Split('/');
-		//				chunk2string = arFaces[1].Trim().Split('/');
-		//				chunk3string = arFaces[2].Trim().Split('/');
-		//			}
-
-		//			//Parse components to int MINUS ONE BECAUSE OF ZERO INDEXING
-		//			int[] chunk1 = new int[] { int.Parse(chunk1string[0]) - 1, int.Parse(chunk1string[1]) - 1, int.Parse(chunk1string[2]) - 1 };
-		//			int[] chunk2 = new int[] { int.Parse(chunk2string[0]) - 1, int.Parse(chunk2string[1]) - 1, int.Parse(chunk2string[2]) - 1 };
-		//			int[] chunk3 = new int[] { int.Parse(chunk3string[0]) - 1, int.Parse(chunk3string[1]) - 1, int.Parse(chunk3string[2]) - 1 };
-
-		//			/* Implemented a hashing system to detect unique chunks. If you try to hash the whole V/UV/N as a single hash it's too big,
-		//			 * so instead we use a dictionary as an intermediate hash. Each uniquely hashed V/UV pair produces a unique (small) integer
-		//			 * from the first dictionary. That integer, hashed with the normal index, produces the final unique hash for the chunk.
-		//			 * 
-		//			 * That final hash is fed into the second dictionary:
-		//			 * If it already exists, the dictionary returns the chunk's index in the unique vertex list
-		//			 * If it doesn't exist, add it to the dictionary, build the corresponding unique vertex by referencing the OBJ index lists
-		//			 * and add it to the new unique vert list
-		//			 */
-		//			//CHUNK 1
-		//			UInt64 tempHash = Utils.HashInts(chunk1[0], chunk1[1]);
-		//			int dummy = 0;
-
-		//			if (VertUVDictionary.TryGetValue(tempHash, out dummy) == false)
-		//			{
-		//				VertUVDictionary.Add(tempHash, VertUVDictionary.Count);
-		//			}
-
-		//			tempHash = Utils.HashInts(VertUVDictionary[tempHash], chunk1[2]);
-
-		//			if (UniqueChunkDictionary.TryGetValue(tempHash, out dummy) == false)
-		//			{
-		//				UniqueChunkDictionary.Add(tempHash, UniqueChunkDictionary.Count);
-
-		//				Vertex WorkingVert = new Vertex();
-		//				WorkingVert.UpdatePosition(WorkingObject.Verts[chunk1[0]]);
-		//				WorkingVert.UpdateUV(WorkingObject.Textures[chunk1[1]]);
-		//				WorkingVert.UpdateNormals(WorkingObject.Normals[chunk1[2]]);
-
-		//				WorkingObject.UniqueVerts.Add(WorkingVert);
-		//			}
-
-		//			tempFaceArray[0] = UniqueChunkDictionary[tempHash];
-
-		//			//CHUNK 2
-		//			tempHash = Utils.HashInts(chunk2[0], chunk2[1]);
-
-		//			if (VertUVDictionary.TryGetValue(tempHash, out dummy) == false)
-		//			{
-		//				VertUVDictionary.Add(tempHash, VertUVDictionary.Count);
-		//			}
-
-		//			tempHash = Utils.HashInts(VertUVDictionary[tempHash], chunk2[2]);
-
-		//			if (UniqueChunkDictionary.TryGetValue(tempHash, out dummy) == false)
-		//			{
-		//				UniqueChunkDictionary.Add(tempHash, UniqueChunkDictionary.Count);
-
-		//				Vertex WorkingVert = new Vertex();
-		//				WorkingVert.UpdatePosition(WorkingObject.Verts[chunk2[0]]);
-		//				WorkingVert.UpdateUV(WorkingObject.Textures[chunk2[1]]);
-		//				WorkingVert.UpdateNormals(WorkingObject.Normals[chunk2[2]]);
-
-		//				WorkingObject.UniqueVerts.Add(WorkingVert);
-		//			}
-
-		//			tempFaceArray[1] = UniqueChunkDictionary[tempHash];
-
-		//			//CHUNK 3
-		//			tempHash = Utils.HashInts(chunk3[0], chunk3[1]);
-
-		//			if (VertUVDictionary.TryGetValue(tempHash, out dummy) == false)
-		//			{
-		//				VertUVDictionary.Add(tempHash, VertUVDictionary.Count);
-		//			}
-
-		//			tempHash = Utils.HashInts(VertUVDictionary[tempHash], chunk3[2]);
-
-		//			if (UniqueChunkDictionary.TryGetValue(tempHash, out dummy) == false)
-		//			{
-		//				UniqueChunkDictionary.Add(tempHash, UniqueChunkDictionary.Count);
-
-		//				Vertex WorkingVert = new Vertex();
-		//				WorkingVert.UpdatePosition(WorkingObject.Verts[chunk3[0]]);
-		//				WorkingVert.UpdateUV(WorkingObject.Textures[chunk3[1]]);
-		//				WorkingVert.UpdateNormals(WorkingObject.Normals[chunk3[2]]);
-
-		//				WorkingObject.UniqueVerts.Add(WorkingVert);
-		//			}
-
-		//			tempFaceArray[2] = UniqueChunkDictionary[tempHash];
-
-		//			//ADD TEMP FACE TO THE LIST
-		//			omg.FaceIndices.Add(tempFaceArray);
-		//		}
-		//	}
-		//}
-
-
-		List<int> DaisyChainFromIndices(List<int[]> nIndices)
+        void ReadOBJ(string obj)
+        {
+            ConsoleWrite(ConsoleLineSpacer);
+            ConsoleWrite($"Opening OBJ file:  {obj}");
+            VertexDaisyChain = new List<int>();
+            ConsoleWrite(" ");
+            ClearUpStatus();
+            string[] lines = File.ReadAllLines(obj);
+
+            Dictionary<UInt64, int> VertUVDictionary = new Dictionary<UInt64, int>();
+            Dictionary<UInt64, int> UniqueChunkDictionary = new Dictionary<UInt64, int>(); //For use if we implement vert normal splitting
+
+            //Prepare Input OBJ Structure
+            WorkingObject = new ObjModel
+            {
+                Verts = new List<Vertex>(),
+                Textures = new List<UVMap>(),
+                Normals = new List<Normal>(),
+                FaceIndices = new List<int[]>(),
+                UniqueVerts = new List<Vertex>(),
+                MaterialGroups = new List<ObjMatGroup>()
+            };
+
+            ObjMatGroup WorkingMat = new ObjMatGroup()
+            {
+                FaceIndices = new List<int[]>(),
+                lines = new List<string>(),
+                DaisyChain = new List<int>()
+            };
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+                string line = lines[i];
+
+                if (line.StartsWith("v "))
+                {
+                    float flip = 1f;
+                    if (chkGeometryFlipX.Checked) { flip = -1f; }
+
+                    string vertCoords = line.Replace("v ", "").Trim();
+                    string[] vertProps = vertCoords.Trim().Split(' ');
+                    Vertex vert = new Vertex()
+                    {
+                        X = flip * float.Parse(Utils.FixFloatingPoint(vertProps[0])),
+                        Y = float.Parse(Utils.FixFloatingPoint(vertProps[1])),
+                        Z = float.Parse(Utils.FixFloatingPoint(vertProps[2]))
+                    };
+                    WorkingObject.Verts.Add(vert);
+                }
+                if (line.StartsWith("vt "))
+                {
+                    string vertTextures = line.Replace("vt ", "").Trim();
+                    vertTextures = Utils.FixFloatingPoint(vertTextures);
+                    string[] vertTex = vertTextures.Trim().Split(' ');
+                    UVMap tex = new UVMap()
+                    {
+                        U = float.Parse(vertTex[0]),
+                        V = float.Parse(vertTex[1])
+                    };
+
+                    WorkingObject.Textures.Add(tex);
+                }
+                if (line.StartsWith("vn "))
+                {   //TODO test if we need to flip normals
+                    string normCoords = line.Replace("vn ", "").Trim();
+                    string[] normProps = normCoords.Trim().Split(' ');
+                    Normal norm = new Normal()
+                    {
+                        nX = float.Parse(Utils.FixFloatingPoint(normProps[0])),
+                        nY = float.Parse(Utils.FixFloatingPoint(normProps[1])),
+                        nZ = float.Parse(Utils.FixFloatingPoint(normProps[2]))
+                    };
+                    WorkingObject.Normals.Add(norm);
+                }
+                if (line.StartsWith("usemtl") || line.StartsWith("o "))
+                {
+                    //Starting a new material group, add the old material to the WorkingObj if needed
+                    if (WorkingMat.lines.Count > 0)
+                    {
+                        WorkingMat.endvert = WorkingObject.Verts.Count;
+                        WorkingObject.MaterialGroups.Add(WorkingMat);
+                    }
+                    //Initialise a new MatGroup
+                    WorkingMat = new ObjMatGroup
+                    {
+                        FaceIndices = new List<int[]>(),
+                        lines = new List<string>(),
+                        DaisyChain = new List<int>()
+                    };
+                }
+                if (line.StartsWith("f "))
+                {   //If we find a face line, add it to our current material group
+                    WorkingMat.lines.Add(line);
+                }
+            }
+            //Once we reach the end of the file, add the final group to the OBJ
+            if (WorkingMat.lines.Count > 0)
+            {
+                WorkingMat.endvert = WorkingObject.Verts.Count;
+                WorkingObject.MaterialGroups.Add(WorkingMat);
+            }
+
+            foreach (ObjMatGroup omg in WorkingObject.MaterialGroups)
+            {
+                for (int i = 0; i < omg.lines.Count; i++)
+                {
+                    string line = omg.lines[i];
+                    int[] tempFaceArray = new int[3];
+
+                    if (!line.Contains("/"))
+                    {
+                        MessageBox.Show("Invalid Face data format", "Error");
+                        return;
+                    }
+                    string vertFaces = line.Replace("f ", "").Trim(); //Remove leading f
+                    string[] arFaces = vertFaces.Trim().Split(' '); //Split into chunks
+
+                    string[] chunk1string;
+                    string[] chunk2string;
+                    string[] chunk3string;
+                    //FACE FLIP HAPPENS HERE NOW
+                    if (chkGeometryFlipX.Checked)
+                    {
+                        chunk1string = arFaces[2].Trim().Split('/');   //Split chunks into index components
+                        chunk2string = arFaces[1].Trim().Split('/');
+                        chunk3string = arFaces[0].Trim().Split('/');
+                    }
+                    else
+                    {
+                        chunk1string = arFaces[0].Trim().Split('/');
+                        chunk2string = arFaces[1].Trim().Split('/');
+                        chunk3string = arFaces[2].Trim().Split('/');
+                    }
+
+                    //Parse components to int MINUS ONE BECAUSE OF ZERO INDEXING
+                    int[] chunk1 = new int[] { int.Parse(chunk1string[0]) - 1, int.Parse(chunk1string[1]) - 1, int.Parse(chunk1string[2]) - 1 };
+                    int[] chunk2 = new int[] { int.Parse(chunk2string[0]) - 1, int.Parse(chunk2string[1]) - 1, int.Parse(chunk2string[2]) - 1 };
+                    int[] chunk3 = new int[] { int.Parse(chunk3string[0]) - 1, int.Parse(chunk3string[1]) - 1, int.Parse(chunk3string[2]) - 1 };
+
+                    for (int j = 0; j < 3; j++) //If we're dealing with an obj with negative indexing, adjust face indices
+                    {
+                        if (chunk1[j] < 0) chunk1[j] += omg.endvert + 1;
+                        if (chunk2[j] < 0) chunk2[j] += omg.endvert + 1;
+                        if (chunk3[j] < 0) chunk3[j] += omg.endvert + 1;
+                    }
+
+                    /* Simpler hashing system that only respects position and UV maps */
+                    //CHUNK 1
+                    UInt64 tempHash = Utils.HashInts(chunk1[0], chunk1[1]);
+                    if (VertUVDictionary.TryGetValue(tempHash, out _) == false)
+                    {
+                        VertUVDictionary.Add(tempHash, VertUVDictionary.Count);
+
+                        Vertex WorkingVert = new Vertex();
+                        WorkingVert.UpdatePosition(WorkingObject.Verts[chunk1[0]]);
+                        WorkingVert.UpdateUV(WorkingObject.Textures[chunk1[1]]);
+                        WorkingVert.UpdateNormals(WorkingObject.Normals[chunk1[2]]);
+
+                        WorkingObject.UniqueVerts.Add(WorkingVert);
+                    }
+
+                    tempFaceArray[0] = VertUVDictionary[tempHash];
+
+                    //CHUNK 2
+                    tempHash = Utils.HashInts(chunk2[0], chunk2[1]);
+
+                    if (VertUVDictionary.TryGetValue(tempHash, out _) == false)
+                    {
+                        VertUVDictionary.Add(tempHash, VertUVDictionary.Count);
+
+                        Vertex WorkingVert = new Vertex();
+                        WorkingVert.UpdatePosition(WorkingObject.Verts[chunk2[0]]);
+                        WorkingVert.UpdateUV(WorkingObject.Textures[chunk2[1]]);
+                        WorkingVert.UpdateNormals(WorkingObject.Normals[chunk2[2]]);
+
+                        WorkingObject.UniqueVerts.Add(WorkingVert);
+                    }
+
+                    tempFaceArray[1] = VertUVDictionary[tempHash];
+
+                    //CHUNK 3
+                    tempHash = Utils.HashInts(chunk3[0], chunk3[1]);
+
+                    if (VertUVDictionary.TryGetValue(tempHash, out _) == false)
+                    {
+                        VertUVDictionary.Add(tempHash, VertUVDictionary.Count);
+
+                        Vertex WorkingVert = new Vertex();
+                        WorkingVert.UpdatePosition(WorkingObject.Verts[chunk3[0]]);
+                        WorkingVert.UpdateUV(WorkingObject.Textures[chunk3[1]]);
+                        WorkingVert.UpdateNormals(WorkingObject.Normals[chunk3[2]]);
+
+                        WorkingObject.UniqueVerts.Add(WorkingVert);
+                    }
+
+                    tempFaceArray[2] = VertUVDictionary[tempHash];
+
+                    //ADD TEMP FACE TO THE LIST
+                    omg.FaceIndices.Add(tempFaceArray);
+                }
+            }
+        }
+
+        //void ReadOBJ(string obj)
+        //{
+        //	ConsoleWrite(ConsoleLineSpacer);
+        //	ConsoleWrite($"Opening OBJ file:  {obj}");
+        //	VertexDaisyChain = new List<int>();
+        //	ConsoleWrite(" ");
+        //	ClearUpStatus();
+        //	string[] lines = File.ReadAllLines(obj);
+
+        //	Dictionary<UInt64, int> VertUVDictionary;
+        //	Dictionary<UInt64, int> UniqueChunkDictionary = new Dictionary<UInt64, int>(); //For use if we implement vert normal splitting
+
+        //	//Prepare Input OBJ Structure
+        //	WorkingObjFile = new ObjFile
+        //	{
+        //		ObjObjects = new List<ObjObject>(),
+        //		Verts = new List<Vertex>(),
+        //		Normals = new List<Normal>(),
+        //		Textures = new List<UVMap>()
+        //	};
+
+        //	int ObjObjectIndex = -1;
+        //	int ObjGroupIndex = -1;
+        //	int ObjMaterialIndex = -1;
+
+        //	int lastV = 0;
+        //	int lastN = 0;
+        //	int lastT = 0;
+
+        //	for (int i = 0; i < lines.Length; i++)
+        //	{
+        //		string line = lines[i];
+
+        //		if (line.StartsWith("o "))
+        //		{
+        //			ObjObjectIndex++;
+        //			ObjGroupIndex = -1;
+        //			ObjMaterialIndex = -1;
+        //			WorkingObjFile.ObjObjects.Add(new ObjObject() 
+        //			{ 
+        //				ObjGroups = new List<ObjGroup>(),
+        //				Name = line.Split(' ')[1] 
+        //			});
+        //		}
+
+        //		if (line.StartsWith("g "))
+        //		{
+        //			ObjGroupIndex++;
+        //			ObjMaterialIndex = -1;
+        //			WorkingObjFile.ObjObjects[ObjObjectIndex].ObjGroups.Add(new ObjGroup() 
+        //			{ 
+        //				ObjMaterials = new List<ObjMaterial>(), 
+        //				Name = line.Split(' ')[1], 
+        //				UniqueVerts = new List<Vertex>() 
+        //			});
+        //		}
+
+        //		if (line.StartsWith("usemtl "))
+        //		{
+        //			ObjMaterialIndex++;
+        //                  WorkingObjFile.ObjObjects[ObjObjectIndex].ObjGroups[ObjGroupIndex].ObjMaterials.Add(new ObjMaterial()
+        //                  {
+        //                      lines = new List<string>(),
+        //                      DaisyChain = new List<int>(),
+        //                      FaceIndices = new List<int[]>(),
+        //                      Name = line.Split(' ')[1],
+        //                      lastV = lastV,
+        //				lastN = lastN,
+        //				lastT = lastT
+        //                  });
+        //              }
+
+        //		if (line.StartsWith("v "))
+        //		{
+        //			lastV++;
+        //			float flip = 1f;
+        //			if (chkGeometryFlipX.Checked) { flip = -1f; }
+
+        //			string vertCoords = line.Replace("v ", "").Trim();
+        //			string[] vertProps = vertCoords.Trim().Split(' ');
+
+        //			Vertex vert = new Vertex()
+        //			{
+        //				X = flip * float.Parse(Utils.FixFloatingPoint(vertProps[0])),
+        //				Y = float.Parse(Utils.FixFloatingPoint(vertProps[1])),
+        //				Z = float.Parse(Utils.FixFloatingPoint(vertProps[2]))
+        //			};
+        //			WorkingObjFile.Verts.Add(vert);
+        //		}
+
+        //		if (line.StartsWith("vt "))
+        //		{
+        //			lastT++;
+        //			string vertTextures = line.Replace("vt ", "").Trim();
+        //			vertTextures = Utils.FixFloatingPoint(vertTextures);
+        //			string[] vertTex = vertTextures.Trim().Split(' ');
+        //			UVMap tex = new UVMap()
+        //			{
+        //				U = float.Parse(vertTex[0]),
+        //				V = float.Parse(vertTex[1])
+        //			};
+        //			WorkingObjFile.Textures.Add(tex);
+        //		}
+
+        //		if (line.StartsWith("vn "))
+        //		{   //TODO test if we need to flip normals
+        //			lastN++;
+        //			string normCoords = line.Replace("vn ", "").Trim();
+        //			string[] normProps = normCoords.Trim().Split(' ');
+        //			Normal norm = new Normal()
+        //			{
+        //				nX = float.Parse(Utils.FixFloatingPoint(normProps[0])),
+        //				nY = float.Parse(Utils.FixFloatingPoint(normProps[1])),
+        //				nZ = float.Parse(Utils.FixFloatingPoint(normProps[2]))
+        //			};
+        //			WorkingObjFile.Normals.Add(norm);
+        //		}
+
+        //		if (line.StartsWith("f "))
+        //		{   
+        //			if (WorkingObjFile.ObjObjects.Count == 0)
+        //                  {
+        //				ObjObjectIndex = 0;
+        //				WorkingObjFile.ObjObjects.Add(new ObjObject()
+        //				{
+        //					ObjGroups = new List<ObjGroup>(),
+        //					Name = line.Split(' ')[1]
+        //				});
+        //			}
+        //			if (WorkingObjFile.ObjObjects[0].ObjGroups.Count == 0)
+        //			{
+        //				ObjGroupIndex = 0;
+        //				WorkingObjFile.ObjObjects[ObjObjectIndex].ObjGroups.Add(new ObjGroup()
+        //				{
+        //					ObjMaterials = new List<ObjMaterial>(),
+        //					Name = line.Split(' ')[1],
+        //					UniqueVerts = new List<Vertex>()
+        //				});
+        //			}
+        //			if (WorkingObjFile.ObjObjects[0].ObjGroups[0].ObjMaterials.Count == 0)
+        //			{
+        //				ObjMaterialIndex = 0;
+        //				WorkingObjFile.ObjObjects[ObjObjectIndex].ObjGroups[ObjGroupIndex].ObjMaterials.Add(new ObjMaterial()
+        //				{
+        //					lines = new List<string>(),
+        //					DaisyChain = new List<int>(),
+        //					FaceIndices = new List<int[]>(),
+        //					Name = line.Split(' ')[1],
+        //					lastV = lastV,
+        //					lastN = lastN,
+        //					lastT = lastT
+        //				});
+        //			}
+        //			//If we find a face line, add it to our current material group
+        //			WorkingObjFile.ObjObjects[ObjObjectIndex].ObjGroups[ObjGroupIndex].ObjMaterials[ObjMaterialIndex].lines.Add(line);
+        //		}
+        //	}
+
+        //	List<EMG> testEMGlist = new List<EMG>();
+
+        //	foreach (ObjObject o in WorkingObjFile.ObjObjects)
+        //          {
+        //		EMG emg = new EMG()
+        //		{
+        //			ModelCount = 0,
+        //			ModelPointersList = new List<int>(),
+        //			Models = new List<Model>(),
+        //			RootBone = 0
+        //		};
+
+        //		foreach (ObjGroup g in o.ObjGroups)
+        //              {
+        //			Model model = new Model()
+        //			{
+        //				VertexData = new List<Vertex>(),
+        //				BitDepth = 0x20,
+        //				BitFlag = 0x07,
+        //				ReadMode = 0,
+        //				SubModels = new List<SubModel>(),
+        //				SubModelsCount = 0,
+        //				TexturePointersList = new List<int>(),
+        //				Textures = new List<EMGTexture>()
+        //			};
+
+        //			VertUVDictionary = new Dictionary<ulong, int>(); //Clear the dictionary for the new model
+
+        //			foreach (ObjMaterial m in g.ObjMaterials)
+        //                  {
+        //				SubModel submodel = new SubModel()
+        //				{
+        //					BoneIntegersCount = 0,
+        //					SubModelName = Utils.MakeModelName(m.Name)
+        //				};
+
+        //				for (int i = 0; i < m.lines.Count; i++)
+        //                      {
+        //                          string line = m.lines[i];
+        //                          int[] tempFaceArray = new int[3];
+
+        //                          if (!line.Contains("/"))
+        //                          {
+        //                              MessageBox.Show("Invalid Face data format", "Error");
+        //                              return;
+        //                          }
+        //                          string vertFaces = line.Replace("f ", "").Trim(); //Remove leading f
+        //                          string[] arFaces = vertFaces.Trim().Split(' '); //Split into chunks
+
+        //                          string[] chunk1string;
+        //                          string[] chunk2string;
+        //                          string[] chunk3string;
+        //                          //FACE FLIP HAPPENS HERE NOW
+        //                          if (chkGeometryFlipX.Checked)
+        //                          {
+        //                              chunk1string = arFaces[2].Trim().Split('/');   //Split chunks into index components
+        //                              chunk2string = arFaces[1].Trim().Split('/');
+        //                              chunk3string = arFaces[0].Trim().Split('/');
+        //                          }
+        //                          else
+        //                          {
+        //                              chunk1string = arFaces[0].Trim().Split('/');
+        //                              chunk2string = arFaces[1].Trim().Split('/');
+        //                              chunk3string = arFaces[2].Trim().Split('/');
+        //                          }
+
+        //                          //Parse components to int MINUS ONE BECAUSE OF ZERO INDEXING
+        //                          int[] chunk1 = new int[] { int.Parse(chunk1string[0]) - 1, int.Parse(chunk1string[1]) - 1, int.Parse(chunk1string[2]) - 1 };
+        //                          int[] chunk2 = new int[] { int.Parse(chunk2string[0]) - 1, int.Parse(chunk2string[1]) - 1, int.Parse(chunk2string[2]) - 1 };
+        //                          int[] chunk3 = new int[] { int.Parse(chunk3string[0]) - 1, int.Parse(chunk3string[1]) - 1, int.Parse(chunk3string[2]) - 1 };
+
+        //                          if (chunk1[0] < 0) chunk1[0] += m.lastV + 1;
+        //                          if (chunk1[1] < 0) chunk1[1] += m.lastT + 1;
+        //                          if (chunk1[2] < 0) chunk1[2] += m.lastN + 1;
+
+        //					if (chunk2[0] < 0) chunk2[0] += m.lastV + 1;
+        //					if (chunk2[1] < 0) chunk2[1] += m.lastT + 1;
+        //					if (chunk2[2] < 0) chunk2[2] += m.lastN + 1;
+
+        //					if (chunk3[0] < 0) chunk3[0] += m.lastV + 1;
+        //					if (chunk3[1] < 0) chunk3[1] += m.lastT + 1;
+        //					if (chunk3[2] < 0) chunk3[2] += m.lastN + 1;
+
+
+        //					/* Simpler hashing system that only respects position and UV maps */
+        //					//CHUNK 1
+        //					UInt64 tempHash = Utils.HashInts(chunk1[0], chunk1[1]);
+        //                          if (VertUVDictionary.TryGetValue(tempHash, out _) == false)
+        //                          {
+        //                              VertUVDictionary.Add(tempHash, VertUVDictionary.Count);
+
+        //                              Vertex WorkingVert = new Vertex();
+        //                              WorkingVert.UpdatePosition(WorkingObjFile.Verts[chunk1[0]]);
+        //                              WorkingVert.UpdateUV(WorkingObjFile.Textures[chunk1[1]]);
+        //                              WorkingVert.UpdateNormals(WorkingObjFile.Normals[chunk1[2]]);
+
+        //                              g.UniqueVerts.Add(WorkingVert);
+        //                          }
+
+        //                          tempFaceArray[0] = VertUVDictionary[tempHash];
+
+        //                          //CHUNK 2
+        //                          tempHash = Utils.HashInts(chunk2[0], chunk2[1]);
+
+        //                          if (VertUVDictionary.TryGetValue(tempHash, out _) == false)
+        //                          {
+        //                              VertUVDictionary.Add(tempHash, VertUVDictionary.Count);
+
+        //                              Vertex WorkingVert = new Vertex();
+        //                              WorkingVert.UpdatePosition(WorkingObjFile.Verts[chunk2[0]]);
+        //                              WorkingVert.UpdateUV(WorkingObjFile.Textures[chunk2[1]]);
+        //                              WorkingVert.UpdateNormals(WorkingObjFile.Normals[chunk2[2]]);
+
+        //                              g.UniqueVerts.Add(WorkingVert);
+        //                          }
+
+        //                          tempFaceArray[1] = VertUVDictionary[tempHash];
+
+        //                          //CHUNK 3
+        //                          tempHash = Utils.HashInts(chunk3[0], chunk3[1]);
+
+        //                          if (VertUVDictionary.TryGetValue(tempHash, out _) == false)
+        //                          {
+        //                              VertUVDictionary.Add(tempHash, VertUVDictionary.Count);
+
+        //                              Vertex WorkingVert = new Vertex();
+        //                              WorkingVert.UpdatePosition(WorkingObjFile.Verts[chunk3[0]]);
+        //                              WorkingVert.UpdateUV(WorkingObjFile.Textures[chunk3[1]]);
+        //                              WorkingVert.UpdateNormals(WorkingObjFile.Normals[chunk3[2]]);
+
+        //                              g.UniqueVerts.Add(WorkingVert);
+        //                          }
+
+        //                          tempFaceArray[2] = VertUVDictionary[tempHash];
+
+        //                          //ADD TEMP FACE TO THE LIST
+        //                          m.FaceIndices.Add(tempFaceArray);
+        //                      }
+
+        //				submodel.DaisyChain = DaisyChainFromIndices(m.FaceIndices).ToArray();
+        //				submodel.DaisyChainLength = submodel.DaisyChain.Length;
+
+        //				model.SubModels.Add(submodel);
+        //				model.SubModelsCount++;
+        //                  }
+
+        //			model.VertexData = g.UniqueVerts;
+
+        //			emg.Models.Add(model);
+        //			emg.ModelCount++;
+        //		}
+
+        //		testEMGlist.Add(emg);
+        //          }
+        //}
+
+
+        List<int> DaisyChainFromIndices(List<int[]> nIndices)
 		{
 			SetupProgress(nIndices.Count);
 
@@ -891,10 +788,11 @@ namespace USF4_Stage_Tool
 
 		bool ValidateOBJ()
 		{
-			if (WorkingObject.Verts.Count <= 0) { MessageBox.Show(TStrings.STR_ERR_VertsNotFoundinOBJ, TStrings.STR_Information); return false; }
-			if (WorkingObject.Textures.Count <= 0) { MessageBox.Show(TStrings.STR_ERR_TexturesNotFoundinOBJ, TStrings.STR_Information); return false; }
-			if (WorkingObject.Normals.Count <= 0) { MessageBox.Show(TStrings.STR_ERR_NormalsNotFoundinOBJ, TStrings.STR_Information); return false; }
-			if (WorkingObject.MaterialGroups.Count <= 0) { MessageBox.Show(TStrings.STR_ERR_FacesNotFoundinOBJ, TStrings.STR_Information); return false; }
+			//TODO FIX VALIDATION AGAIN
+			//if (WorkingObject.Verts.Count <= 0) { MessageBox.Show(TStrings.STR_ERR_VertsNotFoundinOBJ, TStrings.STR_Information); return false; }
+			//if (WorkingObject.Textures.Count <= 0) { MessageBox.Show(TStrings.STR_ERR_TexturesNotFoundinOBJ, TStrings.STR_Information); return false; }
+			//if (WorkingObject.Normals.Count <= 0) { MessageBox.Show(TStrings.STR_ERR_NormalsNotFoundinOBJ, TStrings.STR_Information); return false; }
+			//if (WorkingObject.MaterialGroups.Count <= 0) { MessageBox.Show(TStrings.STR_ERR_FacesNotFoundinOBJ, TStrings.STR_Information); return false; }
 
 			return true;
 		}
@@ -5740,7 +5638,8 @@ namespace USF4_Stage_Tool
 
 				for (int i = 0; i < emo.EMGs.Count; i++)
 				{
-					lines.AddRange(GeometryIO.EMGtoOBJ(emo.EMGs[i], Encoding.ASCII.GetString(emo.Name).Split('\0')[0] + $"_EMG_{i}", true));
+					//lines.AddRange(GeometryIO.EMGtoOBJ(emo.EMGs[i], Encoding.ASCII.GetString(emo.Name).Split('\0')[0] + $"_EMG_{i}", true));
+					lines.AddRange(GeometryIO.EMGtoOBJ(emo.EMGs[i], $"EMG_{i}", emo.EMGs.Count > 1)); //If there's more than 1 EMG, force inverted indices
 				}
 
 				File.WriteAllLines(saveFileDialog1.FileName, lines);

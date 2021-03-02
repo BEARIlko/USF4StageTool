@@ -149,8 +149,11 @@ namespace USF4_Stage_Tool
         public static List<string> EMGtoOBJ(EMG emg, string name = "??EMO_??EMG_??Model", bool invert_indices = false)
         {
             List<string> lines = new List<string>();
-
-            if (emg.ModelCount > 1) invert_indices = true; //Force inverted indices if there's multiple vert lists
+            //Force inverted face indices if there's multiple models
+            //Otherwise, respect the initial "invert_indices" setting
+            if (emg.ModelCount > 1) invert_indices = true; 
+            
+            lines.Add($"o {name}");
 
             for (int i = 0; i < emg.Models.Count; i++)
             {
@@ -166,7 +169,7 @@ namespace USF4_Stage_Tool
 
             Model model = emg.Models[modelindex];
 
-            lines.Add($"o {name}_{modelindex}");
+            lines.Add($"g {name}_m_{modelindex}");
             for (int j = 0; j < model.VertexData.Count; j++)
             {
                 Vertex v = model.VertexData[j];
@@ -230,8 +233,6 @@ namespace USF4_Stage_Tool
                     }
                 }
             }
-
-            lines.Add($"g {Encoding.ASCII.GetString(sm.SubModelName).Split('\0')[0]}");
             lines.Add($"usemtl {Encoding.ASCII.GetString(sm.SubModelName).Split('\0')[0]}");
             //Add in material tags - if you want to texture the model in blender makes the process slightly easier
 

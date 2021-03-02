@@ -2044,6 +2044,38 @@ namespace USF4_Stage_Tool
 		}
 	}
 
+	public struct ObjFile	//Top level file structure for OBJ
+    {
+		public List<ObjObject> ObjObjects;
+		public List<Vertex> Verts;
+		public List<UVMap> Textures;
+		public List<Normal> Normals;
+	}
+
+	public struct ObjObject   //"o " grouping => .emg
+	{
+		public List<ObjGroup> ObjGroups;
+		public string Name;
+	}
+
+	public struct ObjGroup   //"g " grouping => model
+	{
+		public List<ObjMaterial> ObjMaterials;
+		public List<Vertex> UniqueVerts;
+		public string Name;
+	}
+
+	public struct ObjMaterial   //"usemtl " grouping => submodel
+	{
+		public string Name;
+		public int lastV; 
+		public int lastT;
+		public int lastN;
+		public List<string> lines;
+		public List<int[]> FaceIndices;
+		public List<int> DaisyChain;
+	}
+
 	public struct ObjModel   //The representation of the Wavefront .OBJ file.
 	{
 		public List<Vertex> Verts;
