@@ -8,6 +8,40 @@ namespace USF4_Stage_Tool
 {
     public static class GeometryIO
     {
+        public static List<int> BruteForceChain(List<int[]> nIndices)
+        {
+            List<int> best = new List<int>();
+            List<int> newlist = new List<int>();
+
+            Random random = new Random();
+
+            int rnd = random.Next(0, nIndices.Count);
+
+            int bestat = 0;
+
+            for (int i = 0; i < 100; i++)
+            {
+                List<int[]> test = new List<int[]>();
+
+                test.AddRange(nIndices.GetRange(rnd, nIndices.Count - rnd));
+                test.AddRange(nIndices.GetRange(0, rnd));
+
+                newlist = new List<int>(DaisyChainFromIndices(test));
+
+                if (best.Count == 0) best = new List<int>(newlist);
+                else if (best.Count > newlist.Count)
+                {
+                    best = new List<int>(newlist);
+                    bestat = i;
+                }
+            }
+
+            Console.WriteLine($"Final result {best.Count}/{nIndices.Count*3} = {100 * best.Count / (nIndices.Count * 3)}%");
+            Console.WriteLine($"Best result at i = {bestat}.");
+
+            return best;
+        }
+
         public static List<int> DaisyChainFromIndices(List<int[]> nIndices)
         {
             List<int> Chain = new List<int>();
@@ -63,31 +97,35 @@ namespace USF4_Stage_Tool
                 if (nIndices.Count > 0)
                 {
                     compression += 2;
+                    Random random = new Random();
+
+                    int rnd =  random.Next(0, nIndices.Count);
+
                     Chain.Add(buffer1);
                     if (bForwards)
                     {
                         //Create chain break
-                        Chain.Add(nIndices[0][0]);
-                        Chain.Add(nIndices[0][0]);
-                        Chain.Add(nIndices[0][1]);
-                        Chain.Add(nIndices[0][2]);
+                        Chain.Add(nIndices[rnd][0]);
+                        Chain.Add(nIndices[rnd][0]);
+                        Chain.Add(nIndices[rnd][1]);
+                        Chain.Add(nIndices[rnd][2]);
                         //Re-initialise buffer
-                        buffer1 = nIndices[0][2];
-                        buffer2 = nIndices[0][1];
+                        buffer1 = nIndices[rnd][2];
+                        buffer2 = nIndices[rnd][1];
                     }
                     if (!bForwards)
                     {
                         //Create chain break
-                        Chain.Add(nIndices[0][2]);
-                        Chain.Add(nIndices[0][2]);
-                        Chain.Add(nIndices[0][1]);
-                        Chain.Add(nIndices[0][0]);
+                        Chain.Add(nIndices[rnd][2]);
+                        Chain.Add(nIndices[rnd][2]);
+                        Chain.Add(nIndices[rnd][1]);
+                        Chain.Add(nIndices[rnd][0]);
                         //Re-initialise buffer
-                        buffer1 = nIndices[0][0];
-                        buffer2 = nIndices[0][1];
+                        buffer1 = nIndices[rnd][0];
+                        buffer2 = nIndices[rnd][1];
                     }
                     //Clear the used face and flip the flag
-                    nIndices.RemoveAt(0);
+                    nIndices.RemoveAt(rnd);
                     bForwards = !bForwards;
                     //progressBar1.Value += 1;
                     //TimeEstimate(TStrings.STR_ReorderingFaces, count, Chain.Count);
@@ -245,57 +283,11 @@ namespace USF4_Stage_Tool
             return lines;
         }
 
-        public static EMZ UpdateLegacyStage(EMZ emz)
-        {
-            for (int i = 0; i < emz.Files.Count; i++)
-            {
-                if (emz.Files[i] is EMO)
-                {
-                    EMO emo = (EMO)emz.Files[i];
-                    for (int j = 0; j < emo.EMGs.Count; j++)
-                    {
-                        EMG emg = emo.EMGs[j];
-
-                        for (int k = 0; k < emg.Models.Count; k++)
-                        {
-                            Model mod = emg.Models[k];
-                            if (mod.ReadMode == 0)
-                            {
-                                for (int l = 0; l < mod.SubModels.Count; l++)
-                                {
-                                    SubModel sub = mod.SubModels[l];
-
-                                    sub.DaisyChain = DaisyChainFromIndices(FaceIndicesFromDaisyChain(sub.DaisyChain, true)).ToArray();
-                                    sub.DaisyChainLength = sub.DaisyChain.Length;
-                                    mod.SubModels.RemoveAt(l);
-                                    mod.SubModels.Insert(l, sub);
-                                }
-
-                                mod.ReadMode = 1;
-                                emg.GenerateBytes();
-                                emg.Models.RemoveAt(k);
-                                emg.Models.Insert(k, mod);
-                            }
-                        }
-
-                        emo.GenerateBytes();
-                        emo.EMGs.RemoveAt(j);
-                        emo.EMGs.Insert(j, emg);
-                    }
-
-                    emz.Files.Remove(i);
-                    emz.Files.Add(i, emo);
-                }
-            }
-
-            return emz;
-        }
-
         public static EMG ReadColladaStruct()
         {
             COLLADA model = COLLADA.Load("USA_MAN03_B.dae");
 
-            //coll.Save("USAman2.dae");
+            //model.Save("USAman2.dae");
 
             List<float> position_floats = new List<float>();
             List<float> normal_floats = new List<float>();
@@ -402,9 +394,11 @@ namespace USF4_Stage_Tool
                         if(node.node1 != null)
                         {
                             List<node> q = node.node1.ToList();
-                            
-                            while(q.Count > 0) //While there's still nodes, keep going...
-                            {
+
+                            //Depth-first search for nodes. Importing the master node-name list seems to be broken
+                            //Hoping depth-first is always right, if not have to match bones later using names
+                            while (q.Count > 0) 
+                            {                   
                                 current_node = q[0];
 
                                 var c_matrix = current_node.Items[0] as matrix;
@@ -454,15 +448,6 @@ namespace USF4_Stage_Tool
             }
 
             //Compile indexes - these are the equivalent of OBJ V/VN/VT indexes
-
-
-
-            //TRY BUILDING A BONE DICTIONARY
-
-            //IN: "true" BONE INTEGER
-            //OUT: "local" SUBMODEL BONE INTEGER
-
-
             int pointer = 0;
             for (int i = 0; i < position_floats.Count/3; i++)
             {
@@ -518,8 +503,8 @@ namespace USF4_Stage_Tool
                     Y = position_list[tri_indices[i * 3]].Y,
                     Z = position_list[tri_indices[i * 3]].Z,
                     BoneCount = position_list[tri_indices[i * 3]].BoneCount,
-                    BoneIDs = position_list[tri_indices[i * 3]].BoneIDs,
-                    BoneWeights = position_list[tri_indices[i * 3]].BoneWeights,
+                    BoneIDs = new List<int> (position_list[tri_indices[i * 3]].BoneIDs),
+                    BoneWeights = new List<float> (position_list[tri_indices[i * 3]].BoneWeights),
                     nX = normal_list[tri_indices[i * 3 + 1]].nX,
                     nY = normal_list[tri_indices[i * 3 + 1]].nY,
                     nZ = normal_list[tri_indices[i * 3 + 1]].nZ,
@@ -528,15 +513,6 @@ namespace USF4_Stage_Tool
                 }) ;
             }
 
-            //for(int i = 0; i < VertexList.Count; i++)
-            //{
-            //    for(int j = 0; j < VertexList[i].BoneCount; j++)
-            //    {
-            //        VertexList[i].BoneIDs.Add((i + j) * 2);
-            //        VertexList[i].BoneWeights.Add(Convert.ToSingle(bone_floats[(i + j) * 2 + 1]));
-            //    }
-            //}
-
             for(int i = 0; i < tri_indices.Count / 3; i++)
             {
                 FaceIndices.Add(new int[]{
@@ -544,14 +520,37 @@ namespace USF4_Stage_Tool
                 });
             }
 
-            int[] test = new int[tri_indices.Count];
+            int[] test = new int[tri_indices.Count/3];
 
-            for(int i = 0; i < tri_indices.Count; i++)
+            for(int i = 0; i < tri_indices.Count/3; i++)
             {
                 test[i] = i;
             }
 
             List<int> Daisy = DaisyChainFromIndices(FaceIndices);
+
+            //Build a dictionary to translate absolute bone ref to submodel bone ref
+            Dictionary<int, int> BoneDictionary = new Dictionary<int, int>();
+            for(int i = 0; i < VertexList.Count; i++)
+            {
+                for(int j = 0; j < VertexList[i].BoneIDs.Count; j++)
+                {
+                    if(!BoneDictionary.TryGetValue(VertexList[i].BoneIDs[j], out _))
+                    {
+                        BoneDictionary.Add(VertexList[i].BoneIDs[j], BoneDictionary.Count);
+                    }
+                }
+            }
+
+            BoneDictionary.Add(0, BoneDictionary.Count);
+            //Update vertex list with submodel bone refs
+            for(int i = 0; i < VertexList.Count; i++)
+            {
+                for (int j = 0; j < VertexList[i].BoneIDs.Count; j++)
+                {
+                    VertexList[i].BoneIDs[j] = BoneDictionary[VertexList[i].BoneIDs[j]];
+                }
+            }
 
             EMG emg = new EMG()
             {
@@ -565,13 +564,13 @@ namespace USF4_Stage_Tool
                     {
                         HEXBytes = new byte[0],
                         BitFlag = 0x0247,
-                        BitDepth = 0x32,
+                        BitDepth = 0x34,
                         TextureCount = 1,
                         TextureListPointer = 0x00,
                         VertexCount = VertexList.Count,
                         VertexData = VertexList,
-                        ReadMode = 0,
-                        //ReadMode = 1,
+                        ReadMode = 0,   //triangles
+                        //ReadMode = 1, //stripped
                         SubModelsCount = 1,
                         SubModelsListPointer = 1,
                         SubModelPointersList = new List<int>() { 0x00 },
@@ -579,14 +578,14 @@ namespace USF4_Stage_Tool
                         {
                             new SubModel()
                             {
-                                //DaisyChain = test,
-                                //DaisyChainLength = test.Length,
-                                DaisyChain = Daisy.ToArray(),
-                                DaisyChainLength = Daisy.Count,
+                                DaisyChain = test,
+                                DaisyChainLength = test.Length,
+                                //DaisyChain = Daisy.ToArray(),
+                                //DaisyChainLength = Daisy.Count,
                                 SubModelName = Utils.MakeModelName("Polygon"),
-                                BoneIntegersCount = 0,
+                                BoneIntegersCount = BoneDictionary.Count,
                                 MaterialIndex = 0,
-                                BoneIntegersList = new List<int>(),
+                                BoneIntegersList = BoneDictionary.Keys.ToList(),
                                 MysteryFloats = new byte[] { 0x9E, 0xDF, 0xDD, 0xBC, 0xC5, 0x2A, 0x3B, 0x3E,
                                     0xA7, 0x68, 0x3F, 0x3C, 0x00, 0x00, 0x80, 0x3F },
                                 HEXBytes = new byte[0]
@@ -598,7 +597,7 @@ namespace USF4_Stage_Tool
                             new EMGTexture
                             {
                                 TextureLayers = 1,
-                                TextureIndicesList = new List<int> { 1 },
+                                TextureIndicesList = new List<int> { 0 },
                                 Scales_UList = new List<float> { 1f },
                                 Scales_VList = new List<float> { 1f }
                             }
@@ -619,6 +618,230 @@ namespace USF4_Stage_Tool
             emg.GenerateBytes();
 
             return emg;
+        }
+
+        public static COLLADA newCollada(List<Vertex> vlist)
+        {
+            library_controllers clib = new library_controllers()
+            {
+                controller = new controller[]
+                {
+                    new controller()
+                    {
+                        Item = new object[]
+                        {
+                            new skin()
+                            {
+                                bind_shape_matrix = "1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1",
+                                joints = new skinJoints
+                                {
+                                    input = new InputLocal[]
+                                    {
+                                        new InputLocal()
+                                        {
+                                            source = "",
+                                            semantic = "JOINT"
+                                        },
+                                        new InputLocal()
+                                        {
+                                            source = "",
+                                            semantic = "INV_BIND_MATRIX"
+                                        }
+                                    }
+                                },
+                                source = new source[]
+                                {
+                                    new source
+                                    {
+                                        id = "",
+                                        Item = new object[]
+                                        {
+                                            new Name_array()
+                                            {
+                                                count = 0,
+                                                id = "",
+                                                name = "",
+                                                _Text_ = "",
+                                                Values = new string[]
+                                                {
+                                                    //INSERT bone names?
+                                                }
+                                            }
+                                        }
+                                    },
+                                    new source
+                                    {
+                                        id = "",
+                                        Item = new object[]
+                                        {
+                                            new float_array()
+                                            {
+                                                count = 0,
+                                                digits = 6,
+                                                id = "",
+                                                name = "",
+                                                Values = new double[]   //INSERT skin bind poses array
+                                                {
+                                                    
+                                                }
+                                            }
+                                        }
+
+                                    },
+                                    new source
+                                    {
+                                        id = "", //INSERT skin ID
+                                        
+                                        Item = new object[]
+                                        {
+                                            new float_array()
+                                            {
+                                                count = 0,
+                                                digits = 6,
+                                                id = "",
+                                                name = "",
+                                                Values = BoneWeightDictionary(vlist).Keys.ToArray() //INSERT bone floats
+                                            }
+                                        },
+                                        
+                                    }
+                                },
+
+                                vertex_weights = new skinVertex_weights()
+                                {
+                                    v = "",     //INSERT bone weights and counts string
+                                    vcount = "",
+                                    count = 0, //INSERT bone count
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            library_visual_scenes vlib = new library_visual_scenes()
+            {
+                visual_scene = new visual_scene[]
+                {
+                    new visual_scene()
+                    {
+                        node = new node[]
+                        {
+                            new node()
+                            {
+                                node1 = new node[]
+                                {
+                                    new node(){} //INSERT pre-made node list
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            library_geometries glib = new library_geometries()
+            {
+                geometry = new geometry[]
+                {
+                    new geometry()
+                    {
+                        Item = new object[]
+                        {
+                            new mesh()
+                            {
+                                Items = new object[]
+                                {
+                                    new triangles()
+                                    {
+                                        p = "" //INSERT p-string
+                                    }
+                                },
+                                source = new source[]
+                                {
+                                    new source()
+                                    {
+                                        id = "", //INSERT vert id
+                                        Item = new object[]
+                                        {
+                                            new float_array()
+                                            {
+                                                Values = new double[]
+                                                {
+                                                    1d  //INSERT vert doubles
+                                                }
+                                            }
+                                        }
+                                    },
+                                    new source()
+                                    {
+                                        id = "", //INSERT normal id
+                                        Item = new object[]
+                                        {
+                                            new float_array()
+                                            {
+                                                Values = new double[]
+                                                {
+                                                    1d  //INSERT normal doubles
+                                                }
+                                            }
+                                        }
+                                    },
+                                    new source()
+                                    {
+                                        id = "", //INSERT texture id
+                                        Item = new object[]
+                                        {
+                                            new float_array()
+                                            {
+                                                Values = new double[]
+                                                {
+                                                    1d  //INSERT texture doubles
+                                                }
+                                            }
+                                        }
+                                    },
+                                }
+                            } 
+                        }
+                    }
+                },
+            };
+
+            COLLADA col = new COLLADA()
+            {   
+                asset = new asset()
+                {
+                    up_axis = UpAxisType.Z_UP,
+                    unit = new assetUnit()
+                    {
+                        meter = 1,
+                        name = "meter"
+                    }
+                },
+                Items = new object[] 
+                {
+                    glib,
+                    clib,
+                    vlib
+                },
+            };
+
+            return col;
+        }
+
+        public static Dictionary<double,int> BoneWeightDictionary(List<Vertex> vs)
+        {
+            Dictionary<double, int> bw = new Dictionary<double, int>();
+
+            foreach(Vertex v in vs)
+            {
+                foreach(float w in v.BoneWeights)
+                {
+                    if (!bw.TryGetValue(w, out _)) bw.Add(w, bw.Count);
+                }
+            }
+
+            return bw;
         }
     }
 }

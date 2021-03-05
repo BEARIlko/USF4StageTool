@@ -29,12 +29,18 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
             this.diagOpenOBJ = new System.Windows.Forms.OpenFileDialog();
             this.pnlOBJECTS = new System.Windows.Forms.Panel();
             this.pSelectedTreeNodeData = new System.Windows.Forms.Panel();
             this.pnlEO_MOD = new System.Windows.Forms.Panel();
+            this.modelTextureGrid = new System.Windows.Forms.DataGridView();
+            this.id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Layer = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Index = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.scaleU = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.scaleV = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.bntEO_NodeSave = new System.Windows.Forms.Button();
             this.label10 = new System.Windows.Forms.Label();
             this.pnlEO_MaterialEdit = new System.Windows.Forms.Panel();
@@ -120,7 +126,6 @@
             this.addEMBToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.extractTEXEMZTexturesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.duplicateUSAMAN01BToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.updateLegacyStageFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.cmEmpty = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.emmContext = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.addNewMaterialToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -146,6 +151,7 @@
             this.matContext = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.addMaterialToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteMaterialToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.renameMaterialToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             this.csbContext = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.injectCSBToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -167,16 +173,11 @@
             this.deleteEMOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.InjectEMO = new System.Windows.Forms.ToolStripMenuItem();
             this.rawDumpEMOAsSMDToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.modelTextureGrid = new System.Windows.Forms.DataGridView();
-            this.id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Layer = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Index = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.scaleU = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.scaleV = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.renameMaterialToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.addEMGToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pnlOBJECTS.SuspendLayout();
             this.pSelectedTreeNodeData.SuspendLayout();
             this.pnlEO_MOD.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.modelTextureGrid)).BeginInit();
             this.pnlEO_MaterialEdit.SuspendLayout();
             this.pnlEO_SUBMOD.SuspendLayout();
             this.pnlEO_EMG.SuspendLayout();
@@ -196,7 +197,6 @@
             this.csbContext.SuspendLayout();
             this.emaContext.SuspendLayout();
             this.emoContext.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.modelTextureGrid)).BeginInit();
             this.SuspendLayout();
             // 
             // diagOpenOBJ
@@ -249,6 +249,68 @@
             this.pnlEO_MOD.Name = "pnlEO_MOD";
             this.pnlEO_MOD.Size = new System.Drawing.Size(209, 369);
             this.pnlEO_MOD.TabIndex = 53;
+            // 
+            // modelTextureGrid
+            // 
+            this.modelTextureGrid.AllowUserToResizeColumns = false;
+            this.modelTextureGrid.AllowUserToResizeRows = false;
+            this.modelTextureGrid.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
+            this.modelTextureGrid.BackgroundColor = System.Drawing.SystemColors.ButtonHighlight;
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.modelTextureGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
+            this.modelTextureGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.modelTextureGrid.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.id,
+            this.Layer,
+            this.Index,
+            this.scaleU,
+            this.scaleV});
+            this.modelTextureGrid.Cursor = System.Windows.Forms.Cursors.IBeam;
+            this.modelTextureGrid.Location = new System.Drawing.Point(8, 33);
+            this.modelTextureGrid.Name = "modelTextureGrid";
+            this.modelTextureGrid.RowHeadersVisible = false;
+            this.modelTextureGrid.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
+            this.modelTextureGrid.ScrollBars = System.Windows.Forms.ScrollBars.None;
+            this.modelTextureGrid.Size = new System.Drawing.Size(192, 284);
+            this.modelTextureGrid.TabIndex = 53;
+            this.modelTextureGrid.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.modelTextureGrid_CellValueChanged);
+            // 
+            // id
+            // 
+            this.id.HeaderText = "ID";
+            this.id.Name = "id";
+            this.id.Width = 25;
+            // 
+            // Layer
+            // 
+            this.Layer.HeaderText = "Layer";
+            this.Layer.Name = "Layer";
+            this.Layer.Width = 41;
+            // 
+            // Index
+            // 
+            this.Index.HeaderText = "Index";
+            this.Index.Name = "Index";
+            this.Index.Width = 41;
+            // 
+            // scaleU
+            // 
+            this.scaleU.HeaderText = "Scale U";
+            this.scaleU.Name = "scaleU";
+            this.scaleU.Width = 41;
+            // 
+            // scaleV
+            // 
+            this.scaleV.HeaderText = "Scale V";
+            this.scaleV.Name = "scaleV";
+            this.scaleV.Width = 41;
             // 
             // bntEO_NodeSave
             // 
@@ -338,6 +400,7 @@
             // 
             this.cbShaderProperties.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbShaderProperties.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbShaderProperties.FormattingEnabled = true;
             this.cbShaderProperties.Location = new System.Drawing.Point(10, 333);
             this.cbShaderProperties.Name = "cbShaderProperties";
@@ -979,6 +1042,7 @@
             this.rawDumpEMGToolStripMenuItem.Name = "rawDumpEMGToolStripMenuItem";
             this.rawDumpEMGToolStripMenuItem.Size = new System.Drawing.Size(268, 22);
             this.rawDumpEMGToolStripMenuItem.Text = "Raw Dump EMG";
+            this.rawDumpEMGToolStripMenuItem.Click += new System.EventHandler(this.rawDumpEMGToolStripMenuItem_Click_1);
             // 
             // extractEMGAsOBJToolStripMenuItem
             // 
@@ -1043,10 +1107,9 @@
             this.closeEMZToolStripMenuItem,
             this.AddFileToolStripMenuItem,
             this.extractTEXEMZTexturesToolStripMenuItem,
-            this.duplicateUSAMAN01BToolStripMenuItem,
-            this.updateLegacyStageFileToolStripMenuItem});
+            this.duplicateUSAMAN01BToolStripMenuItem});
             this.emzContext.Name = "emzContext";
-            this.emzContext.Size = new System.Drawing.Size(207, 136);
+            this.emzContext.Size = new System.Drawing.Size(207, 114);
             this.emzContext.Opening += new System.ComponentModel.CancelEventHandler(this.emzContext_Opening);
             // 
             // saveEMZToolStripMenuItem
@@ -1132,13 +1195,6 @@
             this.duplicateUSAMAN01BToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
             this.duplicateUSAMAN01BToolStripMenuItem.Text = "Duplicate USA_MAN01_B";
             this.duplicateUSAMAN01BToolStripMenuItem.Click += new System.EventHandler(this.dupliacteUSAMAN01BToolStripMenuItem_Click);
-            // 
-            // updateLegacyStageFileToolStripMenuItem
-            // 
-            this.updateLegacyStageFileToolStripMenuItem.Name = "updateLegacyStageFileToolStripMenuItem";
-            this.updateLegacyStageFileToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
-            this.updateLegacyStageFileToolStripMenuItem.Text = "Update Legacy Stage File";
-            this.updateLegacyStageFileToolStripMenuItem.Click += new System.EventHandler(this.updateLegacyStageFileToolStripMenuItem_Click);
             // 
             // cmEmpty
             // 
@@ -1314,21 +1370,28 @@
             this.deleteMaterialToolStripMenuItem1,
             this.renameMaterialToolStripMenuItem});
             this.matContext.Name = "matContext";
-            this.matContext.Size = new System.Drawing.Size(181, 92);
+            this.matContext.Size = new System.Drawing.Size(164, 70);
             // 
             // addMaterialToolStripMenuItem
             // 
             this.addMaterialToolStripMenuItem.Name = "addMaterialToolStripMenuItem";
-            this.addMaterialToolStripMenuItem.Size = new System.Drawing.Size(153, 22);
+            this.addMaterialToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
             this.addMaterialToolStripMenuItem.Text = "Add Material";
             this.addMaterialToolStripMenuItem.Click += new System.EventHandler(this.addMaterialToolStripMenuItem_Click);
             // 
             // deleteMaterialToolStripMenuItem1
             // 
             this.deleteMaterialToolStripMenuItem1.Name = "deleteMaterialToolStripMenuItem1";
-            this.deleteMaterialToolStripMenuItem1.Size = new System.Drawing.Size(153, 22);
+            this.deleteMaterialToolStripMenuItem1.Size = new System.Drawing.Size(163, 22);
             this.deleteMaterialToolStripMenuItem1.Text = "Delete Material";
             this.deleteMaterialToolStripMenuItem1.Click += new System.EventHandler(this.deleteMaterialToolStripMenuItem1_Click);
+            // 
+            // renameMaterialToolStripMenuItem
+            // 
+            this.renameMaterialToolStripMenuItem.Name = "renameMaterialToolStripMenuItem";
+            this.renameMaterialToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+            this.renameMaterialToolStripMenuItem.Text = "Rename Material";
+            this.renameMaterialToolStripMenuItem.Click += new System.EventHandler(this.renameMaterialToolStripMenuItem_Click);
             // 
             // csbContext
             // 
@@ -1420,6 +1483,7 @@
             // 
             this.emoContext.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.insertOBJAsNewEMGToolStripMenuItem1,
+            this.addEMGToolStripMenuItem,
             this.expandAllToolStripMenuItem,
             this.collapseAllToolStripMenuItem,
             this.extractEMOAsOBJToolStripMenuItem,
@@ -1428,7 +1492,7 @@
             this.InjectEMO,
             this.rawDumpEMOAsSMDToolStripMenuItem});
             this.emoContext.Name = "luaContext";
-            this.emoContext.Size = new System.Drawing.Size(259, 180);
+            this.emoContext.Size = new System.Drawing.Size(259, 224);
             this.emoContext.Opening += new System.ComponentModel.CancelEventHandler(this.emoContext_Opening);
             // 
             // insertOBJAsNewEMGToolStripMenuItem1
@@ -1487,74 +1551,12 @@
             this.rawDumpEMOAsSMDToolStripMenuItem.Text = "Dump EMO as SMD (Experimental)";
             this.rawDumpEMOAsSMDToolStripMenuItem.Click += new System.EventHandler(this.rawDumpEMOAsSMDToolStripMenuItem_Click);
             // 
-            // modelTextureGrid
+            // addEMGToolStripMenuItem
             // 
-            this.modelTextureGrid.AllowUserToResizeColumns = false;
-            this.modelTextureGrid.AllowUserToResizeRows = false;
-            this.modelTextureGrid.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
-            this.modelTextureGrid.BackgroundColor = System.Drawing.SystemColors.ButtonHighlight;
-            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle7.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle7.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle7.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle7.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.modelTextureGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle7;
-            this.modelTextureGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.modelTextureGrid.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.id,
-            this.Layer,
-            this.Index,
-            this.scaleU,
-            this.scaleV});
-            this.modelTextureGrid.Cursor = System.Windows.Forms.Cursors.IBeam;
-            this.modelTextureGrid.Location = new System.Drawing.Point(8, 33);
-            this.modelTextureGrid.Name = "modelTextureGrid";
-            this.modelTextureGrid.RowHeadersVisible = false;
-            this.modelTextureGrid.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
-            this.modelTextureGrid.ScrollBars = System.Windows.Forms.ScrollBars.None;
-            this.modelTextureGrid.Size = new System.Drawing.Size(192, 284);
-            this.modelTextureGrid.TabIndex = 53;
-            this.modelTextureGrid.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.modelTextureGrid_CellValueChanged);
-            // 
-            // id
-            // 
-            this.id.HeaderText = "ID";
-            this.id.Name = "id";
-            this.id.Width = 25;
-            // 
-            // Layer
-            // 
-            this.Layer.HeaderText = "Layer";
-            this.Layer.Name = "Layer";
-            this.Layer.Width = 41;
-            // 
-            // Index
-            // 
-            this.Index.HeaderText = "Index";
-            this.Index.Name = "Index";
-            this.Index.Width = 41;
-            // 
-            // scaleU
-            // 
-            this.scaleU.HeaderText = "Scale U";
-            this.scaleU.Name = "scaleU";
-            this.scaleU.Width = 41;
-            // 
-            // scaleV
-            // 
-            this.scaleV.HeaderText = "Scale V";
-            this.scaleV.Name = "scaleV";
-            this.scaleV.Width = 41;
-            // 
-            // renameMaterialToolStripMenuItem
-            // 
-            this.renameMaterialToolStripMenuItem.Name = "renameMaterialToolStripMenuItem";
-            this.renameMaterialToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.renameMaterialToolStripMenuItem.Text = "Rename Material";
-            this.renameMaterialToolStripMenuItem.Click += new System.EventHandler(this.renameMaterialToolStripMenuItem_Click);
+            this.addEMGToolStripMenuItem.Name = "addEMGToolStripMenuItem";
+            this.addEMGToolStripMenuItem.Size = new System.Drawing.Size(258, 22);
+            this.addEMGToolStripMenuItem.Text = "Add EMG";
+            this.addEMGToolStripMenuItem.Click += new System.EventHandler(this.addEMGToolStripMenuItem_Click);
             // 
             // Form1
             // 
@@ -1571,6 +1573,7 @@
             this.pnlOBJECTS.ResumeLayout(false);
             this.pSelectedTreeNodeData.ResumeLayout(false);
             this.pnlEO_MOD.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.modelTextureGrid)).EndInit();
             this.pnlEO_MaterialEdit.ResumeLayout(false);
             this.pnlEO_MaterialEdit.PerformLayout();
             this.pnlEO_SUBMOD.ResumeLayout(false);
@@ -1596,7 +1599,6 @@
             this.csbContext.ResumeLayout(false);
             this.emaContext.ResumeLayout(false);
             this.emoContext.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.modelTextureGrid)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -1736,7 +1738,6 @@
         private System.Windows.Forms.ToolStripMenuItem deleteCSBToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem rawDumpEMMToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem rawDumpEMBToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem updateLegacyStageFileToolStripMenuItem;
         public System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.ToolStripMenuItem injectColladaAsEMGExperimentalToolStripMenuItem;
         public System.Windows.Forms.DataGridView modelTextureGrid;
@@ -1746,6 +1747,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn scaleU;
         private System.Windows.Forms.DataGridViewTextBoxColumn scaleV;
         private System.Windows.Forms.ToolStripMenuItem renameMaterialToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem addEMGToolStripMenuItem;
     }
 }
 

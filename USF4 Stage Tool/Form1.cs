@@ -757,6 +757,7 @@ namespace USF4_Stage_Tool
 
 				tempMatGroup.DaisyChain = await Task.Run(() =>
 				{
+					//return GeometryIO.BruteForceChain(new List<int[]>(WorkingObject.MaterialGroups[i].FaceIndices));
 					return DaisyChainFromIndices(new List<int[]>(WorkingObject.MaterialGroups[i].FaceIndices));
 				});
 
@@ -2401,9 +2402,18 @@ namespace USF4_Stage_Tool
 		void TreeDisplayEMMDetails()
 		{
 			lvShaderProperties.Clear();
+			Utils.ReadShaders();
+			FillShaderComboBox();
 			EMM emm = (EMM)WorkingEMZ.Files[LastSelectedTreeNode.Parent.Index];
 			Material mat = emm.Materials[LastSelectedTreeNode.Index];
 			Console.WriteLine("Shader Name: " + Encoding.ASCII.GetString(mat.Name));
+
+			if (!Utils.Shaders.TryGetValue(Encoding.ASCII.GetString(mat.Shader), out _))
+            {
+				Utils.Shaders.Add(Encoding.ASCII.GetString(mat.Shader), Utils.Shaders.Count);
+				Utils.SaveShaders();
+            }
+
 			cbShaders.SelectedIndex = Utils.Shaders[Encoding.ASCII.GetString(mat.Shader)];
 			for (int i = 0; i < mat.PropertyCount; i++)
 			{
@@ -2552,6 +2562,7 @@ namespace USF4_Stage_Tool
 			lbSelNODE_ListData.Items.Clear();
 			lbSelNODE_ListData.Items.Add($"Bone Integers Count: {m.BoneIntegersCount}");
 			lbSelNODE_ListData.Items.Add($"Daisy Chain Length: {m.DaisyChainLength}");
+			lbSelNODE_ListData.Items.Add($"Daisy Chain Compression: {100 * m.DaisyChainLength / (GeometryIO.FaceIndicesFromDaisyChain(m.DaisyChain).Count * 3)}%");
 			lbSelNODE_ListData.Items.Add($"Material Index: {m.MaterialIndex}");
 		}
 
@@ -2777,7 +2788,7 @@ namespace USF4_Stage_Tool
 			if (Tag == "EMZ")
 			{
 				saveFileDialog1.Filter = EMZFileFilter;
-				if (WorkingEMZ.HEXBytes == null) return;
+				if (WorkingEMZ == null || WorkingEMZ.HEXBytes == null) return;
 
 				saveFileDialog1.InitialDirectory = string.Empty;
 				saveFileDialog1.FileName = TargetEMZFileName;
@@ -2793,7 +2804,7 @@ namespace USF4_Stage_Tool
 			else
 			{
 				saveFileDialog1.Filter = TEXEMZFileFilter;
-				if (WorkingTEXEMZ.HEXBytes == null) return;
+				if (WorkingTEXEMZ == null || WorkingTEXEMZ.HEXBytes == null) return;
 
 				saveFileDialog1.InitialDirectory = string.Empty;
 				saveFileDialog1.FileName = TargetTEXEMZFileName.Replace(".tex.emz", "");
@@ -4498,9 +4509,11 @@ namespace USF4_Stage_Tool
 		{
 			try
 			{
-				EMB emb;
-				if ((string)LastSelectedTreeNode.Tag == "EMB") { emb = (EMB)WorkingTEXEMZ.Files[LastSelectedTreeNode.Index]; }
-				else { emb = (EMB)WorkingTEXEMZ.Files[LastSelectedTreeNode.Parent.Index]; }
+				int index;
+
+				if (LastSelectedTreeNode.Tag.ToString() == "EMB") index = LastSelectedTreeNode.Index;
+				else index = LastSelectedTreeNode.Parent.Index;
+				EMB emb = (EMB)WorkingTEXEMZ.Files[index];
 				DDS dds = new DDS();
 				diagOpenOBJ.RestoreDirectory = true;
 				diagOpenOBJ.FileName = string.Empty;
@@ -4520,8 +4533,8 @@ namespace USF4_Stage_Tool
 					emb.FileNamePointerList.Add(0);
 					emb.DDSFiles.Add(dds);
 					emb.GenerateBytes();
-					WorkingTEXEMZ.Files.Remove(LastSelectedTreeNode.Parent.Index);
-					WorkingTEXEMZ.Files.Add(LastSelectedTreeNode.Parent.Index, emb);
+					WorkingTEXEMZ.Files.Remove(index);
+					WorkingTEXEMZ.Files.Add(index, emb);
 					RefreshTree(false);
 					ImageEngineImage IE = new ImageEngineImage(dds.HEXBytes);
 					pbPreviewDDS.BackgroundImage = Utils.BitmapFromBytes(IE.Save(new ImageEngineFormatDetails(ImageEngineFormat.PNG), new MipHandling()));
@@ -5698,11 +5711,6 @@ namespace USF4_Stage_Tool
 			}
 		}
 
-        private void rawDumpEMGToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-        }
-
 		private void AddFile(string filetype)
         {
 			diagOpenOBJ.RestoreDirectory = true;
@@ -5980,11 +5988,6 @@ namespace USF4_Stage_Tool
 			}
 		}
 
-        private void updateLegacyStageFileToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-			GeometryIO.UpdateLegacyStage(WorkingEMZ);
-        }
-
         private void injectColladaAsEMGExperimentalToolStripMenuItem_Click(object sender, EventArgs e)
         {
 			EMO emo = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
@@ -6056,6 +6059,55 @@ namespace USF4_Stage_Tool
 			{
 				return;
 			}
+		}
+
+        private void rawDumpEMGToolStripMenuItem_Click_1(object sender, EventArgs e)
+        {
+			EMO emo = (EMO)WorkingEMZ.Files[LastSelectedTreeNode.Parent.Index];
+
+			EMG emg = emo.EMGs[LastSelectedTreeNode.Index];
+
+			emg.GenerateBytes();
+
+			saveFileDialog1.Filter = EMGFileFilter;
+			saveFileDialog1.FileName = $"{Encoding.ASCII.GetString(emo.Name)}_EMG_{LastSelectedTreeNode.Index}";
+			if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+			{
+				Utils.WriteDataToStream(saveFileDialog1.FileName, emg.HEXBytes);
+				AddStatus($"Extracted {Encoding.ASCII.GetString(emo.Name)}_EMG_{LastSelectedTreeNode.Index}");
+			}
+		}
+
+        private void addEMGToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			EMO emo = (EMO)WorkingEMZ.Files[LastSelectedTreeNode.Index];
+
+			diagOpenOBJ.RestoreDirectory = true;
+			diagOpenOBJ.FileName = string.Empty;
+			diagOpenOBJ.InitialDirectory = LastOpenFolder;
+			diagOpenOBJ.Filter = EMGFileFilter;
+
+			if (diagOpenOBJ.ShowDialog() == DialogResult.OK)
+			{
+				string filepath = diagOpenOBJ.FileName;
+				if (filepath.Trim() != string.Empty)
+				{
+					FileStream fsSource = new FileStream(diagOpenOBJ.FileName, FileMode.Open, FileAccess.Read);
+					byte[] bytes;
+					using (BinaryReader br = new BinaryReader(fsSource, Encoding.ASCII)) { bytes = br.ReadBytes((int)fsSource.Length); }
+
+					emo.EMGs.Add(new EMG(bytes));
+					emo.EMGCount = emo.EMGs.Count;
+					emo.EMGPointersList.Add(0x00);
+					emo.GenerateBytes();
+
+					WorkingEMZ.Files.Remove(LastSelectedTreeNode.Index);
+					WorkingEMZ.Files.Add(LastSelectedTreeNode.Index, emo);
+
+					RefreshTree(false);
+				}
+			}
+
 		}
     }
 

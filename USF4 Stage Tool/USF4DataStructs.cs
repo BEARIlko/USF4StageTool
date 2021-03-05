@@ -1182,9 +1182,13 @@ namespace USF4_Stage_Tool
 				Console.WriteLine("Got EMG " + i);
 			}
 
+			/*Number of names in the index doesn't seem to be stored anywhere in the file.
+			 * We take the position of the first name, and subtract the position of the first name POINTER
+			 * That's the total length of the pointer list, divided by 4 = number of entries
+			 */
+			int NameListCount = (Utils.ReadInt(true, NamingListPointer + 0x20, HEXBytes) - (NamingListPointer)) / 4;
 
-
-			for (int i = 0; i < NumberEMMMaterials; i++)
+			for (int i = 0; i < NameListCount; i++)
 			{
 				NamingPointersList.Add(Utils.ReadInt(true, NamingListPointer + 0x20 + i * 4, HEXBytes));
 				NamesList.Add(Utils.ReadZeroTermStringToArray(NamingPointersList[i] + 0x20, HEXBytes, HEXBytes.Length));
