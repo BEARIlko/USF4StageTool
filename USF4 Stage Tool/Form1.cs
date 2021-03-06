@@ -2509,7 +2509,6 @@ namespace USF4_Stage_Tool
 				}
 				lbSelNODE_ListData.Items.Add($"Texture: {i} Index: {s}");
 			}
-			//if(m.TexturesList.Count > 0) tbEOMod_TextureIndex.Text = $"{m.TexturesList[0].TextureIndex[0]}";     //DONE Some way to edit "more" textures
 
 			//Try to find the EMB matching the current model...
 			matchingemb = new EMB();
@@ -2539,7 +2538,7 @@ namespace USF4_Stage_Tool
 				{
 					for(int j = 0; j < m.Textures[i].TextureLayers; j++)
                     {
-						string[] row = { $"{i}", $"{j}", $"{m.Textures[i].TextureIndicesList[j]}", $"{m.Textures[i].Scales_UList[j]}", $"{m.Textures[i].Scales_VList[j]}" };
+						string[] row = { $"{i}", $"{j}", $"{m.Textures[i].TextureIndicesList[j]}", $"{m.Textures[i].Scales_UList[j].ToString("0.00")}", $"{m.Textures[i].Scales_VList[j].ToString("0.00")}" };
 						modelTextureGrid.Rows.Add(row);
 						//If we have a matching EMB, set the tooltip to be the indexed DDS name
 						try
@@ -3149,24 +3148,6 @@ namespace USF4_Stage_Tool
 
 		private void BntEO_ModSave_Click(object sender, EventArgs e)
 		{
-			//if (tbEOMod_TextureIndex.Text.Trim() != string.Empty)
-			//{
-			//	int newTextureIndex = int.Parse(tbEOMod_TextureIndex.Text.Trim());
-			//	EMO emo = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
-			//	EMG emg = emo.EMGList[SelectedEMGNumberInTree];
-			//	Model model = emg.Models[SelectedModelNumberInTree];
-			//	model.TexturesList[0].TextureIndex[0] = newTextureIndex;
-			//	emg.Models.RemoveAt(SelectedModelNumberInTree);
-			//	emg.Models.Insert(SelectedModelNumberInTree, model);
-			//	emg.GenerateBytes();
-			//	emo.EMGList.RemoveAt(SelectedEMGNumberInTree);
-			//	emo.EMGList.Insert(SelectedEMGNumberInTree, emg);
-			//	emo.GenerateBytes();
-			//	WorkingEMZ.Files.Remove(SelectedEMONumberInTree);
-			//	WorkingEMZ.Files.Add(SelectedEMONumberInTree, emo);
-			//	TreeDisplayModelData(model);
-			//}
-
 			EMO emo = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
 			EMG emg = emo.EMGs[SelectedEMGNumberInTree];
 			Model model = emg.Models[SelectedModelNumberInTree];
@@ -3177,14 +3158,23 @@ namespace USF4_Stage_Tool
 			EMGTexture tex = new EMGTexture() { TextureIndicesList = new List<int>(), TextureLayers = 0, Scales_UList = new List<float>(), Scales_VList = new List<float>() };
 			int lastID = 0;
 
-            for (int i = 0; i < modelTextureGrid.Rows.Count -1; i++)
+            for (int i = 0; i < modelTextureGrid.Rows.Count; i++)
             {
-                bool IDtest = int.TryParse((string)modelTextureGrid.Rows[i].Cells[0].Value, out int ID);
-                bool Layerstest = int.TryParse((string)modelTextureGrid.Rows[i].Cells[1].Value, out int Layers);
-				bool Indextest = int.TryParse((string)modelTextureGrid.Rows[i].Cells[2].Value, out int Index);
-				bool Utest = float.TryParse((string)modelTextureGrid.Rows[i].Cells[3].Value, out float U);
-				bool Vtest = float.TryParse((string)modelTextureGrid.Rows[i].Cells[4].Value, out float V);
+				string sID = (string)modelTextureGrid.Rows[i].Cells[0].Value;
+				string sLayers = (string)modelTextureGrid.Rows[i].Cells[1].Value;
+				string sInd = (string)modelTextureGrid.Rows[i].Cells[2].Value;
+				string sU = (string)modelTextureGrid.Rows[i].Cells[3].Value;
+				string sV = (string)modelTextureGrid.Rows[i].Cells[4].Value;
 
+				if (sID + sLayers + sInd + sU + sV == string.Empty) continue; //Skip empty rows
+
+				bool IDtest = int.TryParse(sID, out int ID);
+                bool Layerstest = int.TryParse(sLayers, out int Layers);
+				bool Indextest = int.TryParse(sInd, out int Index);
+				bool Utest = float.TryParse(sU, out float U);
+				bool Vtest = float.TryParse(sV, out float V);
+
+				
 				if (IDtest && Layerstest && Indextest && Utest && Vtest && Layers < 2)
 				{
 					if (tex.TextureLayers == 0)
@@ -5850,7 +5840,7 @@ namespace USF4_Stage_Tool
         {
 			WorkingEMZ.Files.Remove(index);
 
-			Dictionary<int, object> temp = new Dictionary<int, object>();
+			Dictionary<int, USF4File> temp = new Dictionary<int, USF4File>();
 			for (int i = 0; i < index; i++)
             {
 				temp.Add(i, WorkingEMZ.Files[i]);
@@ -5873,7 +5863,7 @@ namespace USF4_Stage_Tool
 		{
 			WorkingTEXEMZ.Files.Remove(index);
 
-			Dictionary<int, object> temp = new Dictionary<int, object>();
+			Dictionary<int, USF4File> temp = new Dictionary<int, USF4File>();
 			for (int i = 0; i < index; i++)
 			{
 				temp.Add(i, WorkingTEXEMZ.Files[i]);
