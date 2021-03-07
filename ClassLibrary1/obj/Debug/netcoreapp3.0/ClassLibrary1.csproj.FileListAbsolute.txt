@@ -1,0 +1,9 @@
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\ClassLibrary1\bin\Debug\netcoreapp3.0\ClassLibrary1.deps.json
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\ClassLibrary1\bin\Debug\netcoreapp3.0\ClassLibrary1.dll
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\ClassLibrary1\bin\Debug\netcoreapp3.0\ClassLibrary1.pdb
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\ClassLibrary1\obj\Debug\netcoreapp3.0\ClassLibrary1.csprojAssemblyReference.cache
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\ClassLibrary1\obj\Debug\netcoreapp3.0\ClassLibrary1.AssemblyInfoInputs.cache
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\ClassLibrary1\obj\Debug\netcoreapp3.0\ClassLibrary1.AssemblyInfo.cs
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\ClassLibrary1\obj\Debug\netcoreapp3.0\ClassLibrary1.csproj.CoreCompileInputs.cache
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\ClassLibrary1\obj\Debug\netcoreapp3.0\ClassLibrary1.dll
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\ClassLibrary1\obj\Debug\netcoreapp3.0\ClassLibrary1.pdb

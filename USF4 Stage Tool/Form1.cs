@@ -1,8 +1,9 @@
 ﻿using CSharpImageLibrary;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
-using System.Drawing.Drawing2D;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -11,19 +12,25 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Forms.Integration;
 using static KopiLua.Lua;
 using static CSharpImageLibrary.ImageFormats;
 using System.Globalization;
 using Collada141;
-
-
+using System.Windows.Media.Media3D;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Interop;
 
 namespace USF4_Stage_Tool
 {
 
 	public partial class Form1 : Form
 	{
-        DebugOutput debugOutputForm;
+		[System.Runtime.InteropServices.DllImport("gdi32.dll")]
+		public static extern bool DeleteObject(IntPtr hObject);
+
+		DebugOutput debugOutputForm;
 		public string LastOpenFolder = string.Empty;
 
 		//File types filters
@@ -63,6 +70,8 @@ namespace USF4_Stage_Tool
 
 		EMZ WorkingEMZ;
 		EMZ WorkingTEXEMZ;
+		ElementHost EH3D = new ElementHost();
+		HostingWpfUserControlInWf.UserControl1 uc = new HostingWpfUserControlInWf.UserControl1();
 		ObjFile WorkingObjFile;
 		ObjModel WorkingObject;
 		string WorkingFileName;
@@ -2127,7 +2136,7 @@ namespace USF4_Stage_Tool
 			tvTree.Nodes.Add(NodeEMZ);
 			for (int i = 0; i < sourceEMZ.Files.Count; i++)
 			{
-				object file = sourceEMZ.Files[i];
+				USF4File file = sourceEMZ.Files[i];
 				string nodeName = Encoding.UTF8.GetString(sourceEMZ.FileNamesList[i]);
 				if (file.GetType() == typeof(EMO))
 				{
@@ -2309,6 +2318,7 @@ namespace USF4_Stage_Tool
 			{
 				CM = luaContext;
 				title = e.Node.Text;
+				lbSelNODE_ListData.Items.Clear();
 			}
 			if (e.Node.Tag.ToString() == "CSB")
 			{
@@ -2520,8 +2530,8 @@ namespace USF4_Stage_Tool
 					object file = WorkingTEXEMZ.Files[i];
 					if (file.GetType() == typeof(EMB))
 					{
-						byte[] targetemo = Utils.ChopByteArray(WorkingEMZ.FileNamesList[SelectedEMONumberInTree], 0x04, 0x03);
-						byte[] targetemb = Utils.ChopByteArray(WorkingTEXEMZ.FileNamesList[i], 0x04, 0x03);
+						byte[] targetemo = Utils.ChopByteArray(WorkingEMZ.FileNamesList[SelectedEMONumberInTree], 0, WorkingEMZ.FileNamesList[SelectedEMONumberInTree].Length - 1);
+						byte[] targetemb = Utils.ChopByteArray(WorkingTEXEMZ.FileNamesList[i], 0, WorkingTEXEMZ.FileNamesList[i].Length - 1);
 
 						if (Encoding.ASCII.GetString(targetemo) == Encoding.ASCII.GetString(targetemb))
 						{
@@ -3065,9 +3075,29 @@ namespace USF4_Stage_Tool
 		}
 
 		private void Form1_Load(object sender, EventArgs e)
-		{
-            pnlEO_EMG.Visible = false;
+		{		
+			pnlEO_EMG.Visible = false;
 			pnlEO_MOD.Visible = false;
+
+			EH3D = new ElementHost();
+			EH3D.Dock = DockStyle.None;
+			EH3D.Location = new Point()
+			{
+				X = pSelectedTreeNodeData.Location.X + pnlOBJECTS.Location.X,
+				Y = pSelectedTreeNodeData.Location.Y + pnlOBJECTS.Location.Y
+			};
+			EH3D.Width = pSelectedTreeNodeData.Width;
+			EH3D.Height = pSelectedTreeNodeData.Height;
+			EH3D.Visible = false;
+
+			// Create the WPF UserControl.
+			uc = new HostingWpfUserControlInWf.UserControl1();
+			// Assign the WPF UserControl to the ElementHost control's
+			// Child property.
+			EH3D.Child = uc;
+			// Add the ElementHost control to the form's
+			// collection of child controls.
+			Controls.Add(EH3D);
 
 			#region Set up tooltips
 			foreach (ToolStripItem ts in emgContext.Items)
@@ -3134,7 +3164,6 @@ namespace USF4_Stage_Tool
 				AddAnimationtoolStripMenuItem2.Visible = false;
 				dumpRefPoseToSMDToolStripMenuItem.Visible = false;
 				rawDumpEMAToolStripMenuItem.Visible = false;
-				updateLegacyStageFileToolStripMenuItem.Visible = false;
 				injectColladaAsEMGExperimentalToolStripMenuItem.Visible = false;
 #endif
 
@@ -5661,7 +5690,8 @@ namespace USF4_Stage_Tool
 
 			if (saveFileDialog1.ShowDialog() == DialogResult.OK)
 			{
-				List<string> lines = GeometryIO.EMGtoOBJ(emg, Encoding.ASCII.GetString(emo.Name).Split('\0')[0] + $"_EMG_{SelectedEMGNumberInTree}");
+				//List<string> lines = GeometryIO.EMGtoOBJ(emg, Encoding.ASCII.GetString(emo.Name).Split('\0')[0] + $"_EMG_{SelectedEMGNumberInTree}");
+				List<string> lines = GeometryIO.EMGtoOBJ(emg, "test" + $"_EMG_{SelectedEMGNumberInTree}");
 
 				File.WriteAllLines(saveFileDialog1.FileName, lines);
 			}
@@ -5678,7 +5708,8 @@ namespace USF4_Stage_Tool
 
 			if (saveFileDialog1.ShowDialog() == DialogResult.OK)
 			{
-				List<string> lines = GeometryIO.ModeltoOBJ(emg, SelectedModelNumberInTree, Encoding.ASCII.GetString(emo.Name).Split('\0')[0] + $"_EMG_{SelectedEMGNumberInTree}");
+				//List<string> lines = GeometryIO.ModeltoOBJ(emg, SelectedModelNumberInTree, Encoding.ASCII.GetString(emo.Name).Split('\0')[0] + $"_EMG_{SelectedEMGNumberInTree}");
+				List<string> lines = GeometryIO.ModeltoOBJ(emg, SelectedModelNumberInTree, "test" + $"_EMG_{SelectedEMGNumberInTree}");
 
 				File.WriteAllLines(saveFileDialog1.FileName, lines);
 			}
@@ -6099,8 +6130,182 @@ namespace USF4_Stage_Tool
 			}
 
 		}
-    }
 
+		private void previewToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			EH3D.Visible = true;
+			EH3D.BringToFront();
+
+			uc.ClearModels();
+
+			TreeNode node = LastSelectedTreeNode;
+			//Get the EMO node
+			while(!((string)node.Tag == "EMO"))
+            {
+				node = node.Parent;
+            }
+
+			EMO emo = (EMO)WorkingEMZ.Files[node.Index];
+			EMG emg = emo.EMGs[SelectedEMGNumberInTree];
+
+			//Look for an emb that matches our EMO
+			matchingemb = new EMB();
+
+			if (WorkingTEXEMZ != null && WorkingTEXEMZ.Files != null)
+			{
+				for (int i = 0; i < WorkingTEXEMZ.Files.Count; i++)
+				{
+					USF4File file = WorkingTEXEMZ.Files[i];
+					if (file.GetType() == typeof(EMB))
+					{
+						byte[] targetemo = Utils.ChopByteArray(WorkingEMZ.FileNamesList[SelectedEMONumberInTree], 0x00, WorkingEMZ.FileNamesList[SelectedEMONumberInTree].Length - 1);
+						byte[] targetemb = Utils.ChopByteArray(WorkingTEXEMZ.FileNamesList[i], 0x00, WorkingTEXEMZ.FileNamesList[i].Length - 1);
+
+						if (Encoding.ASCII.GetString(targetemo) == Encoding.ASCII.GetString(targetemb))
+						{
+							matchingemb = (EMB)WorkingTEXEMZ.Files[i];
+						}
+					}
+				}
+			}
+
+			//Gather mesh and texture data for each model
+			for (int i = 0; i < emg.Models.Count; i++)
+			//for (int i = 0; i < emg.Models.Count; i++)
+			{
+				Point3DCollection pos = new Point3DCollection();
+				Vector3DCollection norm = new Vector3DCollection();
+				PointCollection tex = new PointCollection();
+				
+				for (int j = 0; j < emg.Models[i].VertexData.Count; j++)
+				{
+					Vertex v = emg.Models[i].VertexData[j];
+					pos.Add(new Point3D(v.X, v.Y, v.Z));
+					if((emg.Models[i].BitDepth & 0x02) == 0x02) norm.Add(new Vector3D(v.nX, v.nY, v.nZ));
+					tex.Add(new System.Windows.Point(v.U, v.V));
+				}
+
+				for (int j = 0; j < emg.Models[i].SubModels.Count; j++)
+				//for (int j = 0; j < 1; j++)
+				{
+					BitmapSource bitmapSource;
+					int textureindex;
+					DDS dds;
+					List<int[]> tempfaceindices;
+					Int32Collection faces = new Int32Collection();
+					MaterialGroup mg = new MaterialGroup();
+					List<int> ddsindices = new List<int>();
+					tempfaceindices = GeometryIO.FaceIndicesFromDaisyChain(emg.Models[i].SubModels[j].DaisyChain);
+					textureindex = emg.Models[i].SubModels[j].MaterialIndex;
+					if (emg.Models[i].Textures != null && emg.Models[i].Textures.Count != 0)
+					{
+						for (int k = 0; k < emg.Models[i].Textures[textureindex].TextureIndicesList.Count; k++)
+                        {
+							ddsindices.Add(emg.Models[i].Textures[textureindex].TextureIndicesList[k]);
+                        }
+					}
+
+					for (int k = 0; k < tempfaceindices.Count; k++)
+					{
+						faces.Add(tempfaceindices[k][2]);
+						faces.Add(tempfaceindices[k][1]);
+						faces.Add(tempfaceindices[k][0]);
+					}
+
+					//Try to convert the matched DDS file into BMP
+					try
+					{
+						if (matchingemb.DDSFiles != null && ddsindices.Max() < matchingemb.DDSFiles.Count)
+						{
+							for (int k = 0; k < ddsindices.Count; k++)
+							{
+								dds = matchingemb.DDSFiles[ddsindices[k]];
+
+								using (ImageEngineImage IE = new ImageEngineImage(dds.HEXBytes)) //Use IEI to convert dds bytes to System.Drawing.Image
+								{
+									Bitmap image = Utils.BitmapFromBytes(IE.Save(new ImageEngineFormatDetails(ImageEngineFormat.PNG), new MipHandling()));
+
+									using (System.Drawing.Bitmap bmp = new System.Drawing.Bitmap(image)) //Use Interop to convert to a BitmapSource to use as a WPF brush
+									{
+										IntPtr hBitmap = bmp.GetHbitmap();
+										try
+										{
+											bitmapSource = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(hBitmap, IntPtr.Zero, System.Windows.Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
+										}
+										finally
+										{
+											DeleteObject(hBitmap);
+										}
+									}
+								}
+
+								double opacity = 1;
+
+								if (k == 1) opacity = 0.5;
+
+								mg.Children.Add(new DiffuseMaterial()
+								{
+									Brush = new System.Windows.Media.ImageBrush()
+									{
+										ImageSource = bitmapSource,
+										TileMode = TileMode.Tile,
+										Transform = new ScaleTransform(
+											1d / emg.Models[i].Textures[textureindex].Scales_UList[k],
+											1d / emg.Models[i].Textures[textureindex].Scales_VList[k]),
+										ViewportUnits = BrushMappingMode.Absolute,
+										Opacity = opacity
+									}
+								});
+							}
+						}
+						else //Default to solid color Red if there's no matching dds
+						{
+							mg.Children.Add(new DiffuseMaterial()
+							{
+								Brush = new SolidColorBrush()
+								{
+									Color = System.Windows.Media.Color.FromRgb(255, 0, 0),
+									Opacity = 1
+								}
+							});
+						}
+					}
+					catch //Default to purple if an exception is thrown (eg bad DDS data)
+					{
+						mg.Children.Add(new DiffuseMaterial()
+						{
+							Brush = new SolidColorBrush()
+							{
+								Color = System.Windows.Media.Color.FromRgb(255, 0, 255),
+								Opacity = 1
+							}
+						});
+					}
+
+					//Add the completed model before moving on to the next
+					uc.AddModel(new GeometryModel3D()
+					{
+						Geometry = new MeshGeometry3D()
+						{
+							Positions = pos,
+							Normals = norm,
+							TextureCoordinates = tex,
+							TriangleIndices = faces
+						},
+						Material = mg,
+						
+					
+					});
+				}
+			}            
+		}
+
+        private void closePreviewWindowToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			uc.ClearModels();
+			EH3D.Visible = false;
+        }
+    }
 }
 
 

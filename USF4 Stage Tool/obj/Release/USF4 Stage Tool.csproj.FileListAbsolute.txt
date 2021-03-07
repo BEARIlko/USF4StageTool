@@ -136,3 +136,23 @@ E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool
 E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.pdb
 E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\bin\Release\Microsoft.IO.RecyclableMemoryStream.xml
 E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\bin\Release\System.Diagnostics.DiagnosticSource.xml
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.csprojAssemblyReference.cache
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\USF4 Stage Tool\obj\Release\USF4_Stage_Tool.DebugOutput.resources
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\USF4 Stage Tool\obj\Release\USF4_Stage_Tool.Form1.resources
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\USF4 Stage Tool\obj\Release\USF4_Stage_Tool.InputBox.resources
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\USF4 Stage Tool\obj\Release\USF4_Stage_Tool.Properties.Resources.resources
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.csproj.GenerateResource.cache
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.csproj.CoreCompileInputs.cache
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.exe
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.pdb
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\USF4 Stage Tool\bin\Release\USF4 Stage Tool.exe.config
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\USF4 Stage Tool\bin\Release\USF4 Stage Tool.exe
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\USF4 Stage Tool\bin\Release\USF4 Stage Tool.pdb
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\USF4 Stage Tool\bin\Release\CSharpImageLibrary.xml
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\USF4 Stage Tool\bin\Release\Microsoft.IO.RecyclableMemoryStream.xml
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\USF4 Stage Tool\bin\Release\System.Diagnostics.DiagnosticSource.xml
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\USF4 Stage Tool\bin\Release\System.Numerics.Vectors.xml
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\USF4 Stage Tool\bin\Release\System.Threading.Tasks.Dataflow.xml
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\USF4 Stage Tool\bin\Release\UsefulThings.xml
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.csproj.Fody.CopyLocal.cache
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.csproj.CopyComplete

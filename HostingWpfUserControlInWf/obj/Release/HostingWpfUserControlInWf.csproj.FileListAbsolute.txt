@@ -1,0 +1,12 @@
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\HostingWpfUserControlInWf\bin\Release\HostingWpfUserControlInWf.dll
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\HostingWpfUserControlInWf\bin\Release\HostingWpfUserControlInWf.pdb
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\HostingWpfUserControlInWf\obj\Release\HostingWpfUserControlInWf.csprojAssemblyReference.cache
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\HostingWpfUserControlInWf\obj\Release\UserControl1.baml
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\HostingWpfUserControlInWf\obj\Release\UserControl1.g.cs
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\HostingWpfUserControlInWf\obj\Release\HostingWpfUserControlInWf_MarkupCompile.cache
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\HostingWpfUserControlInWf\obj\Release\HostingWpfUserControlInWf.g.resources
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\HostingWpfUserControlInWf\obj\Release\HostingWpfUserControlInWf.Properties.Resources.resources
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\HostingWpfUserControlInWf\obj\Release\HostingWpfUserControlInWf.csproj.GenerateResource.cache
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\HostingWpfUserControlInWf\obj\Release\HostingWpfUserControlInWf.csproj.CoreCompileInputs.cache
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\HostingWpfUserControlInWf\obj\Release\HostingWpfUserControlInWf.dll
+E:\USF4 Stage Tool 3d attempt\USF4StageTool\HostingWpfUserControlInWf\obj\Release\HostingWpfUserControlInWf.pdb

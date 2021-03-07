@@ -29,14 +29,19 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.diagOpenOBJ = new System.Windows.Forms.OpenFileDialog();
             this.pnlOBJECTS = new System.Windows.Forms.Panel();
             this.pSelectedTreeNodeData = new System.Windows.Forms.Panel();
             this.pnlEO_MOD = new System.Windows.Forms.Panel();
             this.modelTextureGrid = new System.Windows.Forms.DataGridView();
+            this.id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Layer = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Index = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.scaleU = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.scaleV = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.bntEO_NodeSave = new System.Windows.Forms.Button();
             this.label10 = new System.Windows.Forms.Label();
             this.pnlEO_MaterialEdit = new System.Windows.Forms.Panel();
@@ -110,6 +115,7 @@
             this.duplicateModelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.duplicateEMGToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.injectColladaAsEMGExperimentalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.previewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.emzContext = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.saveEMZToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.closeEMZToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -162,6 +168,7 @@
             this.deleteEMAToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.emoContext = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.insertOBJAsNewEMGToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.addEMGToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.expandAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.collapseAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.extractEMOAsOBJToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -169,12 +176,7 @@
             this.deleteEMOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.InjectEMO = new System.Windows.Forms.ToolStripMenuItem();
             this.rawDumpEMOAsSMDToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.addEMGToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Layer = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Index = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.scaleU = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.scaleV = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.closePreviewWindowToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pnlOBJECTS.SuspendLayout();
             this.pSelectedTreeNodeData.SuspendLayout();
             this.pnlEO_MOD.SuspendLayout();
@@ -258,14 +260,14 @@
             this.modelTextureGrid.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
             this.modelTextureGrid.BackgroundColor = System.Drawing.SystemColors.ButtonHighlight;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.modelTextureGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle7.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle7.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle7.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle7.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.modelTextureGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle7;
             this.modelTextureGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.modelTextureGrid.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.id,
@@ -274,14 +276,14 @@
             this.scaleU,
             this.scaleV});
             this.modelTextureGrid.Cursor = System.Windows.Forms.Cursors.IBeam;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.modelTextureGrid.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle8.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle8.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle8.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle8.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle8.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.modelTextureGrid.DefaultCellStyle = dataGridViewCellStyle8;
             this.modelTextureGrid.Location = new System.Drawing.Point(8, 33);
             this.modelTextureGrid.Name = "modelTextureGrid";
             this.modelTextureGrid.RowHeadersVisible = false;
@@ -290,6 +292,41 @@
             this.modelTextureGrid.Size = new System.Drawing.Size(192, 284);
             this.modelTextureGrid.TabIndex = 53;
             this.modelTextureGrid.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.modelTextureGrid_CellValueChanged);
+            // 
+            // id
+            // 
+            this.id.HeaderText = "ID";
+            this.id.Name = "id";
+            this.id.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.id.Width = 25;
+            // 
+            // Layer
+            // 
+            this.Layer.HeaderText = "Layer";
+            this.Layer.Name = "Layer";
+            this.Layer.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.Layer.Width = 41;
+            // 
+            // Index
+            // 
+            this.Index.HeaderText = "Index";
+            this.Index.Name = "Index";
+            this.Index.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.Index.Width = 41;
+            // 
+            // scaleU
+            // 
+            this.scaleU.HeaderText = "Scale U";
+            this.scaleU.Name = "scaleU";
+            this.scaleU.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.scaleU.Width = 41;
+            // 
+            // scaleV
+            // 
+            this.scaleV.HeaderText = "Scale V";
+            this.scaleV.Name = "scaleV";
+            this.scaleV.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.scaleV.Width = 41;
             // 
             // bntEO_NodeSave
             // 
@@ -595,7 +632,7 @@
             this.pbPreviewDDS.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.pbPreviewDDS.Location = new System.Drawing.Point(3, 3);
             this.pbPreviewDDS.Name = "pbPreviewDDS";
-            this.pbPreviewDDS.Size = new System.Drawing.Size(443, 399);
+            this.pbPreviewDDS.Size = new System.Drawing.Size(443, 390);
             this.pbPreviewDDS.TabIndex = 58;
             this.pbPreviewDDS.TabStop = false;
             this.pbPreviewDDS.Visible = false;
@@ -997,9 +1034,11 @@
             this.injectSMDAsEMGExperimentalToolStripMenuItem,
             this.duplicateModelToolStripMenuItem,
             this.duplicateEMGToolStripMenuItem,
-            this.injectColladaAsEMGExperimentalToolStripMenuItem});
+            this.injectColladaAsEMGExperimentalToolStripMenuItem,
+            this.previewToolStripMenuItem,
+            this.closePreviewWindowToolStripMenuItem});
             this.emgContext.Name = "treeContext";
-            this.emgContext.Size = new System.Drawing.Size(269, 246);
+            this.emgContext.Size = new System.Drawing.Size(269, 312);
             this.emgContext.Opening += new System.ComponentModel.CancelEventHandler(this.emgContext_Opening);
             // 
             // emgContextInjectOBJ
@@ -1078,6 +1117,13 @@
             this.injectColladaAsEMGExperimentalToolStripMenuItem.Size = new System.Drawing.Size(268, 22);
             this.injectColladaAsEMGExperimentalToolStripMenuItem.Text = "Inject Collada as EMG (Experimental)";
             this.injectColladaAsEMGExperimentalToolStripMenuItem.Click += new System.EventHandler(this.injectColladaAsEMGExperimentalToolStripMenuItem_Click);
+            // 
+            // previewToolStripMenuItem
+            // 
+            this.previewToolStripMenuItem.Name = "previewToolStripMenuItem";
+            this.previewToolStripMenuItem.Size = new System.Drawing.Size(268, 22);
+            this.previewToolStripMenuItem.Text = "Preview";
+            this.previewToolStripMenuItem.Click += new System.EventHandler(this.previewToolStripMenuItem_Click);
             // 
             // emzContext
             // 
@@ -1481,6 +1527,13 @@
             this.insertOBJAsNewEMGToolStripMenuItem1.Text = "Insert OBJ As New EMG";
             this.insertOBJAsNewEMGToolStripMenuItem1.Click += new System.EventHandler(this.insertOBJAsNewEMGToolStripMenuItem1_Click);
             // 
+            // addEMGToolStripMenuItem
+            // 
+            this.addEMGToolStripMenuItem.Name = "addEMGToolStripMenuItem";
+            this.addEMGToolStripMenuItem.Size = new System.Drawing.Size(258, 22);
+            this.addEMGToolStripMenuItem.Text = "Add EMG";
+            this.addEMGToolStripMenuItem.Click += new System.EventHandler(this.addEMGToolStripMenuItem_Click);
+            // 
             // expandAllToolStripMenuItem
             // 
             this.expandAllToolStripMenuItem.Name = "expandAllToolStripMenuItem";
@@ -1530,47 +1583,12 @@
             this.rawDumpEMOAsSMDToolStripMenuItem.Text = "Dump EMO as SMD (Experimental)";
             this.rawDumpEMOAsSMDToolStripMenuItem.Click += new System.EventHandler(this.rawDumpEMOAsSMDToolStripMenuItem_Click);
             // 
-            // addEMGToolStripMenuItem
+            // closePreviewWindowToolStripMenuItem
             // 
-            this.addEMGToolStripMenuItem.Name = "addEMGToolStripMenuItem";
-            this.addEMGToolStripMenuItem.Size = new System.Drawing.Size(258, 22);
-            this.addEMGToolStripMenuItem.Text = "Add EMG";
-            this.addEMGToolStripMenuItem.Click += new System.EventHandler(this.addEMGToolStripMenuItem_Click);
-            // 
-            // id
-            // 
-            this.id.HeaderText = "ID";
-            this.id.Name = "id";
-            this.id.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.id.Width = 25;
-            // 
-            // Layer
-            // 
-            this.Layer.HeaderText = "Layer";
-            this.Layer.Name = "Layer";
-            this.Layer.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.Layer.Width = 41;
-            // 
-            // Index
-            // 
-            this.Index.HeaderText = "Index";
-            this.Index.Name = "Index";
-            this.Index.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.Index.Width = 41;
-            // 
-            // scaleU
-            // 
-            this.scaleU.HeaderText = "Scale U";
-            this.scaleU.Name = "scaleU";
-            this.scaleU.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.scaleU.Width = 41;
-            // 
-            // scaleV
-            // 
-            this.scaleV.HeaderText = "Scale V";
-            this.scaleV.Name = "scaleV";
-            this.scaleV.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.scaleV.Width = 41;
+            this.closePreviewWindowToolStripMenuItem.Name = "closePreviewWindowToolStripMenuItem";
+            this.closePreviewWindowToolStripMenuItem.Size = new System.Drawing.Size(268, 22);
+            this.closePreviewWindowToolStripMenuItem.Text = "Close Preview Window";
+            this.closePreviewWindowToolStripMenuItem.Click += new System.EventHandler(this.closePreviewWindowToolStripMenuItem_Click);
             // 
             // Form1
             // 
@@ -1762,6 +1780,8 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn Index;
         private System.Windows.Forms.DataGridViewTextBoxColumn scaleU;
         private System.Windows.Forms.DataGridViewTextBoxColumn scaleV;
+        private System.Windows.Forms.ToolStripMenuItem previewToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem closePreviewWindowToolStripMenuItem;
     }
 }
 
