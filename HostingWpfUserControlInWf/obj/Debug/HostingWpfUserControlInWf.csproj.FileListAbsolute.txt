@@ -10,3 +10,15 @@ E:\USF4 Stage Tool 3d attempt\USF4StageTool\HostingWpfUserControlInWf\obj\Debug\
 E:\USF4 Stage Tool 3d attempt\USF4StageTool\HostingWpfUserControlInWf\obj\Debug\HostingWpfUserControlInWf.dll
 E:\USF4 Stage Tool 3d attempt\USF4StageTool\HostingWpfUserControlInWf\obj\Debug\HostingWpfUserControlInWf.pdb
 E:\USF4 Stage Tool 3d attempt\USF4StageTool\HostingWpfUserControlInWf\obj\Debug\HostingWpfUserControlInWf.csprojAssemblyReference.cache
+E:\GIT\USF4 Stage Tool\USF4StageTool\HostingWpfUserControlInWf\bin\Debug\HostingWpfUserControlInWf.dll
+E:\GIT\USF4 Stage Tool\USF4StageTool\HostingWpfUserControlInWf\bin\Debug\HostingWpfUserControlInWf.pdb
+E:\GIT\USF4 Stage Tool\USF4StageTool\HostingWpfUserControlInWf\obj\Debug\HostingWpfUserControlInWf.csprojAssemblyReference.cache
+E:\GIT\USF4 Stage Tool\USF4StageTool\HostingWpfUserControlInWf\obj\Debug\UserControl1.baml
+E:\GIT\USF4 Stage Tool\USF4StageTool\HostingWpfUserControlInWf\obj\Debug\UserControl1.g.cs
+E:\GIT\USF4 Stage Tool\USF4StageTool\HostingWpfUserControlInWf\obj\Debug\HostingWpfUserControlInWf_MarkupCompile.cache
+E:\GIT\USF4 Stage Tool\USF4StageTool\HostingWpfUserControlInWf\obj\Debug\HostingWpfUserControlInWf.g.resources
+E:\GIT\USF4 Stage Tool\USF4StageTool\HostingWpfUserControlInWf\obj\Debug\HostingWpfUserControlInWf.Properties.Resources.resources
+E:\GIT\USF4 Stage Tool\USF4StageTool\HostingWpfUserControlInWf\obj\Debug\HostingWpfUserControlInWf.csproj.GenerateResource.cache
+E:\GIT\USF4 Stage Tool\USF4StageTool\HostingWpfUserControlInWf\obj\Debug\HostingWpfUserControlInWf.csproj.CoreCompileInputs.cache
+E:\GIT\USF4 Stage Tool\USF4StageTool\HostingWpfUserControlInWf\obj\Debug\HostingWpfUserControlInWf.dll
+E:\GIT\USF4 Stage Tool\USF4StageTool\HostingWpfUserControlInWf\obj\Debug\HostingWpfUserControlInWf.pdb

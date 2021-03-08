@@ -2067,49 +2067,6 @@ namespace USF4_Stage_Tool
 			return nLUA;
 		}
 
-		//EMB ReadEMB(byte[] Data)
-		//{
-  //          EMB nEMB = new EMB
-  //          {
-  //              HEXBytes = Data,
-  //              NumberOfFiles = Utils.ReadInt(true, 0x0C, Data),
-  //              FileListPointer = Utils.ReadInt(true, 0x18, Data),
-  //              FileNameListPointer = Utils.ReadInt(true, 0x1C, Data),
-  //              FileNamePointerList = new List<int>(),
-  //              FileNameList = new List<byte[]>(),
-  //              FilePointerList = new List<int>(),
-  //              FileLengthList = new List<int>(),
-  //              DDSFiles = new List<DDS>()
-  //          };
-
-  //          for (int i = 0; i < nEMB.NumberOfFiles; i++)
-		//	{
-		//		nEMB.FilePointerList.Add(Utils.ReadInt(true, nEMB.FileListPointer + i * 8, Data));
-		//		nEMB.FileLengthList.Add(Utils.ReadInt(true, nEMB.FileListPointer + i * 8 + 0x04, Data));
-		//	}
-		//	for (int i = 0; i < nEMB.NumberOfFiles; i++)
-		//	{
-		//		if (nEMB.FileNameListPointer == 0x00) //if there wasn't a file index, add a dummy one
-		//		{
-		//			nEMB.FileNamePointerList.Add(0x00);
-		//			nEMB.FileNameList.Add(new byte[] { 0x44, 0x44, 0x53 });
-		//		}
-		//		else
-		//		{
-		//			nEMB.FileNamePointerList.Add(Utils.ReadInt(true, nEMB.FileNameListPointer + i * 4, Data));
-		//			nEMB.FileNameList.Add(Utils.ReadZeroTermStringToArray(nEMB.FileNamePointerList[i], nEMB.HEXBytes, nEMB.HEXBytes.Length));
-		//		}
-		//	}
-		//	for (int i = 0; i < nEMB.NumberOfFiles; i++)
-		//	{
-		//		DDS WorkingDDS = new DDS();
-		//		WorkingDDS.HEXBytes = Utils.ChopByteArray(nEMB.HEXBytes, nEMB.FilePointerList[i] + nEMB.FileListPointer + (i * 8), nEMB.FileLengthList[i]);
-		//		nEMB.DDSFiles.Add(WorkingDDS);
-		//	}
-
-		//	return nEMB;
-		//}
-
 		#region Tree Methods
 		public void ClearTree() { tvTree.Nodes.Clear(); }
 
@@ -6171,7 +6128,6 @@ namespace USF4_Stage_Tool
 
 			//Gather mesh and texture data for each model
 			for (int i = 0; i < emg.Models.Count; i++)
-			//for (int i = 0; i < emg.Models.Count; i++)
 			{
 				Point3DCollection pos = new Point3DCollection();
 				Vector3DCollection norm = new Vector3DCollection();
@@ -6186,7 +6142,6 @@ namespace USF4_Stage_Tool
 				}
 
 				for (int j = 0; j < emg.Models[i].SubModels.Count; j++)
-				//for (int j = 0; j < 1; j++)
 				{
 					BitmapSource bitmapSource;
 					int textureindex;
@@ -6293,8 +6248,6 @@ namespace USF4_Stage_Tool
 							TriangleIndices = faces
 						},
 						Material = mg,
-						
-					
 					});
 				}
 			}            

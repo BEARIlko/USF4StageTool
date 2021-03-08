@@ -11,7 +11,7 @@
                 TextBlock.TextAlignment="Center" 
                 FontSize="20" 
                 Foreground="Red" 
-                Content="Model: Cone"/>
+                Content="Model:"/>
 
         <!-- Viewport3D is the rendering surface. -->
         <Viewport3D Name="myViewport" MouseLeftButtonDown="myViewport_MouseLeftButtonDown" MouseRightButtonDown="myViewport_MouseRightButtonDown" >

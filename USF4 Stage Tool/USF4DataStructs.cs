@@ -11,6 +11,7 @@ namespace USF4_Stage_Tool
     public class USF4File
     {
 		public byte[] HEXBytes;
+		public byte[] Name;
 		public virtual void ReadFile(byte[] Data)
         {
 			HEXBytes = Data;
@@ -68,7 +69,7 @@ namespace USF4_Stage_Tool
 				else file = new OtherFile();
 
 				file.ReadFile(Utils.ChopByteArray(Data, FilePointersList[i] + FileListPointer + (i * 8), FileLengthsList[i]));
-
+				file.Name = FileNamesList[i];
 				Files.Add(i, file);
 			}
 
@@ -106,7 +107,7 @@ namespace USF4_Stage_Tool
 				else file = new OtherFile();
 
 				file.ReadFile(Utils.ChopByteArray(Data, FilePointersList[i] + FileListPointer + (i * 8), FileLengthsList[i]));
-
+				file.Name = FileNamesList[i];
 				Files.Add(i, file);
 			}
 
@@ -176,7 +177,6 @@ namespace USF4_Stage_Tool
 
 	public class EMB : USF4File
 	{
-		public byte[] Name;
 		public int NumberOfFiles;
 		public int FileListPointer;
 		public int FileNameListPointer;
@@ -328,9 +328,7 @@ namespace USF4_Stage_Tool
 	}
 
 	public class CSB : USF4File
-	{
-		public byte[] Name;
-		
+	{	
 		public CSB()
         {
 
@@ -339,12 +337,10 @@ namespace USF4_Stage_Tool
 
 	public class LUA : USF4File
 	{
-		public byte[] Name;
 	}
 
 	public class EMM : USF4File
 	{
-		public byte[] Name;
 		public int MaterialCount;
 		public List<int> MaterialPointersList;
 		public List<Material> Materials;
@@ -413,8 +409,7 @@ namespace USF4_Stage_Tool
 	}
 
 	public class EME : USF4File //TODO - Still being read as "Other File" at the moment
-    {
-		public byte[] Name;		
+    {	
 		public int EffectCount;
 		public List<Effect> Effects;
 	}
@@ -432,7 +427,6 @@ namespace USF4_Stage_Tool
 
 	public class EMA : USF4File
 	{
-		public byte[] Name;
 		public int SkeletonPointer;
 		public int AnimationCount;
 		public int MysteryIntOS12; //Always seems to be 3?
@@ -930,7 +924,6 @@ namespace USF4_Stage_Tool
 	{
 		public int SkeletonPointer;
 		public int EMGCount;
-		public byte[] Name;
 		public int NumberEMMMaterials; //???
 		public int NamingListPointer;
 		public List<int> EMGPointersList;
