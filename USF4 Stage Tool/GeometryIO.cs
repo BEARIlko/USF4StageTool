@@ -283,9 +283,117 @@ namespace USF4_Stage_Tool
             return lines;
         }
 
+        public static Animation AnimationFromColladaStruct()
+        {
+            COLLADA model = COLLADA.Load("USAMananim.dae");
+            Animation animation1 = new Animation();
+
+            foreach (var lib in model.Items)
+            {
+                //All the mesh data apart from bone weights are in the geometries library
+                var animations = lib as library_animations;
+                if (animations == null)
+                    continue;
+                foreach (var anim in animations.animation)
+                {
+                    if (anim == null)
+                        continue;
+                    Dictionary<float, int> valuedict = new Dictionary<float, int>();
+                    valuedict.Add(0, 0);
+
+                    int d_max = 0;
+
+                    animation1 = new Animation()
+                    {
+                        CmdTrackCount = 4,
+                        CmdTrackPointersList = new List<int>() { 0, 0, 0, 0, 0 },
+                        CMDTracks = new List<CMDTrack>(),
+                        Name = Encoding.ASCII.GetBytes("ANIMATION_000"),
+                        NamePointer = 0,
+                        ValuesList = new List<float>(),
+                        ValuesListPointer = 0,
+                        ValueCount = 0,
+                        Duration = 0
+                    };
+
+                    for (int i = 0; i < anim.Items.Length; i++)
+                    {
+                        var item = anim.Items[i];
+                        var animation = item as animation;
+
+                        var inputarray = animation.Items[0] as source;
+                        var outputarray = animation.Items[1] as source;
+
+                        var input_floatarray = inputarray.Item as float_array;
+                        var output_floatarray = outputarray.Item as float_array;
+
+                        int boneID = 0;
+                        byte bitflag = 9;
+                        byte transformtype = 3;
+                        List<int> tempsteps = new List<int>() { 0 };
+                        List<int> tempindices = new List<int>() { 0 };
+
+
+                        if (animation.id.Split('_').Last() == "X") bitflag = 0;
+                        if (animation.id.Split('_').Last() == "Y") bitflag = 1;
+                        if (animation.id.Split('_').Last() == "Z") bitflag = 2;
+
+                        if (animation.id.Contains("location")) transformtype = 0;
+                        if (animation.id.Contains("rotation")) transformtype = 1;
+                        if (animation.id.Contains("scale")) transformtype = 2;
+
+                        if (animation.name.Split('_').Last() == "LArm1") boneID = 9;
+                        if (animation.name.Split('_').Last() == "LArm2") boneID = 10;
+                        if (animation.name.Split('_').Last() == "RArm1") boneID = 13;
+                        if (animation.name.Split('_').Last() == "RArm2") boneID = 14;
+                        if (animation.name.Split('_').Last() == "LLeg2") boneID = 20;
+                        
+                        foreach(float f in input_floatarray.Values)
+                        {
+                            tempsteps.Add((int)Math.Round(f * 24f));
+                        }
+
+                        foreach (float f in output_floatarray.Values)
+                        {
+                            if (!valuedict.TryGetValue(f, out _))
+                            {
+                                valuedict.Add(f, valuedict.Count);
+                            }
+                        }
+                        
+                        foreach (float f in output_floatarray.Values)
+                        {
+                            tempindices.Add(valuedict[f]);
+                        }
+
+                        d_max = Math.Max(d_max, (int)Math.Round(input_floatarray.Values.Max() * 24f));
+
+                        CMDTrack cmd = new CMDTrack()
+                        {
+                            TransformType = transformtype, //ROTATION
+                            BitFlag = bitflag,
+                            BoneID = boneID,
+                            StepCount = tempsteps.Count,
+                            StepsList = tempsteps,
+                            IndicesListPointer = 0,
+                            IndicesList = tempindices
+                        };
+
+                        animation1.CMDTracks.Add(cmd);
+                    }
+                    animation1.CmdTrackCount = animation1.CMDTracks.Count;
+                    animation1.Duration = 80;
+                    animation1.ValueCount = valuedict.Count;
+                    animation1.ValuesList = valuedict.Keys.ToList();
+                }
+            }
+
+            return animation1;
+        }
+
         public static EMG ReadColladaStruct()
         {
-            COLLADA model = COLLADA.Load("USA_MAN03_B.dae");
+            COLLADA model = COLLADA.Load("USAMananim.dae");
 
             //model.Save("USAman2.dae");
 

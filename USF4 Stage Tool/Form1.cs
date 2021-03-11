@@ -2293,7 +2293,7 @@ namespace USF4_Stage_Tool
 			}
 			if (e.Node.Tag.ToString() == "EMA")
 			{
-				CM = emoContext;
+				CM = emaContext;
 				TreeDisplayEMAData((EMA)WorkingEMZ.Files[e.Node.Index]);
 
 				title = e.Node.Text;
@@ -2354,6 +2354,7 @@ namespace USF4_Stage_Tool
 				TreeDisplaySubModelData(sEMO.EMGs[SelectedEMGNumberInTree].Models[e.Node.Parent.Index].SubModels[e.Node.Index]);
 				pnlEO_SUBMOD.Visible = true;
 				tbEO_SubModName.Text = $"{e.Node.Text}";
+				tbEO_SubModMaterial.Text = $"{sEMO.EMGs[SelectedEMGNumberInTree].Models[e.Node.Parent.Index].SubModels[e.Node.Index].MaterialIndex}";
 				title = $"{e.Node.Text}";
 			}
 			lbSelNODE_Title.Text = title;
@@ -3032,7 +3033,8 @@ namespace USF4_Stage_Tool
 		}
 
 		private void Form1_Load(object sender, EventArgs e)
-		{		
+		{
+
 			pnlEO_EMG.Visible = false;
 			pnlEO_MOD.Visible = false;
 
@@ -3122,6 +3124,7 @@ namespace USF4_Stage_Tool
 				dumpRefPoseToSMDToolStripMenuItem.Visible = false;
 				rawDumpEMAToolStripMenuItem.Visible = false;
 				injectColladaAsEMGExperimentalToolStripMenuItem.Visible = false;
+				
 #endif
 
 			lbSelNODE_Title.Text = string.Empty;
@@ -3261,7 +3264,7 @@ namespace USF4_Stage_Tool
 
 		private void BntEO_SubModSave_Click(object sender, EventArgs e)
 		{
-			if (tbEO_SubModName.Text.Trim() != string.Empty)
+			if (tbEO_SubModName.Text.Trim() != string.Empty && Int32.TryParse(tbEO_SubModMaterial.Text.Trim(), out int smMaterial))
 			{
 				string value = tbEO_SubModName.Text.Trim();
 				byte[] newName = Utils.MakeModelName(value);
@@ -3271,12 +3274,22 @@ namespace USF4_Stage_Tool
 				Model model = emg.Models[SelectedModelNumberInTree];
 				SubModel sm = model.SubModels[SelectedSubModelNumberInTree];
 				oldName = sm.SubModelName;
+				if (Encoding.ASCII.GetString(oldName) == Encoding.ASCII.GetString(newName) && sm.MaterialIndex == smMaterial)
+				{
+					AddStatus("No changes applied.");
+					return;
+				}
+				sm.MaterialIndex = smMaterial;
+
 				if (Encoding.ASCII.GetString(oldName) == Encoding.ASCII.GetString(newName))
 				{
-					AddStatus("Names are the same! No changes applied!");
+					AddStatus("Material index updated.");
 					return;
 				}
 				sm.SubModelName = newName;
+
+				AddStatus("Submodel info updated.");
+
 				EMM emm = new EMM();
 				bool found = false;
 				bool alreadyExists = false;
@@ -3287,8 +3300,8 @@ namespace USF4_Stage_Tool
 					if (file.GetType() == typeof(EMM))
 					{
 						emm = (EMM)file;
-						byte[] subName = Utils.ChopByteArray(emm.Name, 0x04, 0x03);
-						byte[] targetName = Utils.ChopByteArray(emo.Name, 0x04, 0x03);
+						byte[] subName = Utils.ChopByteArray(emm.Name, 0x00, emm.Name.Length - 1);
+						byte[] targetName = Utils.ChopByteArray(emo.Name, 0x00, emo.Name.Length - 1);
 						Console.WriteLine($" Comparing: {Encoding.ASCII.GetString(subName)} to {Encoding.ASCII.GetString(targetName)}");
 						if (Encoding.ASCII.GetString(subName) == Encoding.ASCII.GetString(targetName))
 						{
@@ -3330,7 +3343,7 @@ namespace USF4_Stage_Tool
 					}
 				}
 				if (!found & !alreadyExists) Console.Write("Did not find material");
-				if (alreadyExists) Console.Write("Found exisitng material");
+				if (alreadyExists) Console.Write("Found existing material");
 				if (found)
 				{
 					emm.GenerateBytes();
@@ -3352,7 +3365,11 @@ namespace USF4_Stage_Tool
 
 				WorkingEMZ.Files.Remove(SelectedEMONumberInTree);
 				WorkingEMZ.Files.Add(SelectedEMONumberInTree, emo);
+
+				lbSelNODE_Title.Text = Encoding.ASCII.GetString(sm.SubModelName);
+
 				RefreshTree(false);
+				TreeDisplaySubModelData(sm);
 			}
 		}
 
@@ -5381,34 +5398,19 @@ namespace USF4_Stage_Tool
 
         private void rawDumpEMAToolStripMenuItem_Click(object sender, EventArgs e)
         {
-			EMA targetEMA = (EMA)WorkingEMZ.Files[LastSelectedTreeNode.Parent.Index];
+			EMA targetEMA = (EMA)WorkingEMZ.Files[LastSelectedTreeNode.Index];
 
 			EMA nEMA = targetEMA;
 
-			Animation nAnim = new Animation();
-
-			for(int i = 0; i < nEMA.AnimationCount; i++)
-            {
-				nAnim = Anim.DuplicateAnimation(nEMA.Animations[i], 1,20);
-				nEMA.Animations.RemoveAt(i);
-				nEMA.Animations.Insert(i, nAnim);
-            }
-
-			//nEMA.Skeleton = Anim.DuplicateSkeleton(nEMA.Skeleton, 1);
-			nEMA.Skeleton.GenerateBytes();
 			nEMA.GenerateBytes();
 
-			WorkingEMZ.Files.Remove(LastSelectedTreeNode.Parent.Index);
-			WorkingEMZ.Files.Add(LastSelectedTreeNode.Parent.Index, nEMA);
-			RefreshTree(false);
-
-			//saveFileDialog1.Filter = EMOFileFilter;
-			//saveFileDialog1.FileName = Encoding.ASCII.GetString(nEMA.Name);
-			//if (saveFileDialog1.ShowDialog() == DialogResult.OK)
-			//{
-			//	Utils.WriteDataToStream(saveFileDialog1.FileName, nEMA.HEXBytes);
-			//	AddStatus($"Extracted {Encoding.ASCII.GetString(nEMA.Name)}");
-			//}
+			saveFileDialog1.Filter = EMAFileFilter;
+			saveFileDialog1.FileName = Encoding.ASCII.GetString(nEMA.Name);
+			if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+			{
+				Utils.WriteDataToStream(saveFileDialog1.FileName, nEMA.HEXBytes);
+				AddStatus($"Extracted {Encoding.ASCII.GetString(nEMA.Name)}");
+			}
 
 		}
 
@@ -5610,7 +5612,16 @@ namespace USF4_Stage_Tool
 
         private void AddAnimationtoolStripMenuItem2_Click(object sender, EventArgs e)
         {
+			EMA ema = (EMA)WorkingEMZ.Files[LastSelectedTreeNode.Index];
 
+			ema.AnimationCount++;
+			ema.Animations.Add(GeometryIO.AnimationFromColladaStruct());
+			ema.AnimationPointersList.Add(0);
+			ema.GenerateBytes();
+
+			WorkingEMZ.Files.Remove(LastSelectedTreeNode.Index);
+			WorkingEMZ.Files.Add(LastSelectedTreeNode.Index, ema);
+			RefreshTree(false);
         }
 
 		private void extractEMOAsOBJToolStripMenuItem_Click(object sender, EventArgs e)
@@ -5647,8 +5658,7 @@ namespace USF4_Stage_Tool
 
 			if (saveFileDialog1.ShowDialog() == DialogResult.OK)
 			{
-				//List<string> lines = GeometryIO.EMGtoOBJ(emg, Encoding.ASCII.GetString(emo.Name).Split('\0')[0] + $"_EMG_{SelectedEMGNumberInTree}");
-				List<string> lines = GeometryIO.EMGtoOBJ(emg, "test" + $"_EMG_{SelectedEMGNumberInTree}");
+				List<string> lines = GeometryIO.EMGtoOBJ(emg, Encoding.ASCII.GetString(emo.Name).Split('\0')[0] + $"_EMG_{SelectedEMGNumberInTree}");
 
 				File.WriteAllLines(saveFileDialog1.FileName, lines);
 			}
@@ -5665,8 +5675,7 @@ namespace USF4_Stage_Tool
 
 			if (saveFileDialog1.ShowDialog() == DialogResult.OK)
 			{
-				//List<string> lines = GeometryIO.ModeltoOBJ(emg, SelectedModelNumberInTree, Encoding.ASCII.GetString(emo.Name).Split('\0')[0] + $"_EMG_{SelectedEMGNumberInTree}");
-				List<string> lines = GeometryIO.ModeltoOBJ(emg, SelectedModelNumberInTree, "test" + $"_EMG_{SelectedEMGNumberInTree}");
+				List<string> lines = GeometryIO.ModeltoOBJ(emg, SelectedModelNumberInTree, Encoding.ASCII.GetString(emo.Name).Split('\0')[0] + $"_EMG_{SelectedEMGNumberInTree}");
 
 				File.WriteAllLines(saveFileDialog1.FileName, lines);
 			}
@@ -5968,6 +5977,7 @@ namespace USF4_Stage_Tool
 
         private void injectColladaAsEMGExperimentalToolStripMenuItem_Click(object sender, EventArgs e)
         {
+
 			EMO emo = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
 			
 			EMG emg = GeometryIO.ReadColladaStruct();

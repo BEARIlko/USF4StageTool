@@ -29,8 +29,8 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.diagOpenOBJ = new System.Windows.Forms.OpenFileDialog();
             this.pnlOBJECTS = new System.Windows.Forms.Panel();
@@ -116,6 +116,7 @@
             this.duplicateEMGToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.injectColladaAsEMGExperimentalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.previewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.closePreviewWindowToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.emzContext = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.saveEMZToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.closeEMZToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -176,7 +177,8 @@
             this.deleteEMOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.InjectEMO = new System.Windows.Forms.ToolStripMenuItem();
             this.rawDumpEMOAsSMDToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.closePreviewWindowToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tbEO_SubModMaterial = new System.Windows.Forms.TextBox();
+            this.label4 = new System.Windows.Forms.Label();
             this.pnlOBJECTS.SuspendLayout();
             this.pSelectedTreeNodeData.SuspendLayout();
             this.pnlEO_MOD.SuspendLayout();
@@ -228,9 +230,9 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.pSelectedTreeNodeData.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pSelectedTreeNodeData.Controls.Add(this.pnlEO_SUBMOD);
             this.pSelectedTreeNodeData.Controls.Add(this.pnlEO_MOD);
             this.pSelectedTreeNodeData.Controls.Add(this.pnlEO_MaterialEdit);
-            this.pSelectedTreeNodeData.Controls.Add(this.pnlEO_SUBMOD);
             this.pSelectedTreeNodeData.Controls.Add(this.pnlEO_EMG);
             this.pSelectedTreeNodeData.Controls.Add(this.lbSelNODE_ListData);
             this.pSelectedTreeNodeData.Controls.Add(this.lbSelNODE_Title);
@@ -260,14 +262,14 @@
             this.modelTextureGrid.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
             this.modelTextureGrid.BackgroundColor = System.Drawing.SystemColors.ButtonHighlight;
-            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle7.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle7.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle7.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle7.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.modelTextureGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle7;
+            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle5.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.modelTextureGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
             this.modelTextureGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.modelTextureGrid.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.id,
@@ -276,14 +278,14 @@
             this.scaleU,
             this.scaleV});
             this.modelTextureGrid.Cursor = System.Windows.Forms.Cursors.IBeam;
-            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle8.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle8.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle8.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle8.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle8.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.modelTextureGrid.DefaultCellStyle = dataGridViewCellStyle8;
+            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle6.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle6.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.modelTextureGrid.DefaultCellStyle = dataGridViewCellStyle6;
             this.modelTextureGrid.Location = new System.Drawing.Point(8, 33);
             this.modelTextureGrid.Name = "modelTextureGrid";
             this.modelTextureGrid.RowHeadersVisible = false;
@@ -492,20 +494,22 @@
             this.pnlEO_SUBMOD.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlEO_SUBMOD.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pnlEO_SUBMOD.Controls.Add(this.label4);
+            this.pnlEO_SUBMOD.Controls.Add(this.tbEO_SubModMaterial);
             this.pnlEO_SUBMOD.Controls.Add(this.bntEO_SubModSave);
             this.pnlEO_SUBMOD.Controls.Add(this.tbEO_SubModName);
             this.pnlEO_SUBMOD.Controls.Add(this.label1);
             this.pnlEO_SUBMOD.Controls.Add(this.label12);
             this.pnlEO_SUBMOD.Location = new System.Drawing.Point(237, 31);
             this.pnlEO_SUBMOD.Name = "pnlEO_SUBMOD";
-            this.pnlEO_SUBMOD.Size = new System.Drawing.Size(209, 369);
+            this.pnlEO_SUBMOD.Size = new System.Drawing.Size(209, 371);
             this.pnlEO_SUBMOD.TabIndex = 54;
             this.pnlEO_SUBMOD.Visible = false;
             // 
             // bntEO_SubModSave
             // 
             this.bntEO_SubModSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.bntEO_SubModSave.Location = new System.Drawing.Point(8, 323);
+            this.bntEO_SubModSave.Location = new System.Drawing.Point(8, 325);
             this.bntEO_SubModSave.Name = "bntEO_SubModSave";
             this.bntEO_SubModSave.Size = new System.Drawing.Size(191, 38);
             this.bntEO_SubModSave.TabIndex = 52;
@@ -654,7 +658,7 @@
             this.pOBJProperties.Controls.Add(this.label2);
             this.pOBJProperties.Controls.Add(this.tbScaleV);
             this.pOBJProperties.Controls.Add(this.tbScaleU);
-            this.pOBJProperties.Location = new System.Drawing.Point(810, 18);
+            this.pOBJProperties.Location = new System.Drawing.Point(810, 19);
             this.pOBJProperties.Name = "pOBJProperties";
             this.pOBJProperties.Size = new System.Drawing.Size(234, 407);
             this.pOBJProperties.TabIndex = 23;
@@ -794,7 +798,7 @@
             // 
             this.tvTree.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
-            this.tvTree.Location = new System.Drawing.Point(11, 18);
+            this.tvTree.Location = new System.Drawing.Point(11, 19);
             this.tvTree.Name = "tvTree";
             this.tvTree.Size = new System.Drawing.Size(334, 407);
             this.tvTree.TabIndex = 22;
@@ -1038,7 +1042,7 @@
             this.previewToolStripMenuItem,
             this.closePreviewWindowToolStripMenuItem});
             this.emgContext.Name = "treeContext";
-            this.emgContext.Size = new System.Drawing.Size(269, 312);
+            this.emgContext.Size = new System.Drawing.Size(269, 290);
             this.emgContext.Opening += new System.ComponentModel.CancelEventHandler(this.emgContext_Opening);
             // 
             // emgContextInjectOBJ
@@ -1124,6 +1128,13 @@
             this.previewToolStripMenuItem.Size = new System.Drawing.Size(268, 22);
             this.previewToolStripMenuItem.Text = "Preview";
             this.previewToolStripMenuItem.Click += new System.EventHandler(this.previewToolStripMenuItem_Click);
+            // 
+            // closePreviewWindowToolStripMenuItem
+            // 
+            this.closePreviewWindowToolStripMenuItem.Name = "closePreviewWindowToolStripMenuItem";
+            this.closePreviewWindowToolStripMenuItem.Size = new System.Drawing.Size(268, 22);
+            this.closePreviewWindowToolStripMenuItem.Text = "Close Preview Window";
+            this.closePreviewWindowToolStripMenuItem.Click += new System.EventHandler(this.closePreviewWindowToolStripMenuItem_Click);
             // 
             // emzContext
             // 
@@ -1583,12 +1594,24 @@
             this.rawDumpEMOAsSMDToolStripMenuItem.Text = "Dump EMO as SMD (Experimental)";
             this.rawDumpEMOAsSMDToolStripMenuItem.Click += new System.EventHandler(this.rawDumpEMOAsSMDToolStripMenuItem_Click);
             // 
-            // closePreviewWindowToolStripMenuItem
+            // tbEO_SubModMaterial
             // 
-            this.closePreviewWindowToolStripMenuItem.Name = "closePreviewWindowToolStripMenuItem";
-            this.closePreviewWindowToolStripMenuItem.Size = new System.Drawing.Size(268, 22);
-            this.closePreviewWindowToolStripMenuItem.Text = "Close Preview Window";
-            this.closePreviewWindowToolStripMenuItem.Click += new System.EventHandler(this.closePreviewWindowToolStripMenuItem_Click);
+            this.tbEO_SubModMaterial.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbEO_SubModMaterial.Location = new System.Drawing.Point(13, 98);
+            this.tbEO_SubModMaterial.Name = "tbEO_SubModMaterial";
+            this.tbEO_SubModMaterial.Size = new System.Drawing.Size(70, 20);
+            this.tbEO_SubModMaterial.TabIndex = 53;
+            this.tbEO_SubModMaterial.TabStop = false;
+            this.tbEO_SubModMaterial.WordWrap = false;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(10, 82);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(73, 13);
+            this.label4.TabIndex = 54;
+            this.label4.Text = "Material Index";
             // 
             // Form1
             // 
@@ -1782,6 +1805,8 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn scaleV;
         private System.Windows.Forms.ToolStripMenuItem previewToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem closePreviewWindowToolStripMenuItem;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.TextBox tbEO_SubModMaterial;
     }
 }
 
