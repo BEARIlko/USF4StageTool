@@ -19,7 +19,7 @@
             <!-- Add a camera. -->
             <Viewport3D.Camera>
                 <PerspectiveCamera x:Name="Cam"
-                        FarPlaneDistance="100" 
+                        FarPlaneDistance="150" 
                         LookDirection="-0.5,-1,5" 
                         UpDirection="0,1,0" 
                         NearPlaneDistance="1" 

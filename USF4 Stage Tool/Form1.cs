@@ -1693,56 +1693,47 @@ namespace USF4_Stage_Tool
 		void FillShaderComboBox()
 		{
 			cbShaders.Items.Clear();
-			foreach (string s in Utils.Shaders.Keys)
-			{
-				cbShaders.Items.Add(s);
-			}
+			cbShaders.Items.AddRange(Utils.Shaders.Keys.ToArray());
 		}
 
 		void FillShaderPropertiesComboBox()
 		{
 			cbShaderProperties.Items.Clear();
-			foreach (string s in Utils.ShadersProperties.Keys)
-			{
-				cbShaderProperties.Items.Add(s);
-			}
+			cbShaderProperties.Items.AddRange(Utils.ShadersProperties.Keys.ToArray());
 		}
 
 		void SaveEMZToFile(string Tag)
 		{
 			string filepath;
 
+			EMZ targetEMZ;
+			saveFileDialog1.InitialDirectory = string.Empty;
+
 			if (Tag == "EMZ")
 			{
+				targetEMZ = WorkingEMZ;
+				if (targetEMZ == null || targetEMZ.HEXBytes == null) return;
 				saveFileDialog1.Filter = EMZFileFilter;
-				if (WorkingEMZ == null || WorkingEMZ.HEXBytes == null) return;
-
-				saveFileDialog1.InitialDirectory = string.Empty;
 				saveFileDialog1.FileName = TargetEMZFileName;
-				if (saveFileDialog1.ShowDialog() == DialogResult.OK)
-				{
-					filepath = saveFileDialog1.FileName;
-					File.Delete(filepath); //Not very good but works
-					WorkingEMZ.GenerateBytes();
-					File.WriteAllBytes(filepath, WorkingEMZ.HEXBytes);
-					AddStatus($"Saved {filepath}");
-				}
 			}
 			else
 			{
+				targetEMZ = WorkingTEXEMZ;
+				if (targetEMZ == null || targetEMZ.HEXBytes == null) return;
 				saveFileDialog1.Filter = TEXEMZFileFilter;
-				if (WorkingTEXEMZ == null || WorkingTEXEMZ.HEXBytes == null) return;
-
-				saveFileDialog1.InitialDirectory = string.Empty;
 				saveFileDialog1.FileName = TargetTEXEMZFileName.Replace(".tex.emz", "");
-				if (saveFileDialog1.ShowDialog() == DialogResult.OK)
-				{
-					filepath = saveFileDialog1.FileName.Replace(".tex.emz", "") + ".tex.emz";
-					File.Delete(filepath); //Not very good but works
-					WorkingTEXEMZ.GenerateBytes();
-					File.WriteAllBytes(filepath, WorkingTEXEMZ.HEXBytes);
-					AddStatus($"Saved {filepath}");
-				}
+			}
+
+			if (targetEMZ == null || targetEMZ.HEXBytes == null) return;
+
+
+			if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+			{
+				filepath = saveFileDialog1.FileName.Replace(".tex.emz", "") + ".tex.emz";
+				File.Delete(filepath); //Not very good but works
+				targetEMZ.GenerateBytes();
+				File.WriteAllBytes(filepath, targetEMZ.HEXBytes);
+				AddStatus($"Saved {filepath}");
 			}
 		}
 

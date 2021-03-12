@@ -16,9 +16,13 @@ namespace USF4_Stage_Tool
         {
 			HEXBytes = Data;
         }
-		public virtual void GenerateBytes()
+		public virtual byte[] GenerateBytes()
         {
-
+			return HEXBytes;
+        }
+		public virtual void SaveFile(string path)
+        {
+			Utils.WriteDataToStream(path, GenerateBytes());
         }
 	}
 
@@ -38,7 +42,6 @@ namespace USF4_Stage_Tool
 		}
 		public EMZ(byte[] Data)
 		{
-
 			HEXBytes = Data;
 			NumberOfFiles = Utils.ReadInt(true, 0x0C, Data);
 			FileListPointer = Utils.ReadInt(true, 0x18, Data);
@@ -76,7 +79,6 @@ namespace USF4_Stage_Tool
 		}
 		public override void ReadFile(byte[] Data)
 		{
-
 			HEXBytes = Data;
 			NumberOfFiles = Utils.ReadInt(true, 0x0C, Data);
 			FileListPointer = Utils.ReadInt(true, 0x18, Data);
@@ -112,7 +114,7 @@ namespace USF4_Stage_Tool
 			}
 
 		}
-		public override void GenerateBytes()
+		public override byte[] GenerateBytes()
 		{
 			List<byte> Data = new List<byte>();
 			List<int> FilePointerPositions = new List<int>();
@@ -167,6 +169,8 @@ namespace USF4_Stage_Tool
 			}
 
 			HEXBytes = Data.ToArray();
+
+            return Data.ToArray();
 		}
 	}
 
@@ -265,7 +269,7 @@ namespace USF4_Stage_Tool
 				DDSFiles.Add(WorkingDDS);
 			}
 		}
-        public override void GenerateBytes()
+        public override byte[] GenerateBytes()
         {
 			List<byte> Data = new List<byte>();
 
@@ -318,6 +322,8 @@ namespace USF4_Stage_Tool
 
 
 			HEXBytes = Data.ToArray();
+
+			return Data.ToArray();
 		}
 	}
 
@@ -378,7 +384,7 @@ namespace USF4_Stage_Tool
 				Materials.Add(new Material(Data.Slice(MaterialPointersList[i] + 0x10, Data.Length - (MaterialPointersList[i] + 0x10))));
 			}
 		}
-        public override void GenerateBytes()
+        public override byte[] GenerateBytes()
 		{
 			List<byte> Data = new List<byte>();
 			List<int> MaterialPointerPositions = new List<int>();
@@ -404,7 +410,8 @@ namespace USF4_Stage_Tool
 				}
 			}
 			HEXBytes = Data.ToArray();
-			
+
+			return Data.ToArray();
 		}
 	}
 
@@ -655,7 +662,7 @@ namespace USF4_Stage_Tool
 			}
 			else Skeleton = new Skeleton();
 		}
-        public override void GenerateBytes()
+        public override byte[] GenerateBytes()
 		{
 			List<Byte> Data = new List<byte>();
 
@@ -812,6 +819,8 @@ namespace USF4_Stage_Tool
 			Data.Add(0x00);
 
 			HEXBytes = Data.ToArray();
+
+			return Data.ToArray();
 		}
 	}
 
@@ -1012,7 +1021,7 @@ namespace USF4_Stage_Tool
 				NamesList.Add(Utils.ReadZeroTermStringToArray(NamingPointersList[i] + 0x20, HEXBytes, HEXBytes.Length));
 			}
 		}
-        public override void GenerateBytes()
+        public override byte[] GenerateBytes()
         {
 			List<byte> Data = new List<byte>();
 			List<int> EMGIndexPositions = new List<int>();
@@ -1075,6 +1084,8 @@ namespace USF4_Stage_Tool
 			Utils.AddZeroToLineEnd(Data);
 			
 			HEXBytes = Data.ToArray();
+
+			return Data.ToArray();
 		}
 	}
 
@@ -1491,7 +1502,7 @@ namespace USF4_Stage_Tool
 			HEXBytes = HEXBytes.Slice(0, length);
 		}
 
-		public override void GenerateBytes()
+		public override byte[] GenerateBytes()
 		{
 			List<byte> Data = new List<byte>();
 
@@ -1647,7 +1658,7 @@ namespace USF4_Stage_Tool
 					{
 						for (int k = 0; k < 4; k++)
 						{
-							if (Models[i].VertexData[j].BoneIDs.Count > k)
+							if (Models[i].VertexData[j].BoneIDs != null && Models[i].VertexData[j].BoneIDs.Count > k)
 							{
 								Data.Add(Convert.ToByte(Models[i].VertexData[j].BoneIDs[k]));
 							}
@@ -1655,7 +1666,7 @@ namespace USF4_Stage_Tool
 						}
 						for (int k = 0; k < 3; k++)
 						{
-							if (Models[i].VertexData[j].BoneWeights.Count > k)
+							if (Models[i].VertexData[j].BoneWeights != null && Models[i].VertexData[j].BoneWeights.Count > k)
 							{
 								Utils.AddFloatAsBytes(Data, Models[i].VertexData[j].BoneWeights[k]);
 							}
@@ -1665,6 +1676,8 @@ namespace USF4_Stage_Tool
 				}
 			}
 			HEXBytes = Data.ToArray();
+
+			return Data.ToArray();
 		}
 	}
 
