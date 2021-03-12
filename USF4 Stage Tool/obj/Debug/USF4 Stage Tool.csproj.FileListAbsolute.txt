@@ -258,3 +258,4 @@ E:\USF4 Stage Tool 3d attempt\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4 Stage
 E:\USF4 Stage Tool 3d attempt\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.CopyComplete
 E:\USF4 Stage Tool 3d attempt\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.exe
 E:\USF4 Stage Tool 3d attempt\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.pdb
+E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.CompressDaisyChain.resources

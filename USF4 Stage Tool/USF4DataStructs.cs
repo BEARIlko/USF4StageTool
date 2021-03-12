@@ -68,7 +68,7 @@ namespace USF4_Stage_Tool
 				else if (FileType == USF4Methods.CSB) file = new CSB();
 				else file = new OtherFile();
 
-				file.ReadFile(Utils.ChopByteArray(Data, FilePointersList[i] + FileListPointer + (i * 8), FileLengthsList[i]));
+				file.ReadFile(Data.Slice(FilePointersList[i] + FileListPointer + (i * 8), FileLengthsList[i]));
 				file.Name = FileNamesList[i];
 				Files.Add(i, file);
 			}
@@ -106,7 +106,7 @@ namespace USF4_Stage_Tool
 				else if (FileType == USF4Methods.CSB) file = new CSB();
 				else file = new OtherFile();
 
-				file.ReadFile(Utils.ChopByteArray(Data, FilePointersList[i] + FileListPointer + (i * 8), FileLengthsList[i]));
+				file.ReadFile(Data.Slice(FilePointersList[i] + FileListPointer + (i * 8), FileLengthsList[i]));
 				file.Name = FileNamesList[i];
 				Files.Add(i, file);
 			}
@@ -224,7 +224,7 @@ namespace USF4_Stage_Tool
 			for (int i = 0; i < NumberOfFiles; i++)
 			{
 				DDS WorkingDDS = new DDS();
-				WorkingDDS.HEXBytes = Utils.ChopByteArray(HEXBytes, FilePointerList[i] + FileListPointer + (i * 8), FileLengthList[i]);
+				WorkingDDS.HEXBytes = HEXBytes.Slice(FilePointerList[i] + FileListPointer + (i * 8), FileLengthList[i]);
 				DDSFiles.Add(WorkingDDS);
 			}
 		}
@@ -261,7 +261,7 @@ namespace USF4_Stage_Tool
 			for (int i = 0; i < NumberOfFiles; i++)
 			{
 				DDS WorkingDDS = new DDS();
-				WorkingDDS.HEXBytes = Utils.ChopByteArray(HEXBytes, FilePointerList[i] + FileListPointer + (i * 8), FileLengthList[i]);
+				WorkingDDS.HEXBytes = HEXBytes.Slice(FilePointerList[i] + FileListPointer + (i * 8), FileLengthList[i]);
 				DDSFiles.Add(WorkingDDS);
 			}
 		}
@@ -361,7 +361,7 @@ namespace USF4_Stage_Tool
 			for (int i = 0; i < MaterialCount; i++)
 			{
 				MaterialPointersList.Add(Utils.ReadInt(true, 0x14 + i * 4, Data));
-				Materials.Add(new Material(Utils.ChopByteArray(Data, MaterialPointersList[i] + 0x10, Data.Length - (MaterialPointersList[i] + 0x10))));
+				Materials.Add(new Material(Data.Slice(MaterialPointersList[i] + 0x10, Data.Length - (MaterialPointersList[i] + 0x10))));
 			}
 		}
 
@@ -375,7 +375,7 @@ namespace USF4_Stage_Tool
 			for (int i = 0; i < MaterialCount; i++)
 			{
 				MaterialPointersList.Add(Utils.ReadInt(true, 0x14 + i * 4, Data));
-				Materials.Add(new Material(Utils.ChopByteArray(Data, MaterialPointersList[i] + 0x10, Data.Length - (MaterialPointersList[i] + 0x10))));
+				Materials.Add(new Material(Data.Slice(MaterialPointersList[i] + 0x10, Data.Length - (MaterialPointersList[i] + 0x10))));
 			}
 		}
         public override void GenerateBytes()
@@ -543,7 +543,7 @@ namespace USF4_Stage_Tool
 			//All animations pushed to EMA Header, read skeleton...
 			if (SkeletonPointer != 0x00)
 			{
-				Skeleton = new Skeleton(Utils.ChopByteArray(Data, SkeletonPointer, Data.Length - SkeletonPointer));
+				Skeleton = new Skeleton(Data.Slice(SkeletonPointer, Data.Length - SkeletonPointer));
 			}
 			else Skeleton = new Skeleton();
 		}
@@ -651,7 +651,7 @@ namespace USF4_Stage_Tool
 			//All animations pushed to EMA Header, read skeleton...
 			if (SkeletonPointer != 0x00)
 			{
-				Skeleton = new Skeleton(Utils.ChopByteArray(Data, SkeletonPointer, Data.Length - SkeletonPointer));
+				Skeleton = new Skeleton(Data.Slice(SkeletonPointer, Data.Length - SkeletonPointer));
 			}
 			else Skeleton = new Skeleton();
 		}
@@ -954,14 +954,14 @@ namespace USF4_Stage_Tool
 			EMGs = new List<EMG>();
 
 
-			Skeleton.HEXBytes = Utils.ChopByteArray(HEXBytes, SkeletonPointer, HEXBytes.Length - SkeletonPointer);
+			Skeleton.HEXBytes = HEXBytes.Slice(SkeletonPointer, HEXBytes.Length - SkeletonPointer);
 			Skeleton = new Skeleton(Skeleton.HEXBytes);
 
 			for (int i = 0; i < EMGCount; i++)
 			{
 				EMGPointersList.Add(Utils.ReadInt(true, 0x28 + (i * 4), HEXBytes));
-				EMGs.Add(new EMG(Utils.ChopByteArray(HEXBytes, EMGPointersList[i] + 0x30, HEXBytes.Length - (EMGPointersList[i] + 0x30))));
-				Console.WriteLine("Got EMG " + i);
+				EMGs.Add(new EMG(HEXBytes.Slice(EMGPointersList[i] + 0x30, HEXBytes.Length - (EMGPointersList[i] + 0x30))));
+				//Console.WriteLine("Got EMG " + i);
 			}
 
 			/*Number of names in the index doesn't seem to be stored anywhere in the file.
@@ -990,14 +990,14 @@ namespace USF4_Stage_Tool
 			EMGs = new List<EMG>();
 
 
-			Skeleton.HEXBytes = Utils.ChopByteArray(HEXBytes, SkeletonPointer, HEXBytes.Length - SkeletonPointer);
+			Skeleton.HEXBytes = HEXBytes.Slice(SkeletonPointer, HEXBytes.Length - SkeletonPointer);
 			Skeleton = new Skeleton(Skeleton.HEXBytes);
 
 			for (int i = 0; i < EMGCount; i++)
 			{
 				EMGPointersList.Add(Utils.ReadInt(true, 0x28 + (i * 4), HEXBytes));
-				EMGs.Add(new EMG(Utils.ChopByteArray(HEXBytes, EMGPointersList[i] + 0x30, HEXBytes.Length - (EMGPointersList[i] + 0x30))));
-				Console.WriteLine("Got EMG " + i);
+				EMGs.Add(new EMG(HEXBytes.Slice(EMGPointersList[i] + 0x30, HEXBytes.Length - (EMGPointersList[i] + 0x30))));
+				//Console.WriteLine("Got EMG " + i);
 			}
 
 			/*Number of names in the index doesn't seem to be stored anywhere in the file.
@@ -1482,13 +1482,13 @@ namespace USF4_Stage_Tool
 			for (int i = 0; i < ModelCount; i++)
 			{
 				ModelPointersList.Add(Utils.ReadInt(true, 0x08 + i * 4, HEXBytes));
-				Models.Add(new Model(Utils.ChopByteArray(HEXBytes, ModelPointersList[i], HEXBytes.Length - ModelPointersList[i])));
+				Models.Add(new Model(HEXBytes.Slice(ModelPointersList[i], HEXBytes.Length - ModelPointersList[i])));
 			}
 
 			int length;
 			length = Models.Last().VertexListPointer + (Models.Last().VertexCount * Models.Last().BitDepth);
 			length = length + ModelPointersList.Last();
-			HEXBytes = Utils.ChopByteArray(HEXBytes, 0, length);
+			HEXBytes = HEXBytes.Slice(0, length);
 		}
 
 		public override void GenerateBytes()
@@ -1696,7 +1696,7 @@ namespace USF4_Stage_Tool
 			BitDepth = Utils.ReadInt(false, 0x12, Data);
 			VertexListPointer = Utils.ReadInt(true, 0x14, Data);
 			ReadMode = Utils.ReadInt(false, 0x18, Data);
-			CullData = Utils.ChopByteArray(Data, 0x20, 0x30);
+			CullData = Data.Slice(0x20, 0x30);
 			TexturePointersList = new List<int>();
 			Textures = new List<EMGTexture>();
 
@@ -1740,8 +1740,8 @@ namespace USF4_Stage_Tool
 			for (int i = 0; i < SubModelsCount; i++)
 			{
 				SubModelPointersList.Add(Utils.ReadInt(true, SubModelsListPointer + i * 4, Data));
-				SubModels.Add(new SubModel(Utils.ChopByteArray(Data, SubModelPointersList[i], Data.Length - SubModelPointersList[i])));
-				Console.WriteLine("Got SubModel " + i);
+				SubModels.Add(new SubModel(Data.Slice(SubModelPointersList[i], Data.Length - SubModelPointersList[i])));
+				//Console.WriteLine("Got SubModel " + i);
 			}
 
 			VertexData = new List<Vertex>();
@@ -1821,7 +1821,7 @@ namespace USF4_Stage_Tool
 				VertexData.Add(v);
 			}
 
-			HEXBytes = Utils.ChopByteArray(Data, 0x00, VertexListPointer + VertexCount * BitDepth);
+			HEXBytes = Data.Slice(0x00, VertexListPointer + VertexCount * BitDepth);
 		}
 	}
 
@@ -1847,7 +1847,7 @@ namespace USF4_Stage_Tool
 
 		public SubModel(byte[] Data)
 		{
-			MysteryFloats = Utils.ChopByteArray(Data, 0x00, 0x10); //Read in "mystery float" bytes. Not storing them as floats 'cos we don't know what they do and they might not be floats at all
+			MysteryFloats = Data.Slice(0x00, 0x10); //Read in "mystery float" bytes. Not storing them as floats 'cos we don't know what they do and they might not be floats at all
 			BoneIntegersList = new List<int>();
 			MaterialIndex = Utils.ReadInt(false, 0x10, Data);
 			DaisyChainLength = Utils.ReadInt(false, 0x12, Data);
@@ -1865,7 +1865,7 @@ namespace USF4_Stage_Tool
 				BoneIntegersList.Add(Utils.ReadInt(false, 0x36 + (DaisyChainLength + i) * 2, Data));
 			}
 
-			HEXBytes = Utils.ChopByteArray(Data, 0x00, 0x36 + (DaisyChainLength + BoneIntegersCount) * 2);
+			HEXBytes = Data.Slice(0x00, 0x36 + (DaisyChainLength + BoneIntegersCount) * 2);
 		}
 	}
 

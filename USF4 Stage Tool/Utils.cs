@@ -609,15 +609,9 @@ namespace USF4_Stage_Tool
 
 		public static int[] Rotate3Array(int[] Array, int steps)
 		{
-			//If it's not a 1x3 array, return it and error to console
-			if(Array.Length % 3 != 0) { Console.WriteLine($"Wrong size array: {Array.Length}"); return Array; }
-			//If steps is divisible by 3, don't do any rotating
-			if(steps % 3 == 0) { return Array; }
-			int[] temp = new int[3];
-			if (steps % 3 == 1) { temp = new int[]{ Array[2], Array[0], Array[1] }; }
-			if (steps % 3 == 2) { temp = new int[]{ Array[1], Array[2], Array[0] }; }
-
-			return temp;
+			if (steps % 3 == 1) return new int[]{ Array[2], Array[0], Array[1] };
+			else if (steps % 3 == 2) return new int[]{ Array[1], Array[2], Array[0] };
+			else return Array;
 		}
 
 		private static void SaveDDS(string filepath)
@@ -1017,18 +1011,30 @@ namespace USF4_Stage_Tool
 			return byteReturn;
 		}
 
-		public static byte[] ChopByteArray(byte[] source, int StartOffset, int Length)
+		public static T[] Slice<T>(this T[] source, int start, int length)
 		{
-			byte[] chop = new byte[Length];
-			for (int i = 0; i < Length; i++)
-			{
-				chop[i] = source[StartOffset + i];
-			}
-			return chop;
-		}
-		#endregion Binary Methods
 
-		public static byte[] StringToHexBytes(string Name, int Length)
+			// Return new array.
+			T[] res = new T[length];
+			for (int i = 0; i < length; i++)
+			{
+				res[i] = source[i + start];
+			}
+			return res;
+		}
+
+        public static byte[] ChopByteArray(byte[] source, int StartOffset, int Length)
+        {
+            byte[] chop = new byte[Length];
+            for (int i = 0; i < Length; i++)
+            {
+                chop[i] = source[StartOffset + i];
+            }
+            return chop;
+        }
+        #endregion Binary Methods
+
+        public static byte[] StringToHexBytes(string Name, int Length)
 		{
 			byte[] bytes = new byte[Length];
 			string byteString = Name.Trim();

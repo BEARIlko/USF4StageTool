@@ -8,7 +8,7 @@ namespace USF4_Stage_Tool
 {
     public static class GeometryIO
     {
-        public static List<int> BruteForceChain(List<int[]> nIndices)
+        public static List<int> BruteForceChain(List<int[]> nIndices, int attempts)
         {
             List<int> best = new List<int>();
             List<int> newlist = new List<int>();
@@ -19,7 +19,7 @@ namespace USF4_Stage_Tool
 
             int bestat = 0;
 
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < attempts; i++)
             {
                 List<int[]> test = new List<int[]>();
 
@@ -57,36 +57,39 @@ namespace USF4_Stage_Tool
             Chain.AddRange(new List<int> { nIndices[0][0], nIndices[0][1], nIndices[0][2] });
             nIndices.RemoveAt(0);
 
+            int[] workingArray = new int[3];
+
             while (nIndices.Count > 0)
             {
                 for (int i = 0; i < nIndices.Count; i++)
                 {
+                    workingArray = nIndices[i];
+
                     for (int j = 0; j < 3; j++)
                     {
-                        int[] workingArray = Utils.Rotate3Array(nIndices[i], j);
-                        if (bForwards == true && workingArray[1] == buffer1 && workingArray[0] == buffer2)
+                        int x1 = (j > 0) ? -3 : 0;
+                        int x2 = (j == 2) ? -3 : 0;
+                        if (bForwards == true && workingArray[1 + j + x2] == buffer1 && workingArray[0 + j] == buffer2)
                         {
                             compression -= 2;
                             buffer2 = buffer1;
-                            buffer1 = workingArray[2];
+                            buffer1 = workingArray[2 + j + x1];
                             Chain.Add(buffer1);
                             nIndices.RemoveAt(i);
                             i = -1;
                             bForwards = !bForwards;
-                            //progressBar1.Value += 1;
                             //TimeEstimate(TStrings.STR_ReorderingFaces, count, Chain.Count);
                             break;
                         }
-                        if (bForwards == false && workingArray[1] == buffer1 && workingArray[2] == buffer2)
+                        if (bForwards == false && workingArray[1 + j + x2] == buffer1 && workingArray[2 + j + x1] == buffer2)
                         {
                             compression -= 2;
                             buffer2 = buffer1;
-                            buffer1 = workingArray[0];
+                            buffer1 = workingArray[0 + j];
                             Chain.Add(buffer1);
                             nIndices.RemoveAt(i);
                             i = -1;
                             bForwards = !bForwards;
-                            //progressBar1.Value += 1;
                             //TimeEstimate(TStrings.STR_ReorderingFaces, count, Chain.Count);
                             break;
                         }
@@ -101,28 +104,30 @@ namespace USF4_Stage_Tool
 
                     int rnd =  random.Next(0, nIndices.Count);
 
+                    workingArray = nIndices[rnd];
+
                     Chain.Add(buffer1);
                     if (bForwards)
                     {
                         //Create chain break
-                        Chain.Add(nIndices[rnd][0]);
-                        Chain.Add(nIndices[rnd][0]);
-                        Chain.Add(nIndices[rnd][1]);
-                        Chain.Add(nIndices[rnd][2]);
+                        Chain.Add(workingArray[0]);
+                        Chain.Add(workingArray[0]);
+                        Chain.Add(workingArray[1]);
+                        Chain.Add(workingArray[2]);
                         //Re-initialise buffer
-                        buffer1 = nIndices[rnd][2];
-                        buffer2 = nIndices[rnd][1];
+                        buffer1 = workingArray[2];
+                        buffer2 = workingArray[1];
                     }
                     if (!bForwards)
                     {
                         //Create chain break
-                        Chain.Add(nIndices[rnd][2]);
-                        Chain.Add(nIndices[rnd][2]);
-                        Chain.Add(nIndices[rnd][1]);
-                        Chain.Add(nIndices[rnd][0]);
+                        Chain.Add(workingArray[2]);
+                        Chain.Add(workingArray[2]);
+                        Chain.Add(workingArray[1]);
+                        Chain.Add(workingArray[0]);
                         //Re-initialise buffer
-                        buffer1 = nIndices[rnd][0];
-                        buffer2 = nIndices[rnd][1];
+                        buffer1 = workingArray[0];
+                        buffer2 = workingArray[1];
                     }
                     //Clear the used face and flip the flag
                     nIndices.RemoveAt(rnd);

@@ -317,6 +317,12 @@
     <Compile Include="ChunkSpy.cs" />
     <Compile Include="Animation Functions.cs" />
     <Compile Include="Collada141.cs" />
+    <Compile Include="CompressDaisyChain.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CompressDaisyChain.Designer.cs">
+      <DependentUpon>CompressDaisyChain.cs</DependentUpon>
+    </Compile>
     <Compile Include="DebugOutput.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -345,6 +351,9 @@
     <Compile Include="TStrings.cs" />
     <Compile Include="USF4Methods.cs" />
     <Compile Include="Utils.cs" />
+    <EmbeddedResource Include="CompressDaisyChain.resx">
+      <DependentUpon>CompressDaisyChain.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="DebugOutput.resx">
       <DependentUpon>DebugOutput.cs</DependentUpon>
     </EmbeddedResource>
