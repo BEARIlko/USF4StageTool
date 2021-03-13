@@ -23,7 +23,8 @@ namespace HostingWpfUserControlInWf
     public partial class UserControl1 : UserControl
     {
         public double rotation = Math.PI;
-        public double camDist = 5;
+        public double elevation = 0; //Camera angel of elevation above rotation point
+        public double camDist = 5; //Distance from rotation point
         public Point3D camRotationPoint = new Point3D(0, 0, 0);
 
         public UserControl1()
@@ -36,10 +37,17 @@ namespace HostingWpfUserControlInWf
             rotation += radians;
 
             double x = camDist * Math.Sin(rotation);
+            double y = Math.Tan(elevation) * camDist;
             double z = camDist * Math.Cos(rotation);
-
-            Cam.Position = new Point3D() { X = x, Y = camRotationPoint.Y, Z = camRotationPoint.Z + z };
+            //Cam.Position = new Point3D() { X = x, Y = camRotationPoint.Y, Z = camRotationPoint.Z + z };
+            Cam.Position = new Point3D() { X = x, Y = y, Z = camRotationPoint.Z + z };
             Cam.LookDirection = new Vector3D() { X = -x, Y = -camRotationPoint.Y, Z = -z };
+        }
+
+        public void Zoom(float dist)
+        {
+            camDist += dist;
+            UpdateCamera(0);
         }
 
         public void ResetCamera()
@@ -117,8 +125,18 @@ namespace HostingWpfUserControlInWf
                 }
             }
 
-            camRotationPoint = new Point3D(xcentre.Average(), maxY + 1, zcentre.Average());
+            camRotationPoint = new Point3D(xcentre.Average(), ycentre.Average(), zcentre.Average());
             camDist = 4 + Math.Max(maxX - minX, maxZ - minZ);
+            elevation = Math.Tanh(ycentre.Average() / camDist);
+        }
+
+        private void myViewport_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (e.Delta > 0)
+            {
+                Zoom(-2f);
+            }
+            else Zoom(2f);
         }
     }
 }

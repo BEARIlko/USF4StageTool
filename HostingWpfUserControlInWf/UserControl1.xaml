@@ -14,12 +14,12 @@
                 Content="Model:"/>
 
         <!-- Viewport3D is the rendering surface. -->
-        <Viewport3D Name="myViewport" MouseLeftButtonDown="myViewport_MouseLeftButtonDown" MouseRightButtonDown="myViewport_MouseRightButtonDown" >
+        <Viewport3D Name="myViewport" MouseLeftButtonDown="myViewport_MouseLeftButtonDown" MouseRightButtonDown="myViewport_MouseRightButtonDown" MouseWheel="myViewport_MouseWheel" >
 
             <!-- Add a camera. -->
             <Viewport3D.Camera>
                 <PerspectiveCamera x:Name="Cam"
-                        FarPlaneDistance="150" 
+                        FarPlaneDistance="10999" 
                         LookDirection="-0.5,-1,5" 
                         UpDirection="0,1,0" 
                         NearPlaneDistance="1" 

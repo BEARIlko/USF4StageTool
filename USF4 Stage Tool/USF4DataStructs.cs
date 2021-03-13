@@ -1201,7 +1201,7 @@ namespace USF4_Stage_Tool
 					m43 = Utils.ReadFloat(SecondaryMatrixPointer + i * 0x40 + 0x38, Data);
 					m44 = Utils.ReadFloat(SecondaryMatrixPointer + i * 0x40 + 0x3C, Data);
 
-					WorkingNode.SecondaryMatrix = new Matrix4x4(m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44);
+					WorkingNode.SkinBindPoseMatrix = new Matrix4x4(m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44);
 				}
 
 				Nodes.Add(WorkingNode);
@@ -1355,7 +1355,7 @@ namespace USF4_Stage_Tool
 				Utils.AddCopiedBytes(Data, 0x00, NodeNames[i].Length, NodeNames[i]);
 				Data.Add(0x00);
 			}
-			//Utils.AddZeroToLineEnd(Data);
+			Utils.AddZeroToLineEnd(Data);
 
 			//Secondary Matrix List TODO Check the secondary matrix position - not sure where it appears
 			//when there's both secondary matrices AND IK data
@@ -1365,22 +1365,22 @@ namespace USF4_Stage_Tool
 				Utils.UpdateIntAtPosition(Data, SecondaryMatrixPointerPosition, Data.Count);
 				for (int i = 0; i < NodeCount; i++)
 				{
-					Utils.AddFloatAsBytes(Data, Nodes[i].SecondaryMatrix.M11);
-					Utils.AddFloatAsBytes(Data, Nodes[i].SecondaryMatrix.M12);
-					Utils.AddFloatAsBytes(Data, Nodes[i].SecondaryMatrix.M13);
-					Utils.AddFloatAsBytes(Data, Nodes[i].SecondaryMatrix.M14);
-					Utils.AddFloatAsBytes(Data, Nodes[i].SecondaryMatrix.M21);
-					Utils.AddFloatAsBytes(Data, Nodes[i].SecondaryMatrix.M22);
-					Utils.AddFloatAsBytes(Data, Nodes[i].SecondaryMatrix.M23);
-					Utils.AddFloatAsBytes(Data, Nodes[i].SecondaryMatrix.M24);
-					Utils.AddFloatAsBytes(Data, Nodes[i].SecondaryMatrix.M31);
-					Utils.AddFloatAsBytes(Data, Nodes[i].SecondaryMatrix.M32);
-					Utils.AddFloatAsBytes(Data, Nodes[i].SecondaryMatrix.M33);
-					Utils.AddFloatAsBytes(Data, Nodes[i].SecondaryMatrix.M34);
-					Utils.AddFloatAsBytes(Data, Nodes[i].SecondaryMatrix.M41);
-					Utils.AddFloatAsBytes(Data, Nodes[i].SecondaryMatrix.M42);
-					Utils.AddFloatAsBytes(Data, Nodes[i].SecondaryMatrix.M43);
-					Utils.AddFloatAsBytes(Data, Nodes[i].SecondaryMatrix.M44);
+					Utils.AddFloatAsBytes(Data, Nodes[i].SkinBindPoseMatrix.M11);
+					Utils.AddFloatAsBytes(Data, Nodes[i].SkinBindPoseMatrix.M12);
+					Utils.AddFloatAsBytes(Data, Nodes[i].SkinBindPoseMatrix.M13);
+					Utils.AddFloatAsBytes(Data, Nodes[i].SkinBindPoseMatrix.M14);
+					Utils.AddFloatAsBytes(Data, Nodes[i].SkinBindPoseMatrix.M21);
+					Utils.AddFloatAsBytes(Data, Nodes[i].SkinBindPoseMatrix.M22);
+					Utils.AddFloatAsBytes(Data, Nodes[i].SkinBindPoseMatrix.M23);
+					Utils.AddFloatAsBytes(Data, Nodes[i].SkinBindPoseMatrix.M24);
+					Utils.AddFloatAsBytes(Data, Nodes[i].SkinBindPoseMatrix.M31);
+					Utils.AddFloatAsBytes(Data, Nodes[i].SkinBindPoseMatrix.M32);
+					Utils.AddFloatAsBytes(Data, Nodes[i].SkinBindPoseMatrix.M33);
+					Utils.AddFloatAsBytes(Data, Nodes[i].SkinBindPoseMatrix.M34);
+					Utils.AddFloatAsBytes(Data, Nodes[i].SkinBindPoseMatrix.M41);
+					Utils.AddFloatAsBytes(Data, Nodes[i].SkinBindPoseMatrix.M42);
+					Utils.AddFloatAsBytes(Data, Nodes[i].SkinBindPoseMatrix.M43);
+					Utils.AddFloatAsBytes(Data, Nodes[i].SkinBindPoseMatrix.M44);
 				}
 			}
 
@@ -1453,7 +1453,7 @@ namespace USF4_Stage_Tool
 		public int BitFlag;
 		public float PreMatrixFloat;
 		public Matrix4x4 NodeMatrix;
-		public Matrix4x4 SecondaryMatrix;
+		public Matrix4x4 SkinBindPoseMatrix;
 		public List<string> child_strings; //Used to rebuild tree relationships from Collada imports
 	}
 

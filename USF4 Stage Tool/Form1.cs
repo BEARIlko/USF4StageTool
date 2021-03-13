@@ -1883,6 +1883,7 @@ namespace USF4_Stage_Tool
 				X = pSelectedTreeNodeData.Location.X + pnlOBJECTS.Location.X,
 				Y = pSelectedTreeNodeData.Location.Y + pnlOBJECTS.Location.Y
 			};
+			
 			EH3D.Width = pSelectedTreeNodeData.Width;
 			EH3D.Height = pSelectedTreeNodeData.Height;
 			EH3D.Visible = false;
@@ -4479,9 +4480,24 @@ namespace USF4_Stage_Tool
         {
 
 			EMO emo = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
-			
-			EMG emg = GeometryIO.GrendgineCollada();
 
+			Skeleton skel = emo.Skeleton;
+
+			EMG emg = GeometryIO.GrendgineCollada(out List<Node> tempnodes);
+			
+			for(int i = 0; i < tempnodes.Count; i++)
+            {
+				Node n = skel.Nodes[i];
+				n.NodeMatrix = tempnodes[i].NodeMatrix;
+				n.SkinBindPoseMatrix = tempnodes[i].SkinBindPoseMatrix;
+
+				skel.Nodes.RemoveAt(i);
+				skel.Nodes.Insert(i, n);
+            }
+			
+			skel.GenerateBytes();
+
+			emo.Skeleton = skel;
 			emo.EMGs.RemoveAt(SelectedEMGNumberInTree);
 			emo.EMGs.Insert(SelectedEMGNumberInTree, emg);
 			emo.GenerateBytes();
@@ -4598,24 +4614,17 @@ namespace USF4_Stage_Tool
 
 		}
 
-		private void previewToolStripMenuItem_Click(object sender, EventArgs e)
-		{
-			EH3D.Visible = true;
-			EH3D.BringToFront();
+		private void AddEMGtoPreview(EMO emo, EMG emg)
+        {
+			Node n = emo.Skeleton.Nodes[emg.RootBone];
+			Matrix4x4 m = n.NodeMatrix;
 
-			uc.ClearModels();
-
-			TreeNode node = LastSelectedTreeNode;
-			//Get the EMO node
-			while(!((string)node.Tag == "EMO"))
+			while(n.Parent != -1)
             {
-				node = node.Parent;
-            }
+				m = m * emo.Skeleton.Nodes[n.Parent].NodeMatrix;
+				n = emo.Skeleton.Nodes[n.Parent];
+			}
 
-			EMO emo = (EMO)WorkingEMZ.Files[node.Index];
-			EMG emg = emo.EMGs[SelectedEMGNumberInTree];
-
-			//Look for an emb that matches our EMO
 			matchingemb = new EMB();
 
 			if (WorkingTEXEMZ != null && WorkingTEXEMZ.Files != null)
@@ -4642,12 +4651,12 @@ namespace USF4_Stage_Tool
 				Point3DCollection pos = new Point3DCollection();
 				Vector3DCollection norm = new Vector3DCollection();
 				PointCollection tex = new PointCollection();
-				
+
 				for (int j = 0; j < emg.Models[i].VertexData.Count; j++)
 				{
 					Vertex v = emg.Models[i].VertexData[j];
 					pos.Add(new Point3D(v.X, v.Y, v.Z));
-					if((emg.Models[i].BitFlag & 0x02) == 0x02) norm.Add(new Vector3D(v.nX, v.nY, v.nZ));
+					if ((emg.Models[i].BitFlag & 0x02) == 0x02) norm.Add(new Vector3D(v.nX, v.nY, v.nZ));
 					tex.Add(new System.Windows.Point(v.U, v.V));
 				}
 
@@ -4668,9 +4677,9 @@ namespace USF4_Stage_Tool
 					if (emg.Models[i].Textures != null && emg.Models[i].Textures.Count != 0)
 					{
 						for (int k = 0; k < emg.Models[i].Textures[textureindex].TextureIndicesList.Count; k++)
-                        {
+						{
 							ddsindices.Add(emg.Models[i].Textures[textureindex].TextureIndicesList[k]);
-                        }
+						}
 					}
 
 					for (int k = 0; k < tempfaceindices.Count; k++)
@@ -4753,7 +4762,22 @@ namespace USF4_Stage_Tool
 					//Add the completed model before moving on to the next
 					uc.AddModel(new GeometryModel3D()
 					{
-						Transform = new ScaleTransform3D(-1, 1, 1), //Needs un x-flipping AGAIN but at least Transform makes it easy this time...
+						Transform = new Transform3DGroup() 
+						{ 
+							Children = new Transform3DCollection() 
+							{ 
+								new MatrixTransform3D(new Matrix3D() 
+								{ 
+									M11 = m.M11, M12 = m.M12, M13 = m.M13, M14 = m.M14,
+									M21 = m.M21, M22 = m.M22, M23 = m.M23, M24 = m.M24,
+									M31 = m.M31, M32 = m.M32, M33 = m.M33, M34 = m.M34,
+                                    OffsetX = m.M41, OffsetY = m.M42, OffsetZ = m.M43, M44 = m.M44,
+								}),
+								new ScaleTransform3D(-1,1,1),
+								//new TranslateTransform3D(m.M41, m.M42, m.M43)
+							} 
+						},
+						 //Needs un x-flipping AGAIN but at least Transform makes it easy this time...
 						Geometry = new MeshGeometry3D()
 						{
 							Positions = pos,
@@ -4764,7 +4788,27 @@ namespace USF4_Stage_Tool
 						Material = mg,
 					});
 				}
-			}            
+			}
+		}
+
+		private void previewToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			EH3D.Visible = true;
+			EH3D.BringToFront();
+
+			uc.ClearModels();
+
+			TreeNode node = LastSelectedTreeNode;
+			//Get the EMO node
+			while(!((string)node.Tag == "EMO"))
+            {
+				node = node.Parent;
+            }
+
+			EMO emo = (EMO)WorkingEMZ.Files[node.Index];
+			EMG emg = emo.EMGs[SelectedEMGNumberInTree];
+
+			AddEMGtoPreview(emo, emg);      
 		}
 
         private void closePreviewWindowToolStripMenuItem_Click(object sender, EventArgs e)
@@ -4800,6 +4844,20 @@ namespace USF4_Stage_Tool
 				else AddStatus("Compression cancelled.");
 			}
         }
+
+        private void previewEMOToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			EH3D.Visible = true;
+			EH3D.BringToFront();
+			uc.ClearModels();
+
+			EMO emo = (EMO)WorkingEMZ.Files[LastSelectedTreeNode.Index];
+			foreach (EMG emg in emo.EMGs)
+            {
+				AddEMGtoPreview(emo, emg);
+            }
+
+		}
     }
 }
 

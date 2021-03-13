@@ -10,20 +10,14 @@ namespace USF4_Stage_Tool
 {
     public static class GeometryIO
     {
-
-
-
         public static List<int> BruteForceChain(List<int[]> nIndices, int attempts)
         {
 
             List<int> best = new List<int>();
-            List<int> newlist = new List<int>();
 
             Random random = new Random();
 
             int rnd = random.Next(0, nIndices.Count);
-
-            int bestat = 0;
 
             for (int i = 0; i < attempts; i++)
             {
@@ -32,19 +26,14 @@ namespace USF4_Stage_Tool
                 test.AddRange(nIndices.GetRange(rnd, nIndices.Count - rnd));
                 test.AddRange(nIndices.GetRange(0, rnd));
 
-                newlist = new List<int>(DaisyChainFromIndices(test));
+                List<int> newlist = new List<int>(DaisyChainFromIndices(test));
 
                 if (best.Count == 0) best = new List<int>(newlist);
                 else if (best.Count > newlist.Count)
                 {
                     best = new List<int>(newlist);
-                    bestat = i;
                 }
             }
-
-            Console.WriteLine($"Final result {best.Count}/{nIndices.Count*3} = {100 * best.Count / (nIndices.Count * 3)}%");
-            Console.WriteLine($"Best result at i = {bestat}.");
-
             return best;
         }
 
@@ -63,7 +52,7 @@ namespace USF4_Stage_Tool
             Chain.AddRange(new List<int> { nIndices[0][0], nIndices[0][1], nIndices[0][2] });
             nIndices.RemoveAt(0);
 
-            int[] workingArray = new int[3];
+            int[] workingArray;
 
             while (nIndices.Count > 0)
             {
@@ -295,109 +284,137 @@ namespace USF4_Stage_Tool
 
         public static Animation AnimationFromColladaStruct()
         {
-            COLLADA model = COLLADA.Load("USAMananim.dae");
+            Grendgine_Collada model = Grendgine_Collada.Grendgine_Load_File("USAMananim.dae");
             Animation animation1 = new Animation();
 
-            foreach (var lib in model.Items)
+            Dictionary<string, int> master_bone_dict = new Dictionary<string, int>();
+
+            foreach (Grendgine_Collada_Controller c in model.Library_Controllers.Controller)
             {
-                //All the mesh data apart from bone weights are in the geometries library
-                var animations = lib as library_animations;
-                if (animations == null)
-                    continue;
-                foreach (var anim in animations.animation)
-                {
-                    if (anim == null)
-                        continue;
-                    Dictionary<float, int> valuedict = new Dictionary<float, int>();
-                    valuedict.Add(0, 0);
-
-                    int d_max = 0;
-
-                    animation1 = new Animation()
+                foreach (Grendgine_Collada_Source s in c.Skin.Source)
+                { 
+                    if (s.ID.Contains("skin-joints"))
                     {
-                        CmdTrackCount = 4,
-                        CmdTrackPointersList = new List<int>() { 0, 0, 0, 0, 0 },
-                        CMDTracks = new List<CMDTrack>(),
-                        Name = Encoding.ASCII.GetBytes("ANIMATION_000"),
-                        NamePointer = 0,
-                        ValuesList = new List<float>(),
-                        ValuesListPointer = 0,
-                        ValueCount = 0,
-                        Duration = 0
-                    };
-
-                    for (int i = 0; i < anim.Items.Length; i++)
-                    {
-                        var item = anim.Items[i];
-                        var animation = item as animation;
-
-                        var inputarray = animation.Items[0] as source;
-                        var outputarray = animation.Items[1] as source;
-
-                        var input_floatarray = inputarray.Item as float_array;
-                        var output_floatarray = outputarray.Item as float_array;
-
-                        int boneID = 0;
-                        byte bitflag = 9;
-                        byte transformtype = 3;
-                        List<int> tempsteps = new List<int>() { 0 };
-                        List<int> tempindices = new List<int>() { 0 };
-
-
-                        if (animation.id.Split('_').Last() == "X") bitflag = 0;
-                        if (animation.id.Split('_').Last() == "Y") bitflag = 1;
-                        if (animation.id.Split('_').Last() == "Z") bitflag = 2;
-
-                        if (animation.id.Contains("location")) transformtype = 0;
-                        if (animation.id.Contains("rotation")) transformtype = 1;
-                        if (animation.id.Contains("scale")) transformtype = 2;
-
-                        if (animation.name.Split('_').Last() == "LArm1") boneID = 9;
-                        if (animation.name.Split('_').Last() == "LArm2") boneID = 10;
-                        if (animation.name.Split('_').Last() == "RArm1") boneID = 13;
-                        if (animation.name.Split('_').Last() == "RArm2") boneID = 14;
-                        if (animation.name.Split('_').Last() == "LLeg2") boneID = 20;
-                        
-                        foreach(float f in input_floatarray.Values)
+                        foreach (string str in s.Name_Array.Value_Pre_Parse.Trim().Split(' '))
                         {
-                            tempsteps.Add((int)Math.Round(f * 24f));
-                        }
-
-                        foreach (float f in output_floatarray.Values)
-                        {
-                            if (!valuedict.TryGetValue(f, out _))
+                            if (!master_bone_dict.TryGetValue(str, out _))
                             {
-                                valuedict.Add(f, valuedict.Count);
+                                master_bone_dict.Add(str, master_bone_dict.Count);
                             }
                         }
-                        
-                        foreach (float f in output_floatarray.Values)
-                        {
-                            tempindices.Add(valuedict[f]);
-                        }
-
-                        d_max = Math.Max(d_max, (int)Math.Round(input_floatarray.Values.Max() * 24f));
-
-                        CMDTrack cmd = new CMDTrack()
-                        {
-                            TransformType = transformtype, //ROTATION
-                            BitFlag = bitflag,
-                            BoneID = boneID,
-                            StepCount = tempsteps.Count,
-                            StepsList = tempsteps,
-                            IndicesListPointer = 0,
-                            IndicesList = tempindices
-                        };
-
-                        animation1.CMDTracks.Add(cmd);
                     }
-                    animation1.CmdTrackCount = animation1.CMDTracks.Count;
-                    animation1.Duration = 80;
-                    animation1.ValueCount = valuedict.Count;
-                    animation1.ValuesList = valuedict.Keys.ToList();
                 }
             }
+            
+            foreach (Grendgine_Collada_Animation a in model.Library_Animations.Animation)
+            {
+                Dictionary<float, int> valuedict = new Dictionary<float, int>();
+                valuedict.Add(0, 0);
 
+                int d_max = 0;
+
+                animation1 = new Animation()
+                {
+                    CmdTrackCount = 0,
+                    CmdTrackPointersList = new List<int>(),
+                    CMDTracks = new List<CMDTrack>(),
+                    Name = Encoding.ASCII.GetBytes("ANIMATION_000"),
+                    NamePointer = 0,
+                    ValuesList = new List<float>(),
+                    ValuesListPointer = 0,
+                    ValueCount = 0,
+                    Duration = 0
+                };
+
+                foreach (Grendgine_Collada_Animation an in a.Animation)
+                {
+                    int boneID = -1;
+                    byte bitflag = 0;
+                    byte transformtype = 3;
+                    List<int> tempsteps = new List<int>() { 0 };
+                    List<int> tempindices = new List<int>() { 0 };
+
+                    foreach (string str in an.ID.Trim().Split('_'))
+                    {
+                        if (master_bone_dict.TryGetValue(str, out boneID) && boneID > 0) break;
+                        boneID = -1;
+                    }
+
+                    if (an.ID.Contains("location"))
+                    {
+                        transformtype = 0;
+
+                        if (an.ID.Contains("location_X")) bitflag = 0;
+                        else if (an.ID.Contains("location_Y")) bitflag = 1;
+                        else bitflag = 2;
+                    }
+                    else if (an.ID.Contains("rotation_euler"))
+                    {
+                        transformtype = 1;
+
+                        if (an.ID.Contains("rotation_euler_X")) bitflag = 0;
+                        else if (an.ID.Contains("rotation_euler_Y")) bitflag = 1;
+                        else bitflag = 2;
+                    }
+                    else
+                    {
+                        transformtype = 2;
+
+                        if (an.ID.Contains("scale_X")) bitflag = 0;
+                        else if (an.ID.Contains("scale_Y")) bitflag = 1;
+                        else bitflag = 2;
+                    }
+
+                    foreach (Grendgine_Collada_Source s in an.Source)
+                    {
+                        if (s.ID.Contains("input"))
+                        {
+                            foreach (string str in s.Float_Array.Value_As_String.Trim().Split(' '))
+                            {
+                                tempsteps.Add((int)Math.Round(float.Parse(str) * 24f));
+                            }
+                        }
+                        if (s.ID.Contains("output"))
+                        {
+                            foreach (string str in s.Float_Array.Value_As_String.Trim().Split(' '))
+                            {
+                                if (!valuedict.TryGetValue(float.Parse(str), out _))
+                                {
+                                    valuedict.Add(float.Parse(str), valuedict.Count);
+                                }
+
+                                tempindices.Add(valuedict[float.Parse(str)]);
+                            }
+                        }
+                        if (s.ID.Contains("interpolation"))
+                        {
+
+                        }
+                    }
+
+                    d_max = Math.Max(d_max, tempsteps.Max());
+
+                    CMDTrack cmd = new CMDTrack()
+                    {
+                        TransformType = transformtype,
+                        BitFlag = bitflag,
+                        BoneID = boneID,
+                        StepCount = tempsteps.Count,
+                        StepsList = tempsteps,
+                        IndicesListPointer = 0,
+                        IndicesList = tempindices
+                    };
+
+                    animation1.CMDTracks.Add(cmd);
+                }
+
+                animation1.CmdTrackCount = animation1.CMDTracks.Count;
+                animation1.CmdTrackPointersList = new int[animation1.CMDTracks.Count].ToList();
+                animation1.Duration = d_max;
+                animation1.ValueCount = valuedict.Count;
+                animation1.ValuesList = valuedict.Keys.ToList();
+            }
+            
             return animation1;
         }
 
@@ -625,9 +642,11 @@ namespace USF4_Stage_Tool
             return bw;
         }
 
-        public static EMG GrendgineCollada()
+        public static EMG GrendgineCollada(out List<Node> Skeleton)
         {
-            Grendgine_Collada model = Grendgine_Collada.Grendgine_Load_File("USAMananim rot.dae");
+            Grendgine_Collada model = Grendgine_Collada.Grendgine_Load_File("USAMananim no rot.dae");
+
+            Skeleton = new List<Node>();
 
             List<float> position_floats = new List<float>();
             List<float> normal_floats = new List<float>();
@@ -641,10 +660,10 @@ namespace USF4_Stage_Tool
             List<Vertex> VertexList = new List<Vertex>();
             List<int[]> FaceIndices = new List<int[]>();
 
+            Dictionary<string, int> master_bone_dict = new Dictionary<string, int>();
             List<string> bone_names = new List<string>();
+            List<Matrix4x4> bindpose_matrices = new List<Matrix4x4>();
 
-            string[] s_vert_bonecounts = new string[0];
-            string[] s_bone_indices = new string[0];
             List<int> vert_bonecounts = new List<int>();
             List<int> bone_indices = new List<int>();
             List<double> bone_floats = new List<double>();
@@ -688,9 +707,32 @@ namespace USF4_Stage_Tool
             {
                 foreach (Grendgine_Collada_Source s in c.Skin.Source)
                 {
+                    if (s.ID.Contains("skin-bind_poses"))
+                    {
+                        List<float> bpf = new List<float>();
+
+                        foreach (string str in s.Float_Array.Value_As_String.Trim().Split(' '))
+                        {
+                            bpf.Add(float.Parse(str));
+                        }
+
+                        for (int i = 0; i < bpf.Count/16; i++)
+                        {
+                            bindpose_matrices.Add(new Matrix4x4(bpf[16 * i + 0],  bpf[16 * i + 4],  bpf[16 * i + 8],  bpf[16 * i + 12],
+                                                                bpf[16 * i + 1],  bpf[16 * i + 5],  bpf[16 * i + 9],  bpf[16 * i + 13],
+                                                                bpf[16 * i + 2],  bpf[16 * i + 6],  bpf[16 * i + 10], bpf[16 * i + 14],
+                                                                bpf[16 * i + 3],  bpf[16 * i + 7],  bpf[16 * i + 11], bpf[16 * i + 15]));
+                        }
+                    }
                     if (s.ID.Contains("skin-joints"))
                     {
-                        bone_names.AddRange(s.Name_Array.Value_Pre_Parse.Split(' ').ToArray());
+                        foreach (string str in s.Name_Array.Value_Pre_Parse.Trim().Split(' '))
+                        {
+                            if(!master_bone_dict.TryGetValue(str, out _))
+                            {
+                                master_bone_dict.Add(str, master_bone_dict.Count);
+                            }
+                        }
                     }
                     if (s.ID.Contains("skin-weights"))
                     {
@@ -712,12 +754,12 @@ namespace USF4_Stage_Tool
             }
 
             //Actual bones (nodes) are recursively stored in the visual scenes library
-            List<Node> Skeleton = new List<Node>();
+
             Grendgine_Collada_Node current_node;
 
-            //TODO fix "extra" node that we seem to be getting
             foreach (Grendgine_Collada_Visual_Scene v in model.Library_Visual_Scene.Visual_Scene)
             {
+                
                 foreach (Grendgine_Collada_Node n in v.Node)
                 {
                     List<Grendgine_Collada_Node> q = n.node.ToList();
@@ -729,7 +771,7 @@ namespace USF4_Stage_Tool
 
                         Matrix4x4 current_matrix = new Matrix4x4();
 
-                        //Compile matrix...
+                        //Compile transform matrix...
                         foreach (Grendgine_Collada_Matrix m in current_node.Matrix)
                         {
                             string[] strings = m.Value_As_String.Trim().Split(' ');
@@ -738,11 +780,15 @@ namespace USF4_Stage_Tool
                             {
                                 mf[i] = float.Parse(strings[i]);
                             }
-                            current_matrix = new Matrix4x4( mf[0], mf[1], mf[2], mf[3],
-                                                            mf[4], mf[5], mf[6], mf[7],
-                                                            mf[8], mf[9], mf[10],mf[11],
-                                                            mf[12],mf[13],mf[14],mf[15]);
-                        }
+                            current_matrix = new Matrix4x4( mf[0], mf[4], mf[8], mf[12],
+                                                            mf[1], mf[5], mf[9], mf[13],
+                                                            mf[2], mf[6], mf[10],mf[14],
+                                                            mf[3], mf[7], mf[11],mf[15]);
+                            //current_matrix = new Matrix4x4(mf[0], mf[1], mf[2], mf[3],
+                            //                                mf[4], mf[5], mf[6], mf[7],
+                            //                                mf[8], mf[9], mf[10], mf[11],
+                            //                                mf[12], mf[13], mf[14], mf[15]);
+                        }                        
 
                         List<string> children = new List<string>();
 
@@ -754,13 +800,18 @@ namespace USF4_Stage_Tool
                             }
                         }
 
-                        Skeleton.Add(new Node()
-                        {                          
-                            Name = current_node.Name,
-                            NodeMatrix = current_matrix,
-                            child_strings = children
-                        });
-
+                        //Test for "extra" nodes that shouldn't be there, add to skeleton if it's a real node
+                        if(master_bone_dict.TryGetValue(current_node.Name, out _))
+                        {
+                            Skeleton.Add(new Node()
+                            {   
+                                Name = current_node.Name,
+                                NodeMatrix = current_matrix,
+                                SkinBindPoseMatrix = bindpose_matrices[Skeleton.Count],
+                                child_strings = children
+                            });
+                        }
+                        
                         q.RemoveAt(0);
                         if (current_node.node == null) continue; //No more children? break and start over
 
@@ -769,20 +820,10 @@ namespace USF4_Stage_Tool
                             q.Insert(0, current_node.node[current_node.node.Length - (j + 1)]); //Adding them in reverse order
                         }
                     };
-                                        
-                    
                 }
             }
 
-            //Bone weight pre-processing
-            for (int i = 0; i < s_vert_bonecounts.Length; i++)
-            {
-                vert_bonecounts.Add(int.Parse(s_vert_bonecounts[i]));
-            }
-            for (int i = 0; i < s_bone_indices.Length; i++)
-            {
-                bone_indices.Add(int.Parse(s_bone_indices[i])); //Count is == vertex count
-            }
+            
 
             //Compile indexes - these are the equivalent of OBJ V/VN/VT indexes
             int pointer = 0;
@@ -825,7 +866,6 @@ namespace USF4_Stage_Tool
                 {
                     U = texture_floats[i * 2],
                     V = texture_floats[i * 2 + 1]
-
                 });
             }
 
