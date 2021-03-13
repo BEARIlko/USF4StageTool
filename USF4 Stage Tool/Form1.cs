@@ -1726,10 +1726,9 @@ namespace USF4_Stage_Tool
 
 			if (targetEMZ == null || targetEMZ.HEXBytes == null) return;
 
-
 			if (saveFileDialog1.ShowDialog() == DialogResult.OK)
 			{
-				filepath = saveFileDialog1.FileName.Replace(".tex.emz", "") + ".tex.emz";
+				filepath = saveFileDialog1.FileName;
 				File.Delete(filepath); //Not very good but works
 				targetEMZ.GenerateBytes();
 				File.WriteAllBytes(filepath, targetEMZ.HEXBytes);
@@ -1874,7 +1873,6 @@ namespace USF4_Stage_Tool
 
 		private void Form1_Load(object sender, EventArgs e)
 		{
-
 			pnlEO_EMG.Visible = false;
 			pnlEO_MOD.Visible = false;
 
@@ -4482,7 +4480,7 @@ namespace USF4_Stage_Tool
 
 			EMO emo = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
 			
-			EMG emg = GeometryIO.ReadColladaStruct();
+			EMG emg = GeometryIO.GrendgineCollada();
 
 			emo.EMGs.RemoveAt(SelectedEMGNumberInTree);
 			emo.EMGs.Insert(SelectedEMGNumberInTree, emg);
@@ -4649,7 +4647,7 @@ namespace USF4_Stage_Tool
 				{
 					Vertex v = emg.Models[i].VertexData[j];
 					pos.Add(new Point3D(v.X, v.Y, v.Z));
-					if((emg.Models[i].BitDepth & 0x02) == 0x02) norm.Add(new Vector3D(v.nX, v.nY, v.nZ));
+					if((emg.Models[i].BitFlag & 0x02) == 0x02) norm.Add(new Vector3D(v.nX, v.nY, v.nZ));
 					tex.Add(new System.Windows.Point(v.U, v.V));
 				}
 
@@ -4662,7 +4660,10 @@ namespace USF4_Stage_Tool
 					Int32Collection faces = new Int32Collection();
 					MaterialGroup mg = new MaterialGroup();
 					List<int> ddsindices = new List<int>();
-					tempfaceindices = GeometryIO.FaceIndicesFromDaisyChain(emg.Models[i].SubModels[j].DaisyChain);
+
+					bool readmode = (emg.Models[i].ReadMode == 1) ? false : true;
+
+					tempfaceindices = GeometryIO.FaceIndicesFromDaisyChain(emg.Models[i].SubModels[j].DaisyChain, readmode);
 					textureindex = emg.Models[i].SubModels[j].MaterialIndex;
 					if (emg.Models[i].Textures != null && emg.Models[i].Textures.Count != 0)
 					{
@@ -4752,6 +4753,7 @@ namespace USF4_Stage_Tool
 					//Add the completed model before moving on to the next
 					uc.AddModel(new GeometryModel3D()
 					{
+						Transform = new ScaleTransform3D(-1, 1, 1), //Needs un x-flipping AGAIN but at least Transform makes it easy this time...
 						Geometry = new MeshGeometry3D()
 						{
 							Positions = pos,

@@ -259,3 +259,7 @@ E:\USF4 Stage Tool 3d attempt\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4 Stage
 E:\USF4 Stage Tool 3d attempt\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.exe
 E:\USF4 Stage Tool 3d attempt\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.pdb
 E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.CompressDaisyChain.resources
+E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\bin\Debug\Newtonsoft.Json.xml
+E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\bin\Debug\System.Buffers.xml
+E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\bin\Debug\System.Memory.xml
+E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\bin\Debug\System.Runtime.CompilerServices.Unsafe.xml
