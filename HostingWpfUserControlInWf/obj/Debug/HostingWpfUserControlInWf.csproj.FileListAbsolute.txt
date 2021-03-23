@@ -22,3 +22,14 @@ E:\GIT\USF4 Stage Tool\USF4StageTool\HostingWpfUserControlInWf\obj\Debug\Hosting
 E:\GIT\USF4 Stage Tool\USF4StageTool\HostingWpfUserControlInWf\obj\Debug\HostingWpfUserControlInWf.dll
 E:\GIT\USF4 Stage Tool\USF4StageTool\HostingWpfUserControlInWf\obj\Debug\HostingWpfUserControlInWf.pdb
 E:\GIT\USF4 Stage Tool\USF4StageTool\HostingWpfUserControlInWf\obj\Debug\HostingWpfUserControlInWf.csprojAssemblyReference.cache
+D:\GITS\USF4StageTool\HostingWpfUserControlInWf\bin\Debug\HostingWpfUserControlInWf.dll
+D:\GITS\USF4StageTool\HostingWpfUserControlInWf\bin\Debug\HostingWpfUserControlInWf.pdb
+D:\GITS\USF4StageTool\HostingWpfUserControlInWf\obj\Debug\UserControl1.baml
+D:\GITS\USF4StageTool\HostingWpfUserControlInWf\obj\Debug\UserControl1.g.cs
+D:\GITS\USF4StageTool\HostingWpfUserControlInWf\obj\Debug\HostingWpfUserControlInWf_MarkupCompile.cache
+D:\GITS\USF4StageTool\HostingWpfUserControlInWf\obj\Debug\HostingWpfUserControlInWf.g.resources
+D:\GITS\USF4StageTool\HostingWpfUserControlInWf\obj\Debug\HostingWpfUserControlInWf.Properties.Resources.resources
+D:\GITS\USF4StageTool\HostingWpfUserControlInWf\obj\Debug\HostingWpfUserControlInWf.csproj.GenerateResource.cache
+D:\GITS\USF4StageTool\HostingWpfUserControlInWf\obj\Debug\HostingWpfUserControlInWf.csproj.CoreCompileInputs.cache
+D:\GITS\USF4StageTool\HostingWpfUserControlInWf\obj\Debug\HostingWpfUserControlInWf.dll
+D:\GITS\USF4StageTool\HostingWpfUserControlInWf\obj\Debug\HostingWpfUserControlInWf.pdb

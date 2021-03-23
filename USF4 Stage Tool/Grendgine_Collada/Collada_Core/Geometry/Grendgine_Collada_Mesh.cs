@@ -23,7 +23,10 @@ namespace grendgine_collada
 		public Grendgine_Collada_Polygons[] Polygons;		
 
 	    [XmlElement(ElementName = "polylist")]
-		public Grendgine_Collada_Polylist[] Polylist;		
+		public Grendgine_Collada_Polylist[] Polylist;				
+		
+	    [XmlElement(ElementName = "vertices")]
+		public Grendgine_Collada_Vertices Vertices;		
 		
 	    [XmlElement(ElementName = "triangles")]
 		public Grendgine_Collada_Triangles[] Triangles;		
@@ -33,10 +36,6 @@ namespace grendgine_collada
 		
 	    [XmlElement(ElementName = "tristrips")]
 		public Grendgine_Collada_Tristrips[] Tristrips;
-		
-		
-	    [XmlElement(ElementName = "vertices")]
-		public Grendgine_Collada_Vertices Vertices;		
 		
 	    [XmlElement(ElementName = "extra")]
 		public Grendgine_Collada_Extra[] Extra;		

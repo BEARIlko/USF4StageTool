@@ -29,8 +29,8 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.diagOpenOBJ = new System.Windows.Forms.OpenFileDialog();
             this.pnlOBJECTS = new System.Windows.Forms.Panel();
@@ -181,6 +181,8 @@
             this.InjectEMO = new System.Windows.Forms.ToolStripMenuItem();
             this.rawDumpEMOAsSMDToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.previewEMOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.eMOToLibraryControllerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.eMOToLibraryGeometryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pnlOBJECTS.SuspendLayout();
             this.pSelectedTreeNodeData.SuspendLayout();
             this.pnlEO_SUBMOD.SuspendLayout();
@@ -410,14 +412,14 @@
             this.modelTextureGrid.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
             this.modelTextureGrid.BackgroundColor = System.Drawing.SystemColors.ButtonHighlight;
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.modelTextureGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.modelTextureGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.modelTextureGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.modelTextureGrid.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.id,
@@ -426,14 +428,14 @@
             this.scaleU,
             this.scaleV});
             this.modelTextureGrid.Cursor = System.Windows.Forms.Cursors.IBeam;
-            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.modelTextureGrid.DefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.modelTextureGrid.DefaultCellStyle = dataGridViewCellStyle2;
             this.modelTextureGrid.Location = new System.Drawing.Point(8, 33);
             this.modelTextureGrid.Name = "modelTextureGrid";
             this.modelTextureGrid.RowHeadersVisible = false;
@@ -1560,9 +1562,11 @@
             this.deleteEMOToolStripMenuItem,
             this.InjectEMO,
             this.rawDumpEMOAsSMDToolStripMenuItem,
-            this.previewEMOToolStripMenuItem});
+            this.previewEMOToolStripMenuItem,
+            this.eMOToLibraryControllerToolStripMenuItem,
+            this.eMOToLibraryGeometryToolStripMenuItem});
             this.emoContext.Name = "luaContext";
-            this.emoContext.Size = new System.Drawing.Size(259, 224);
+            this.emoContext.Size = new System.Drawing.Size(259, 290);
             this.emoContext.Opening += new System.ComponentModel.CancelEventHandler(this.emoContext_Opening);
             // 
             // insertOBJAsNewEMGToolStripMenuItem1
@@ -1634,6 +1638,20 @@
             this.previewEMOToolStripMenuItem.Size = new System.Drawing.Size(258, 22);
             this.previewEMOToolStripMenuItem.Text = "Preview EMO";
             this.previewEMOToolStripMenuItem.Click += new System.EventHandler(this.previewEMOToolStripMenuItem_Click);
+            // 
+            // eMOToLibraryControllerToolStripMenuItem
+            // 
+            this.eMOToLibraryControllerToolStripMenuItem.Name = "eMOToLibraryControllerToolStripMenuItem";
+            this.eMOToLibraryControllerToolStripMenuItem.Size = new System.Drawing.Size(258, 22);
+            this.eMOToLibraryControllerToolStripMenuItem.Text = "EMO to Library_Controller";
+            this.eMOToLibraryControllerToolStripMenuItem.Click += new System.EventHandler(this.eMOToLibraryControllerToolStripMenuItem_Click);
+            // 
+            // eMOToLibraryGeometryToolStripMenuItem
+            // 
+            this.eMOToLibraryGeometryToolStripMenuItem.Name = "eMOToLibraryGeometryToolStripMenuItem";
+            this.eMOToLibraryGeometryToolStripMenuItem.Size = new System.Drawing.Size(258, 22);
+            this.eMOToLibraryGeometryToolStripMenuItem.Text = "EMO to Library_Geometry";
+            this.eMOToLibraryGeometryToolStripMenuItem.Click += new System.EventHandler(this.eMOToLibraryGeometryToolStripMenuItem_Click);
             // 
             // Form1
             // 
@@ -1831,6 +1849,8 @@
         private System.Windows.Forms.TextBox tbEO_SubModMaterial;
         private System.Windows.Forms.Button btnEO_CompressSM;
         private System.Windows.Forms.ToolStripMenuItem previewEMOToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem eMOToLibraryControllerToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem eMOToLibraryGeometryToolStripMenuItem;
     }
 }
 

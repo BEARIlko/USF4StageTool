@@ -22,6 +22,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Interop;
 using System.Diagnostics;
+using grendgine_collada;
+using System.Xml.Serialization;
 
 namespace USF4_Stage_Tool
 {
@@ -4857,6 +4859,51 @@ namespace USF4_Stage_Tool
 				AddEMGtoPreview(emo, emg);
             }
 
+		}
+
+        private void eMOToLibraryControllerToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			GeometryIO.EMOtoCollada_Library_Controller((EMO)WorkingEMZ.Files[LastSelectedTreeNode.Index]);
+        }
+
+        private void eMOToLibraryGeometryToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			//GeometryIO.EMOtoCollada_Library_Geometries((EMO)WorkingEMZ.Files[LastSelectedTreeNode.Index]);
+			//test
+			//GeometryIO.EMOtoCollada_Library_Controller((EMO)WorkingEMZ.Files[LastSelectedTreeNode.Index]);
+
+			//GeometryIO.EMOtoCollada_Library_Visual_Scenes((EMO)WorkingEMZ.Files[LastSelectedTreeNode.Index]);
+
+			grendgine_collada.Grendgine_Collada template = Grendgine_Collada.Grendgine_Load_File("untitled.dae");
+
+			grendgine_collada.Grendgine_Collada collada = new grendgine_collada.Grendgine_Collada()
+			{
+				Collada_Version = "1.4.1",
+				Library_Controllers = GeometryIO.EMOtoCollada_Library_Controller((EMO)WorkingEMZ.Files[LastSelectedTreeNode.Index]),
+				Library_Geometries = GeometryIO.EMOtoCollada_Library_Geometries((EMO)WorkingEMZ.Files[LastSelectedTreeNode.Index]),
+				Library_Visual_Scene = GeometryIO.EMOtoCollada_Library_Visual_Scenes((EMO)WorkingEMZ.Files[LastSelectedTreeNode.Index])
+			};
+
+			//collada = Grendgine_Collada.Grendgine_Load_File("untitled.dae");
+
+			try
+			{
+				Grendgine_Collada col_scenes = collada;
+
+				XmlSerializer sr = new XmlSerializer(typeof(Grendgine_Collada));
+				TextWriter tw = new StreamWriter("outputtest.dae");
+				sr.Serialize(tw, col_scenes);
+
+				tw.Close();
+
+				
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.ToString());
+				Console.ReadLine();
+				
+			}
 		}
     }
 }

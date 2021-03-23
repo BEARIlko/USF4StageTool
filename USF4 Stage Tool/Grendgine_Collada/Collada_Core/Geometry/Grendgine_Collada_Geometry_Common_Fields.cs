@@ -17,11 +17,11 @@ namespace grendgine_collada
 		[XmlAttribute("material")]
 		public string Material;
 
-	    [XmlElement(ElementName = "p")]
-		public Grendgine_Collada_Int_Array_String P;		
-
 		[XmlElement(ElementName = "input")]
 		public Grendgine_Collada_Input_Shared[] Input;		
+
+	    [XmlElement(ElementName = "p")]
+		public Grendgine_Collada_Int_Array_String P;		
 		
 	    [XmlElement(ElementName = "extra")]
 		public Grendgine_Collada_Extra[] Extra;		
