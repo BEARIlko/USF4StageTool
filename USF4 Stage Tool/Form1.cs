@@ -4874,7 +4874,7 @@ namespace USF4_Stage_Tool
 
 			//GeometryIO.EMOtoCollada_Library_Visual_Scenes((EMO)WorkingEMZ.Files[LastSelectedTreeNode.Index]);
 
-			grendgine_collada.Grendgine_Collada template = Grendgine_Collada.Grendgine_Load_File("untitled.dae");
+			//grendgine_collada.Grendgine_Collada template = Grendgine_Collada.Grendgine_Load_File("untitled.dae");
 
 			grendgine_collada.Grendgine_Collada collada = new grendgine_collada.Grendgine_Collada()
 			{

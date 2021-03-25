@@ -417,6 +417,223 @@ namespace USF4_Stage_Tool
             return animation1;
         }
 
+        public static Grendgine_Collada_Library_Geometries EMOtoCollada_Library_Geometries2(EMO emo)
+        {
+            Grendgine_Collada_Library_Geometries library_geometries = new Grendgine_Collada_Library_Geometries();
+
+            string emo_name = Encoding.ASCII.GetString(emo.Name);
+
+            List<Grendgine_Collada_Geometry> temp_g = new List<Grendgine_Collada_Geometry>();
+
+            //DO WE NEED TO UPDATE LIBRARY CONTROLLERS && VISUAL SCENES?
+
+            foreach (EMG e in emo.EMGs)
+            {
+                for (int i = 0; i < e.Models.Count; i++)
+                {
+                    Model m = e.Models[i];
+
+                    string pos_string = string.Empty;
+                    string norm_string = string.Empty;
+                    string map_string = string.Empty;
+                    string p_string = string.Empty;
+
+                    string emg_name = $"{emo_name}-EMG{i}";
+
+                    bool readmode = (m.ReadMode == 1) ? true : false;
+
+                    List<Vertex> vertices = new List<Vertex> (m.VertexData);
+
+                    foreach (SubModel sm in m.SubModels)
+                    {
+                        List<int[]> temp_indices = GeometryIO.FaceIndicesFromDaisyChain(sm.DaisyChain, readmode);
+
+                        foreach (int[] f in temp_indices)
+                        {
+                            p_string += $"{f[2]} {f[2]} {f[2]} {f[1]} {f[1]} {f[1]} {f[0]} {f[0]} {f[0]} ";
+                        }
+                    }
+
+                    foreach (Vertex v in vertices)
+                    {
+                        pos_string += $"{v.X} {v.Y} {v.Z} ";
+                        norm_string += $"{v.nX} {v.nY} {v.nZ} ";
+                        map_string += $"{v.U} {v.V} ";
+                    }
+
+                    temp_g.Add(new Grendgine_Collada_Geometry()
+                    {
+                        ID = $"{emg_name}-mesh",
+                        Name = emg_name,
+                        Mesh = new Grendgine_Collada_Mesh()
+                        {
+                            Source = new Grendgine_Collada_Source[]
+                            {
+                                //Position floats
+                                new Grendgine_Collada_Source()
+                                {
+                                    ID = $"{emg_name}-mesh-positions",
+                                    Float_Array = new Grendgine_Collada_Float_Array()
+                                    {
+                                        ID = $"{emg_name}-mesh-positions-array",
+                                        Count = vertices.Count * 3,
+                                        Value_As_String = pos_string
+                                    },
+                                    Technique_Common = new Grendgine_Collada_Technique_Common_Source()
+                                    {
+                                        Accessor = new Grendgine_Collada_Accessor()
+                                        {
+                                            Count = (uint)vertices.Count,
+                                            Stride = 3,
+                                            Param = new Grendgine_Collada_Param[]
+                                            {
+                                                new Grendgine_Collada_Param()
+                                                {
+                                                    Name = "X",
+                                                    Type = "float"
+                                                },
+                                                new Grendgine_Collada_Param()
+                                                {
+                                                    Name = "Y",
+                                                    Type = "float"
+                                                },
+                                                new Grendgine_Collada_Param()
+                                                {
+                                                    Name = "Z",
+                                                    Type = "float"
+                                                },
+                                            }
+                                        }
+                                    }
+                                },
+                                //Normal floats
+                                new Grendgine_Collada_Source()
+                                {
+                                    ID = $"{emg_name}-mesh-normals",
+                                    Float_Array = new Grendgine_Collada_Float_Array()
+                                    {
+                                        ID = $"{emg_name}-mesh-normals-array",
+                                        Count = vertices.Count*3,
+                                        Value_As_String = norm_string
+                                    },
+                                    Technique_Common = new Grendgine_Collada_Technique_Common_Source()
+                                    {
+                                        Accessor = new Grendgine_Collada_Accessor()
+                                        {
+                                            Count = (uint)vertices.Count,
+                                            Stride = 3,
+                                            Param = new Grendgine_Collada_Param[]
+                                            {
+                                                new Grendgine_Collada_Param()
+                                                {
+                                                    Name = "X",
+                                                    Type = "float"
+                                                },
+                                                new Grendgine_Collada_Param()
+                                                {
+                                                    Name = "Y",
+                                                    Type = "float"
+                                                },
+                                                new Grendgine_Collada_Param()
+                                                {
+                                                    Name = "Z",
+                                                    Type = "float"
+                                                },
+                                            }
+                                        }
+                                    }
+                                },
+                                //UV Map floats
+                                new Grendgine_Collada_Source()
+                                {
+                                    ID = $"{emg_name}-mesh-map-0",
+                                    Float_Array = new Grendgine_Collada_Float_Array()
+                                    {
+                                        ID = $"{emg_name}-mesh-map-0-array",
+                                        Count = vertices.Count*2,
+                                        Value_As_String = map_string
+                                    },
+                                    Technique_Common = new Grendgine_Collada_Technique_Common_Source()
+                                    {
+                                        Accessor = new Grendgine_Collada_Accessor()
+                                        {
+                                            Count = (uint)vertices.Count,
+                                            Stride = 2,
+                                            Param = new Grendgine_Collada_Param[]
+                                            {
+                                                new Grendgine_Collada_Param()
+                                                {
+                                                    Name = "S",
+                                                    Type = "float"
+                                                },
+                                                new Grendgine_Collada_Param()
+                                                {
+                                                    Name = "T",
+                                                    Type = "float"
+                                                },
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            Vertices = new Grendgine_Collada_Vertices()
+                            {
+                                ID = $"#{emg_name}-mesh-vertices",
+                                Input = new Grendgine_Collada_Input_Unshared[]
+                                {
+                                    new Grendgine_Collada_Input_Unshared()
+                                    {
+                                        Semantic = Grendgine_Collada_Input_Semantic.POSITION,
+                                        source = $"#{emg_name}-mesh-positions"
+                                    }
+                                }
+                            },
+                            Triangles = new Grendgine_Collada_Triangles[]
+                            {
+                                new Grendgine_Collada_Triangles()
+                                {
+                                   //Material = "Material-material",
+                                   P = new Grendgine_Collada_Int_Array_String()
+                                   {
+                                        Value_As_String = p_string,
+                                   },
+                                   Count = p_string.Split(' ').Count(),
+                                   Input = new Grendgine_Collada_Input_Shared[]
+                                   {
+                                       new Grendgine_Collada_Input_Shared()
+                                       {
+                                           Semantic = Grendgine_Collada_Input_Semantic.VERTEX,
+                                           source = $"#{emg_name}-mesh-vertices",
+                                           Offset = 0
+                                       },
+                                       new Grendgine_Collada_Input_Shared()
+                                       {
+                                           Semantic = Grendgine_Collada_Input_Semantic.NORMAL,
+                                           source = $"#{emg_name}-mesh-normals",
+                                           Offset = 1
+                                       },
+                                       new Grendgine_Collada_Input_Shared()
+                                       {
+                                           Semantic = Grendgine_Collada_Input_Semantic.TEXCOORD,
+                                           source = $"#{emg_name}-mesh-map-0",
+                                           Offset = 2
+                                       }
+                                   }
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+
+            Grendgine_Collada_Library_Geometries geometries = new Grendgine_Collada_Library_Geometries()
+            {
+                Geometry = temp_g.ToArray(),
+            };
+
+            return library_geometries;
+        }
+
         public static Grendgine_Collada_Library_Geometries EMOtoCollada_Library_Geometries(EMO emo)
         {
             string emo_name = Encoding.ASCII.GetString(emo.Name);
@@ -426,12 +643,13 @@ namespace USF4_Stage_Tool
             string map_string = string.Empty;
             string p_string = string.Empty;
 
+            int v_t = 0;
+
             foreach (EMG e in emo.EMGs)
             {
-                int v_t = 0;
                 foreach (Model m in e.Models)
                 {
-                    bool readmode = (m.ReadMode == 1) ? true : false;
+                    bool readmode = (m.ReadMode == 1) ? false : true;
 
                     vertices.AddRange(m.VertexData);
 
@@ -462,7 +680,6 @@ namespace USF4_Stage_Tool
 
             Grendgine_Collada_Library_Geometries geometries = new Grendgine_Collada_Library_Geometries()
             {
-
                 Geometry = new Grendgine_Collada_Geometry[]
                 {
                     new Grendgine_Collada_Geometry()
@@ -639,7 +856,6 @@ namespace USF4_Stage_Tool
 
             Skeleton sk = emo.Skeleton;
 
-
             for (int i = 0; i < sk.Nodes.Count; i++)
             {
                 Node n = sk.Nodes[i];
@@ -731,11 +947,19 @@ namespace USF4_Stage_Tool
                                 ID = Encoding.ASCII.GetString(emo.Name),
                                 Name = Encoding.ASCII.GetString(emo.Name),
                                 Type = Grendgine_Collada_Node_Type.NODE,
+                                Matrix = new Grendgine_Collada_Matrix[]
+                                {
+                                    new Grendgine_Collada_Matrix()
+                                    {
+                                        sID = "transform",
+                                        Value_As_String = "1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1"
+                                    }
+                                },
                                 Instance_Controller = new Grendgine_Collada_Instance_Controller[]
                                 {
                                     new Grendgine_Collada_Instance_Controller()
                                     {
-                                        URL = $"Armature_{Encoding.ASCII.GetString(emo.Name)}-skin",
+                                        URL = $"#{Encoding.ASCII.GetString(emo.Name)}-skin",
                                         Skeleton = new Grendgine_Collada_Skeleton[]
                                         {
                                             new Grendgine_Collada_Skeleton()
@@ -758,12 +982,14 @@ namespace USF4_Stage_Tool
         {
             string sbp_string = string.Empty;
             Dictionary<float, int> bw_float_dict = new Dictionary<float, int>();
-            Dictionary<int, Vertex> v_dict = new Dictionary<int, Vertex>();
+            
             string vcounts_string = string.Empty;
             string v_string = string.Empty;
             string emo_name = Encoding.ASCII.GetString(emo.Name);
             List<string> bone_names = new List<string>();
             List<Vertex> vertices = new List<Vertex>();
+
+            int verts_total = 0;
 
             //Building an index to translate Vertex bone IDs into Skeleton bone IDs.
             //Verts can appear in multiple submodels, but when they do their bone ID entries have to "match" in
@@ -773,6 +999,10 @@ namespace USF4_Stage_Tool
             {
                 foreach (Model m in e.Models)
                 {
+                    Dictionary<int, Vertex> v_dict = new Dictionary<int, Vertex>();
+
+                    verts_total += m.VertexData.Count;
+
                     foreach (SubModel sm in m.SubModels)
                     {
                         for (int i = 0; i < sm.DaisyChain.Length; i++)
@@ -795,37 +1025,34 @@ namespace USF4_Stage_Tool
                             }
                         }
                     }
-                }
-            }
 
-            for (int i = 0; i < v_dict.Count; i++)
-            {
-                Vertex v = v_dict[i];
-
-                if (v.BoneWeights.Count < 4) //Calculate the 4th weight from the 3 weights stored in the EMG
-                {
-                    v.BoneWeights.Add(1 - v.BoneWeights.Sum());
-                }
-
-                int boneweightcount = 0;
-                for (int j = 0; j < v.BoneIDs.Count; j++)
-                {
-                    if (v.BoneWeights[j] != 0)
+                    for (int i = 0; i < v_dict.Count; i++)
                     {
-                        boneweightcount++;
-                        if (!bw_float_dict.TryGetValue(v.BoneWeights[j], out _))
+                        Vertex v = v_dict[i];
+
+                        if (v.BoneWeights.Count < 4) //Calculate the 4th weight from the 3 weights stored in the EMG
                         {
-                            bw_float_dict.Add(v.BoneWeights[j], bw_float_dict.Count);
+                            v.BoneWeights.Add(1 - v.BoneWeights.Sum());
                         }
-                        v_string += (v.BoneIDs[j]+1) + " " + bw_float_dict[v.BoneWeights[j]] + " ";
+
+                        int boneweightcount = 0;
+                        for (int j = 0; j < v.BoneIDs.Count; j++)
+                        {
+                            if (v.BoneWeights[j] != 0)
+                            {
+                                boneweightcount++;
+                                if (!bw_float_dict.TryGetValue(v.BoneWeights[j], out _))
+                                {
+                                    bw_float_dict.Add(v.BoneWeights[j], bw_float_dict.Count);
+                                }
+                                v_string += (v.BoneIDs[j]) + " " + bw_float_dict[v.BoneWeights[j]] + " ";
+                            }
+                        }
+
+                        vcounts_string += boneweightcount + " ";
                     }
                 }
-
-                vcounts_string += boneweightcount + " ";
             }
-
-            vcounts_string.Trim();
-            v_string.Trim();
             
             for (int i = 0; i < emo.Skeleton.NodeNames.Count; i++)
             {
@@ -973,7 +1200,7 @@ namespace USF4_Stage_Tool
                             },
                             Vertex_Weights = new Grendgine_Collada_Vertex_Weights()
                             {
-                                Count = v_dict.Count,
+                                Count = verts_total,
                                 Input = new Grendgine_Collada_Input_Shared[]
                                 {
                                     new Grendgine_Collada_Input_Shared()
