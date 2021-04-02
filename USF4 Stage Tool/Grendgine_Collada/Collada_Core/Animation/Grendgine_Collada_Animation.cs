@@ -19,8 +19,6 @@ namespace grendgine_collada
 		[XmlElement(ElementName = "animation")]
 		public Grendgine_Collada_Animation[] Animation;
 		
-		[XmlElement(ElementName = "channel")]
-		public Grendgine_Collada_Channel[] Channel;
 		
 		[XmlElement(ElementName = "source")]
 		public Grendgine_Collada_Source[] Source;
@@ -28,6 +26,8 @@ namespace grendgine_collada
 		[XmlElement(ElementName = "sampler")]
 		public Grendgine_Collada_Sampler[] Sampler;
 		
+		[XmlElement(ElementName = "channel")]
+		public Grendgine_Collada_Channel[] Channel;
 		
 		
 		[XmlElement(ElementName = "asset")]

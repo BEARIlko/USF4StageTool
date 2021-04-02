@@ -864,40 +864,62 @@ namespace USF4_Stage_Tool
                     Matrix4x4 m = n.NodeMatrix;
                     string name = Encoding.ASCII.GetString(sk.NodeNames[i]);
 
+                    Utils.DecomposeMatrixXYZ(m, out float tx, out float ty, out float tz,
+                                                out float rx, out float ry, out float rz,
+                                                out float sx, out float sy, out float sz);
+
                     node_list.Add(new Grendgine_Collada_Node()
                     {
                         ID = name,
                         Name = name,
                         sID = name,
                         Type = Grendgine_Collada_Node_Type.JOINT,
-                        node = RecursiveNode(sk,i),
-                        Matrix = new Grendgine_Collada_Matrix[]
+                        node = RecursiveNode(sk, i),
+                        Translate = new Grendgine_Collada_Translate[]
                         {
-                            new Grendgine_Collada_Matrix() //Column-major
+                            new Grendgine_Collada_Translate()
                             {
-                                sID = "transform",
-                                Value_As_String = $"{m.M11} {m.M21} {m.M31} {m.M41} {m.M12} {m.M22} {m.M32} {m.M42} {m.M13} {m.M23} {m.M33} {m.M43} {m.M14} {m.M24} {m.M34} {m.M44}"
+                                sID = "location",
+                                Value_As_String = $"{tx} {ty} {tz}"
                             }
-                        }
+                        },
+                        Rotate = new Grendgine_Collada_Rotate[]
+                        {
+                            new Grendgine_Collada_Rotate()
+                            {
+                                sID = "rotationX",
+                                Value_As_String = $"1 0 0 {rx}"
+                            },
+                            new Grendgine_Collada_Rotate()
+                            {
+                                sID = "rotationY",
+                                Value_As_String = $"0 1 0 {ry}"
+                            },
+                            new Grendgine_Collada_Rotate()
+                            {
+                                sID = "rotationZ",
+                                Value_As_String = $"0 0 1 {rz}"
+                            }
+                        },
+                        Scale = new Grendgine_Collada_Scale[]
+                        {
+                            new Grendgine_Collada_Scale()
+                            {
+                                sID = "scale",
+                                Value_As_String = $"{sx} {sy} {sz}"
+                            }
+                        },
+                        //Matrix = new Grendgine_Collada_Matrix[]
+                        //{
+                        //    new Grendgine_Collada_Matrix() //Might need to switch columns/rows
+                        //    {
+                        //        sID = "transform",
+                        //        Value_As_String = $"{m.M11} {m.M21} {m.M31} {m.M41} {m.M12} {m.M22} {m.M32} {m.M42} {m.M13} {m.M23} {m.M33} {m.M43} {m.M14} {m.M24} {m.M34} {m.M44} "
+                        //    }
+                        //}
                     });
                 }
             }
-
-            node_list.Add(new Grendgine_Collada_Node()
-            {
-                ID = "Armature",
-                Name = "Armature",
-                Type = Grendgine_Collada_Node_Type.NODE,
-                Matrix = new Grendgine_Collada_Matrix[] 
-                {
-                    new Grendgine_Collada_Matrix()
-                    {
-                        sID = "transform",
-                        Value_As_String = "1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1"
-                    }
-                },
-                node = new Grendgine_Collada_Node[] {node_list[0]}
-            });
 
             Grendgine_Collada_Node[] RecursiveNode(Skeleton s, int n)
             {
@@ -910,6 +932,10 @@ namespace USF4_Stage_Tool
                         Matrix4x4 m = node.NodeMatrix;
                         string name = Encoding.ASCII.GetString(sk.NodeNames[i]);
 
+                        Utils.DecomposeMatrixXYZ(m, out float tx, out float ty, out float tz, 
+                                                    out float rx, out float ry, out float rz, 
+                                                    out float sx, out float sy, out float sz);
+
                         child_list.Add(new Grendgine_Collada_Node() 
                         {
                             ID = name,
@@ -917,14 +943,48 @@ namespace USF4_Stage_Tool
                             sID = name,
                             Type = Grendgine_Collada_Node_Type.JOINT,
                             node = RecursiveNode(s,i),
-                            Matrix = new Grendgine_Collada_Matrix[]
+                            Translate = new Grendgine_Collada_Translate[]
                             {
-                                new Grendgine_Collada_Matrix() //Might need to switch columns/rows
+                                new Grendgine_Collada_Translate()
                                 {
-                                    sID = "transform",
-                                    Value_As_String = $"{m.M11} {m.M21} {m.M31} {m.M41} {m.M12} {m.M22} {m.M32} {m.M42} {m.M13} {m.M23} {m.M33} {m.M43} {m.M14} {m.M24} {m.M34} {m.M44}"
+                                    sID = "location",
+                                    Value_As_String = $"{tx} {ty} {tz}"
                                 }
-                            }
+                            },
+                            Rotate = new Grendgine_Collada_Rotate[]
+                            {
+                                new Grendgine_Collada_Rotate()
+                                {
+                                    sID = "rotationX",
+                                    Value_As_String = $"1 0 0 {rx}"
+                                },
+                                new Grendgine_Collada_Rotate()
+                                {
+                                    sID = "rotationY",
+                                    Value_As_String = $"0 1 0 {ry}"
+                                },
+                                new Grendgine_Collada_Rotate()
+                                {
+                                    sID = "rotationZ",
+                                    Value_As_String = $"0 0 1 {rz}"
+                                }
+                            },
+                            Scale = new Grendgine_Collada_Scale[]
+                            {
+                                new Grendgine_Collada_Scale()
+                                {
+                                    sID = "scale",
+                                    Value_As_String = $"{sx} {sy} {sz}"
+                                }
+                            },
+                            //Matrix = new Grendgine_Collada_Matrix[]
+                            //{
+                            //    new Grendgine_Collada_Matrix() //Might need to switch columns/rows
+                            //    {
+                            //        sID = "transform",
+                            //        Value_As_String = $"{m.M11} {m.M21} {m.M31} {m.M41} {m.M12} {m.M22} {m.M32} {m.M42} {m.M13} {m.M23} {m.M33} {m.M43} {m.M14} {m.M24} {m.M34} {m.M44} "
+                            //    }
+                            //}
                         });
                     }
                 }
@@ -941,7 +1001,7 @@ namespace USF4_Stage_Tool
                         Name = "Scene",
                         Node = new Grendgine_Collada_Node[]
                         {
-                            node_list[1],
+                            node_list[0],
                             new Grendgine_Collada_Node()
                             {
                                 ID = Encoding.ASCII.GetString(emo.Name),
@@ -982,7 +1042,7 @@ namespace USF4_Stage_Tool
         {
             string sbp_string = string.Empty;
             Dictionary<float, int> bw_float_dict = new Dictionary<float, int>();
-            
+
             string vcounts_string = string.Empty;
             string v_string = string.Empty;
             string emo_name = Encoding.ASCII.GetString(emo.Name);
@@ -1011,15 +1071,23 @@ namespace USF4_Stage_Tool
 
                             List<int> temp_boneIDs = new List<int>();
 
-                            foreach (int b in v.BoneIDs)
+                            if ((m.BitFlag & 0x0200) == 0x200) //If we've got bone weight data, use it
                             {
-                                if(b != 0) temp_boneIDs.Add(sm.BoneIntegersList[b]);
+                                foreach (int b in v.BoneIDs)
+                                {
+                                    if (b != 0) temp_boneIDs.Add(sm.BoneIntegersList[b]);
+                                }
+                                if (temp_boneIDs.Count == 0) temp_boneIDs.Add(sm.BoneIntegersList[0]);
                             }
-                            if (temp_boneIDs.Count == 0) temp_boneIDs.Add(sm.BoneIntegersList[0]);
-
+                            else //Otherwise use the EMG root bone with weight 1
+                            {
+                                v.BoneCount = 1;
+                                temp_boneIDs = new List<int>() { e.RootBone, 0, 0, 0 };
+                                v.BoneWeights = new List<float>() { 1, 0, 0 };
+                            }
                             v.BoneIDs = temp_boneIDs;
 
-                            if(!v_dict.TryGetValue(sm.DaisyChain[i], out _))
+                            if (!v_dict.TryGetValue(sm.DaisyChain[i], out _))
                             {
                                 v_dict.Add(sm.DaisyChain[i], v);
                             }
@@ -1053,13 +1121,13 @@ namespace USF4_Stage_Tool
                     }
                 }
             }
-            
+
             for (int i = 0; i < emo.Skeleton.NodeNames.Count; i++)
             {
                 bone_names.Add(Encoding.ASCII.GetString(emo.Skeleton.NodeNames[i]));
             }
 
-            foreach(Node n in emo.Skeleton.Nodes) //Column-major order
+            foreach (Node n in emo.Skeleton.Nodes) //Column-major order
             {
                 sbp_string += n.SkinBindPoseMatrix.M11.ToString() + " ";
                 sbp_string += n.SkinBindPoseMatrix.M21.ToString() + " ";
@@ -1094,7 +1162,7 @@ namespace USF4_Stage_Tool
                             {
                                 Value_As_String = "1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1"
                             },
-                            sID = $"#{emo_name}-mesh",
+                            source = $"#{emo_name}-mesh",
                             Source = new Grendgine_Collada_Source[]
                             {
                                 //Skin Joints
@@ -1223,15 +1291,314 @@ namespace USF4_Stage_Tool
                                 },
                                 V = new Grendgine_Collada_Int_Array_String()
                                 {
-                                    Value_As_String = v_string.Trim()        
+                                    Value_As_String = v_string.Trim()
                                 }
                             }
                         }
                     }
-                }   
+                }
             };
 
             return library_Controller;
+        }
+
+        public static Grendgine_Collada_Library_Animations EMAtoCollada_Library_Animations(EMA ema)
+        {
+            List<Grendgine_Collada_Animation> temp_anims = new List<Grendgine_Collada_Animation>();
+
+            Animation a = ema.Animations[0];
+
+            //foreach (Animation a in ema.Animations)
+            {
+                foreach (CMDTrack c in a.CMDTracks)
+                {
+
+                    string bonename = Encoding.ASCII.GetString(ema.Skeleton.NodeNames[c.BoneID]);
+                    string type;
+                    string TYPE;
+                    string axis;
+                    string target;
+                    string time_vals = string.Empty;
+                    string trans_vals = string.Empty;
+                    string tangent_vals = string.Empty;
+                    string interp_vals = string.Empty; //In SF4 anims, intangent == outtangent so we only need one list of tangent vals
+
+                    if ((c.BitFlag & 0x10) == 0x10)
+                    {
+                        Console.WriteLine($"Zettai! bID = {c.BoneID}, {bonename}");
+                    }
+
+                    if(ema.Skeleton.Nodes[c.BoneID].Sibling != -1)
+                    {
+                        Console.WriteLine($"Sibling! This = {bonename}, sibling = {ema.Skeleton.Nodes[c.BoneID].Sibling}, {Encoding.ASCII.GetString(ema.Skeleton.NodeNames[ema.Skeleton.Nodes[c.BoneID].Sibling])}");
+                    }
+
+                    if ((c.BitFlag & 0x03) == 0) axis = "X";
+                    else if ((c.BitFlag & 0x03) == 1) axis = "Y";
+                    else axis = "Z";
+
+                    if (c.TransformType == 0)
+                    {
+                        type = "translation";
+                        TYPE = axis;
+                        target = $"{bonename}/location.{axis}";
+                    }
+                    else if (c.TransformType == 1)
+                    {
+                        type = "rotation";
+                        TYPE = "ANGLE";
+                        target = $"{bonename}/rotation{axis}.ANGLE";
+                    }
+                    else
+                    {
+                        type = "scale";
+                        TYPE = axis;
+                        target = $"{bonename}/scale.{axis}";
+                    }
+
+                    string name = $"Armature_{Encoding.ASCII.GetString(ema.Skeleton.NodeNames[c.BoneID])}_{type}-{axis}";
+
+                    foreach (int t in c.StepsList)
+                    {
+                        time_vals += $"{Convert.ToSingle(t) / 60f} ";
+                        interp_vals += "LINEAR ";
+                    }
+
+                    for (int i = 0; i < c.StepsList.Count; i++)
+                    {
+                        int masked_index;
+                        int masked_tangent;
+
+                        if ((c.BitFlag & 0x40) == 0)
+                        {
+                            masked_index = c.IndicesList[i] & 0b0011111111111111;
+                            masked_tangent = c.IndicesList[i] >> 14;
+                        }
+                        else
+                        {
+                            masked_index = c.IndicesList[i] & 0b00111111111111111111111111111111;
+                            masked_tangent = c.IndicesList[i] >> 30;
+                        }
+                            
+                        trans_vals += $"{a.ValuesList[masked_index]} ";
+
+                        if (masked_tangent != 0)
+                        {
+                            tangent_vals += $"0 {a.ValuesList[masked_index + masked_tangent]} ";
+                        }
+                        else
+                        {
+                            tangent_vals += "0 0 ";
+                        }
+                    }
+
+                    temp_anims.Add(new Grendgine_Collada_Animation()
+                    {
+                        ID = name,
+                        Source = new Grendgine_Collada_Source[]
+                        {
+                            //INPUT ARRAY (TIME IN SECONDS)
+                            new Grendgine_Collada_Source()
+                            {
+                                ID = $"{name}-input",
+                                Float_Array = new Grendgine_Collada_Float_Array()
+                                {
+                                    ID = $"{name}-input-array",
+                                    Count = c.StepsList.Count,
+                                    Value_As_String = time_vals
+                                },
+                                Technique_Common = new Grendgine_Collada_Technique_Common_Source()
+                                {
+                                    Accessor = new Grendgine_Collada_Accessor()
+                                    {
+                                        Source = $"#{name}-input-array",
+                                        Count = (uint)c.StepsList.Count,
+                                        Stride = 1,
+                                        Param = new Grendgine_Collada_Param[]
+                                        {
+                                            new Grendgine_Collada_Param()
+                                            {
+                                                Name = "TIME",
+                                                Type = "float"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            //OUTPUT ARRAY (TRANSFORM VALUE)
+                            new Grendgine_Collada_Source()
+                            {
+                                ID = $"{name}-output",
+                                Float_Array = new Grendgine_Collada_Float_Array()
+                                {
+                                    ID = $"{name}-output-array",
+                                    Count = c.StepsList.Count,
+                                    Value_As_String = trans_vals
+                                },
+                                Technique_Common = new Grendgine_Collada_Technique_Common_Source()
+                                {
+                                    Accessor = new Grendgine_Collada_Accessor()
+                                    {
+                                        Source = $"#{name}-output-array",
+                                        Count = (uint)c.StepsList.Count,
+                                        Stride = 1,
+                                        Param = new Grendgine_Collada_Param[]
+                                        {
+                                            new Grendgine_Collada_Param()
+                                            {
+                                                Name = TYPE, //NEEDS TO BE THE TRANSFORM TYPE PROBABLY
+                                                Type = "float"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            new Grendgine_Collada_Source()
+                            {
+                                ID = $"{name}-intangents",
+                                Float_Array = new Grendgine_Collada_Float_Array()
+                                {
+                                    ID = $"{name}-intangents-array",
+                                    Count = 2 * c.StepsList.Count,
+                                    Value_As_String = tangent_vals
+                                },
+                                Technique_Common = new Grendgine_Collada_Technique_Common_Source()
+                                {
+                                //<source id="Armature_Chest_ArmatureAction___Chest___rotation_euler_X-intangent">
+                                //  <float_array id="Armature_Chest_ArmatureAction___Chest___rotation_euler_X-intangent-array" count="8">0.1388888 -0.08885568 0.3472222 -0.006967127 0.5555555 -0.06276804 0.7638889 -0.003921687</float_array>
+                                //  <technique_common>
+                                //    <accessor source="#Armature_Chest_ArmatureAction___Chest___rotation_euler_X-intangent-array" count="4" stride="2">
+                                //      <param name="X" type="float"/>
+                                //      <param name="Y" type="float"/>
+                                //    </accessor>
+                                //  </technique_common>
+                                //</source>
+
+                                    Accessor = new Grendgine_Collada_Accessor()
+                                    {
+                                        Source = $"#{name}-intangents-array",
+                                        Count = (uint)(2 * c.StepsList.Count),
+                                        Stride = 2,
+                                        Param = new Grendgine_Collada_Param[]
+                                        {
+                                            new Grendgine_Collada_Param()
+                                            {
+                                                Name = "IN_TANGENT", //NEEDS TO BE THE TRANSFORM TYPE PROBABLY
+                                                Type = "float"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            new Grendgine_Collada_Source()
+                            {
+                                ID = $"{name}-outtangents",
+                                Float_Array = new Grendgine_Collada_Float_Array()
+                                {
+                                    ID = $"{name}-outtangents-array",
+                                    Count = c.StepsList.Count,
+                                    Value_As_String = tangent_vals
+                                },
+                                Technique_Common = new Grendgine_Collada_Technique_Common_Source()
+                                {
+                                    Accessor = new Grendgine_Collada_Accessor()
+                                    {
+                                        Source = $"#{name}-outtangents-array",
+                                        Count = (uint)c.StepsList.Count,
+                                        Stride = 1,
+                                        Param = new Grendgine_Collada_Param[]
+                                        {
+                                            new Grendgine_Collada_Param()
+                                            {
+                                                Name = "OUT_TANGENT", //NEEDS TO BE THE TRANSFORM TYPE PROBABLY
+                                                Type = "float"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            //INTERPOLATION METHOD (BEZIER)
+                            new Grendgine_Collada_Source()
+                            {
+                                ID = $"{name}-interpolation",
+                                Name_Array = new Grendgine_Collada_Name_Array()
+                                {
+                                    ID = $"{name}-interpolation-array",
+                                    Count = c.StepsList.Count,
+                                    Value_Pre_Parse = interp_vals
+                                },
+                                Technique_Common = new Grendgine_Collada_Technique_Common_Source()
+                                {
+                                    Accessor = new Grendgine_Collada_Accessor()
+                                    {
+                                        Source = $"#{name}-interpolation-array",
+                                        Count = (uint)c.StepsList.Count,
+                                        Stride = 1,
+                                        Param = new Grendgine_Collada_Param[]
+                                        {
+                                            new Grendgine_Collada_Param()
+                                            {
+                                                Name = "INTERPOLATION",
+                                                Type = "name"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        Sampler = new Grendgine_Collada_Sampler[]
+                        {
+                            new Grendgine_Collada_Sampler()
+                            {
+                                ID = $"{name}-sampler",
+                                Input = new Grendgine_Collada_Input_Unshared[]
+                                {
+                                    new Grendgine_Collada_Input_Unshared()
+                                    {
+                                        Semantic = Grendgine_Collada_Input_Semantic.INPUT,
+                                        source = $"#{name}-input"
+                                    },
+                                    new Grendgine_Collada_Input_Unshared()
+                                    {
+                                        Semantic = Grendgine_Collada_Input_Semantic.OUTPUT,
+                                        source = $"#{name}-output"
+                                    },
+                                    //new Grendgine_Collada_Input_Unshared()
+                                    //{
+                                    //    Semantic = Grendgine_Collada_Input_Semantic.IN_TANGENT,
+                                    //    source = $"#{name}-intangents"
+                                    //},
+                                    //new Grendgine_Collada_Input_Unshared()
+                                    //{
+                                    //    Semantic = Grendgine_Collada_Input_Semantic.OUT_TANGENT,
+                                    //    source = $"#{name}-outtangents"
+                                    //},
+                                    new Grendgine_Collada_Input_Unshared()
+                                    {
+                                        Semantic = Grendgine_Collada_Input_Semantic.INTERPOLATION,
+                                        source = $"#{name}-interpolation"
+                                    }
+                                }
+                            }
+                        },
+                        Channel = new Grendgine_Collada_Channel[]
+                        {
+                            new Grendgine_Collada_Channel()
+                            {
+                                Source = $"#{name}-sampler",
+                                Target = target
+                            }
+                        }
+                    });
+                }
+            }
+
+            Grendgine_Collada_Library_Animations library_animations = new Grendgine_Collada_Library_Animations()
+            {
+                Animation = temp_anims.ToArray()
+            };
+
+            return library_animations;
         }
 
         public static Dictionary<double,int> BoneWeightDictionary(List<Vertex> vs)

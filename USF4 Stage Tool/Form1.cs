@@ -4876,12 +4876,15 @@ namespace USF4_Stage_Tool
 
 			//grendgine_collada.Grendgine_Collada template = Grendgine_Collada.Grendgine_Load_File("untitled.dae");
 
+			EMA balrog_ema = (EMA)WorkingEMZ.Files[LastSelectedTreeNode.Index - 2];
+
 			grendgine_collada.Grendgine_Collada collada = new grendgine_collada.Grendgine_Collada()
 			{
 				Collada_Version = "1.4.1",
 				Library_Controllers = GeometryIO.EMOtoCollada_Library_Controller((EMO)WorkingEMZ.Files[LastSelectedTreeNode.Index]),
 				Library_Geometries = GeometryIO.EMOtoCollada_Library_Geometries((EMO)WorkingEMZ.Files[LastSelectedTreeNode.Index]),
-				Library_Visual_Scene = GeometryIO.EMOtoCollada_Library_Visual_Scenes((EMO)WorkingEMZ.Files[LastSelectedTreeNode.Index])
+				Library_Visual_Scene = GeometryIO.EMOtoCollada_Library_Visual_Scenes((EMO)WorkingEMZ.Files[LastSelectedTreeNode.Index]),
+				Library_Animations = GeometryIO.EMAtoCollada_Library_Animations(balrog_ema)
 			};
 
 			//collada = Grendgine_Collada.Grendgine_Load_File("untitled.dae");
