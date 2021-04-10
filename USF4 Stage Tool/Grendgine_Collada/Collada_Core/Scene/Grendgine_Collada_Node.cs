@@ -30,6 +30,9 @@ namespace grendgine_collada
 		[XmlElement(ElementName = "matrix")]
 		public Grendgine_Collada_Matrix[] Matrix;
 
+		[XmlElement(ElementName = "translate")]
+		public Grendgine_Collada_Translate[] Translate;
+
 		[XmlElement(ElementName = "rotate")]
 		public Grendgine_Collada_Rotate[] Rotate;
 
@@ -39,9 +42,6 @@ namespace grendgine_collada
 		[XmlElement(ElementName = "skew")]
 		public Grendgine_Collada_Skew[] Skew;
 
-		[XmlElement(ElementName = "translate")]
-		public Grendgine_Collada_Translate[] Translate;
-		
 		[XmlElement(ElementName = "instance_camera")]
 		public Grendgine_Collada_Instance_Camera[] Instance_Camera;
 		

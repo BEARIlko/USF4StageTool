@@ -1511,9 +1511,24 @@ namespace USF4_Stage_Tool
 			lbSelNODE_ListData.Items.Add($"Child ID: {node.Child1}");
 			lbSelNODE_ListData.Items.Add($"Sibling ID: {node.Sibling}");
 
+			//Utils.DecomposeMatrixNaive(node.NodeMatrix, out float tx, out float ty, out float tz, out float rx, out float ry, out float rz);
 			Utils.DecomposeMatrixXYZ(node.NodeMatrix, out float tx, out float ty, out float tz, out float rx, out float ry, out float rz, out _, out _, out _);
-			lbSelNODE_ListData.Items.Add($"Position: ({tx.ToString("0.0000")}, {ty.ToString("0.0000")}, {tz.ToString("0.0000")})");
-			lbSelNODE_ListData.Items.Add($"Rotation: ({rx.ToString("0.0000")}, {ry.ToString("0.0000")}, {rz.ToString("0.0000")})");
+			lbSelNODE_ListData.Items.Add($"Position: ({tx.ToString("0.000000")}, {ty.ToString("0.000000")}, {tz.ToString("0.000000")})");
+			lbSelNODE_ListData.Items.Add($"Rotation: ({rx.ToString("0.000000")}, {ry.ToString("0.000000")}, {rz.ToString("0.000000")})");
+
+			Matrix4x4.Invert(node.SkinBindPoseMatrix, out Matrix4x4 inverse);
+
+			Matrix4x4 m = node.SkinBindPoseMatrix;
+
+			Utils.DecomposeMatrixXYZ(inverse, out tx, out ty, out tz, out rx, out ry, out rz, out _, out _, out _);
+			lbSelNODE_ListData.Items.Add($"SBP Position: ({tx.ToString("0.0000")}, {ty.ToString("0.0000")}, {tz.ToString("0.0000")})");
+			lbSelNODE_ListData.Items.Add($"SBP Rotation: ({rx.ToString("0.0000")}, {ry.ToString("0.0000")}, {rz.ToString("0.0000")})");
+
+			lbSelNODE_ListData.Items.Add($"R1: {m.M11.ToString("0.0000")}, {m.M21.ToString("0.0000")}, {m.M31.ToString("0.0000")}, {m.M41.ToString("0.0000")}");
+			lbSelNODE_ListData.Items.Add($"R1: {m.M12.ToString("0.0000")}, {m.M22.ToString("0.0000")}, {m.M32.ToString("0.0000")}, {m.M42.ToString("0.0000")}");
+			lbSelNODE_ListData.Items.Add($"R1: {m.M13.ToString("0.0000")}, {m.M23.ToString("0.0000")}, {m.M33.ToString("0.0000")}, {m.M43.ToString("0.0000")}");
+			lbSelNODE_ListData.Items.Add($"R1: {m.M14.ToString("0.0000")}, {m.M24.ToString("0.0000")}, {m.M34.ToString("0.0000")}, {m.M44.ToString("0.0000")}");
+
 		}
 		void TreeDisplayEMGData(EMG emg)
 		{
@@ -1875,6 +1890,7 @@ namespace USF4_Stage_Tool
 
 		private void Form1_Load(object sender, EventArgs e)
 		{
+
 			pnlEO_EMG.Visible = false;
 			pnlEO_MOD.Visible = false;
 
@@ -3623,6 +3639,12 @@ namespace USF4_Stage_Tool
 
         private void InjectAnimationtoolStripMenuItem1_Click(object sender, EventArgs e)
         {
+			GeometryIO.AnimationFromColladaStruct(Grendgine_Collada.Grendgine_Load_File("outputtest.dae"));
+
+			EMA ema = (EMA)WorkingEMZ.Files[LastSelectedTreeNode.Parent.Index];
+
+			ema.Animations.RemoveAt(LastSelectedTreeNode.Index);
+
 			InjectAnimation();
 			//DuplicateAnimationDown();
         }
@@ -4170,7 +4192,7 @@ namespace USF4_Stage_Tool
 			EMA ema = (EMA)WorkingEMZ.Files[LastSelectedTreeNode.Index];
 
 			ema.AnimationCount++;
-			ema.Animations.Add(GeometryIO.AnimationFromColladaStruct());
+			//ema.Animations.Add(GeometryIO.AnimationFromColladaStruct());
 			ema.AnimationPointersList.Add(0);
 			ema.GenerateBytes();
 
@@ -4881,6 +4903,10 @@ namespace USF4_Stage_Tool
 			grendgine_collada.Grendgine_Collada collada = new grendgine_collada.Grendgine_Collada()
 			{
 				Collada_Version = "1.4.1",
+				Asset = new Grendgine_Collada_Asset()
+                {
+					Up_Axis = "Y_UP"
+                },
 				Library_Controllers = GeometryIO.EMOtoCollada_Library_Controller((EMO)WorkingEMZ.Files[LastSelectedTreeNode.Index]),
 				Library_Geometries = GeometryIO.EMOtoCollada_Library_Geometries((EMO)WorkingEMZ.Files[LastSelectedTreeNode.Index]),
 				Library_Visual_Scene = GeometryIO.EMOtoCollada_Library_Visual_Scenes((EMO)WorkingEMZ.Files[LastSelectedTreeNode.Index]),

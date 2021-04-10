@@ -483,9 +483,11 @@ namespace USF4_Stage_Tool
 			//double rx = atan2(-matrix[9], matrix[5]);
 			//double rz = asin(matrix[1]);
 
-			ry = -Convert.ToSingle(Math.Atan2(-matrix.M13, matrix.M11));
+			ry = Convert.ToSingle(2 * Math.PI - Math.Atan2(-matrix.M13, matrix.M11));
 			rx = Convert.ToSingle(Math.Atan2(-matrix.M32, matrix.M22));
 			rz = Convert.ToSingle(Math.Asin(matrix.M12));
+
+			if (ry != 0 || rx != 0 || rz != 0) return;
 		}
 
 		public static void DecomposeMatrixYXZ(Matrix4x4 matrix, out float tx, out float ty, out float tz, out float rx, out float ry, out float rz, out float sx, out float sy, out float sz)
@@ -559,8 +561,8 @@ namespace USF4_Stage_Tool
 
 			double e = -1;
 
-			double drz = Math.Atan2(2 * (p0 * p3 - e * p1 * p2), 1 - 2 * (p2 * p2 + p3 * p3));
-			double dry = Math.Asin(2 * (p0 * p2 + e * p1 * p3));
+			double dry = -Math.Atan2(2 * (p0 * p3 - e * p1 * p2), 1 - 2 * (p2 * p2 + p3 * p3));
+			double drz = Math.Asin(2 * (p0 * p2 + e * p1 * p3));
 			double drx = Math.Atan2(2 * (p0 * p1 - e * p2 * p3), 1 - 2 * (p1 * p1 + p2 * p2));
 
 			//Handle singularities
@@ -578,12 +580,16 @@ namespace USF4_Stage_Tool
 			//Supposedly the same holds true for +/ -90 deg, which seems... odd ?
 
 			tx = translation.X;
-			ty = translation.Y;
-			tz = translation.Z;
+			ty = -translation.Z;
+			tz = translation.Y;
 
-			rx = Convert.ToSingle(drx);
-			ry = Convert.ToSingle(dry);
-			rz = Convert.ToSingle(drz);
+			//rx = Convert.ToSingle(drx * 180d/Math.PI);
+			//ry = Convert.ToSingle(dry * 180d / Math.PI);
+			//rz = Convert.ToSingle(drz * 180d / Math.PI);
+
+			rx = Convert.ToSingle((180 / Math.PI) * drx);
+			ry = Convert.ToSingle((180 / Math.PI) * dry);
+			rz = Convert.ToSingle((180 / Math.PI) * drz);
 
 			sx = scale.X;
 			sy = scale.Y;

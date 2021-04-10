@@ -281,10 +281,11 @@ namespace USF4_Stage_Tool
             return lines;
         }
 
-        public static Animation AnimationFromColladaStruct()
+        public static Animation AnimationFromColladaStruct(Grendgine_Collada model)
         {
-            Grendgine_Collada model = Grendgine_Collada.Grendgine_Load_File("USAMananim.dae");
-            Animation animation1 = new Animation();
+            Animation newAnim = new Animation();
+
+            float framerate = 24f;
 
             Dictionary<string, int> master_bone_dict = new Dictionary<string, int>();
 
@@ -304,117 +305,272 @@ namespace USF4_Stage_Tool
                     }
                 }
             }
-            
-            foreach (Grendgine_Collada_Animation a in model.Library_Animations.Animation)
+
+            Dictionary<float, int> valuedict = new Dictionary<float, int>();
+            valuedict.Add(0, 0);
+
+            int d_max = 0;
+
+            newAnim = new Animation()
             {
-                Dictionary<float, int> valuedict = new Dictionary<float, int>();
-                valuedict.Add(0, 0);
+                CmdTrackCount = 0,
+                CmdTrackPointersList = new List<int>(),
+                CMDTracks = new List<CMDTrack>(),
+                Name = Encoding.ASCII.GetBytes("ANIMATION_000"),
+                NamePointer = 0,
+                ValuesList = new List<float>(),
+                ValuesListPointer = 0,
+                ValueCount = 0,
+                Duration = 0
+            };
 
-                int d_max = 0;
+            for (int i = 0; i < model.Library_Animations.Animation.Length; i++)
+            {
+                Grendgine_Collada_Animation an = model.Library_Animations.Animation[i];
 
-                animation1 = new Animation()
+                string inputID = string.Empty;
+                string outputID = string.Empty;
+                string interpID = string.Empty;
+                string intangentID = string.Empty;
+                string outtangentID = string.Empty;
+
+                string target_name = string.Empty;
+                string target_var = string.Empty;
+
+                List<int> tempsteps = new List<int>();
+                List<int> tempindices = new List<int>();
+
+                byte bitflag = 0;
+                byte transformtype = 0;
+
+                int boneID = 0;
+
+                /*  Only correct way to determine transform type/bone target is to go and compare to the actual
+                 *  bone declarations to see what value we're targetting.
+                 *  Otherwise we're at the mercy of naming conventions.
+                 */ 
+
+                for (int j = 0; j < an.Channel.Length; j++)
                 {
-                    CmdTrackCount = 0,
-                    CmdTrackPointersList = new List<int>(),
-                    CMDTracks = new List<CMDTrack>(),
-                    Name = Encoding.ASCII.GetBytes("ANIMATION_000"),
-                    NamePointer = 0,
-                    ValuesList = new List<float>(),
-                    ValuesListPointer = 0,
-                    ValueCount = 0,
-                    Duration = 0
-                };
+                    target_name = an.Channel[j].Target.Split('/')[0];
+                    target_var = an.Channel[j].Target.Split('/')[1];
 
-                foreach (Grendgine_Collada_Animation an in a.Animation)
-                {
-                    int boneID = -1;
-                    byte bitflag = 0;
-                    byte transformtype = 3;
-                    List<int> tempsteps = new List<int>() { 0 };
-                    List<int> tempindices = new List<int>() { 0 };
-
-                    foreach (string str in an.ID.Trim().Split('_'))
-                    {
-                        if (master_bone_dict.TryGetValue(str, out boneID) && boneID > 0) break;
-                        boneID = -1;
-                    }
-
-                    if (an.ID.Contains("location"))
-                    {
-                        transformtype = 0;
-
-                        if (an.ID.Contains("location_X")) bitflag = 0;
-                        else if (an.ID.Contains("location_Y")) bitflag = 1;
-                        else bitflag = 2;
-                    }
-                    else if (an.ID.Contains("rotation_euler"))
-                    {
-                        transformtype = 1;
-
-                        if (an.ID.Contains("rotation_euler_X")) bitflag = 0;
-                        else if (an.ID.Contains("rotation_euler_Y")) bitflag = 1;
-                        else bitflag = 2;
-                    }
-                    else
-                    {
-                        transformtype = 2;
-
-                        if (an.ID.Contains("scale_X")) bitflag = 0;
-                        else if (an.ID.Contains("scale_Y")) bitflag = 1;
-                        else bitflag = 2;
-                    }
-
-                    foreach (Grendgine_Collada_Source s in an.Source)
-                    {
-                        if (s.ID.Contains("input"))
-                        {
-                            foreach (string str in s.Float_Array.Value_As_String.Trim().Split(' '))
-                            {
-                                tempsteps.Add((int)Math.Round(float.Parse(str) * 24f));
-                            }
-                        }
-                        if (s.ID.Contains("output"))
-                        {
-                            foreach (string str in s.Float_Array.Value_As_String.Trim().Split(' '))
-                            {
-                                if (!valuedict.TryGetValue(float.Parse(str), out _))
-                                {
-                                    valuedict.Add(float.Parse(str), valuedict.Count);
-                                }
-
-                                tempindices.Add(valuedict[float.Parse(str)]);
-                            }
-                        }
-                        if (s.ID.Contains("interpolation"))
-                        {
-
-                        }
-                    }
-
-                    d_max = Math.Max(d_max, tempsteps.Max());
-
-                    CMDTrack cmd = new CMDTrack()
-                    {
-                        TransformType = transformtype,
-                        BitFlag = bitflag,
-                        BoneID = boneID,
-                        StepCount = tempsteps.Count,
-                        StepsList = tempsteps,
-                        IndicesListPointer = 0,
-                        IndicesList = tempindices
-                    };
-
-                    animation1.CMDTracks.Add(cmd);
+                    master_bone_dict.TryGetValue(target_name, out boneID);   
                 }
 
-                animation1.CmdTrackCount = animation1.CMDTracks.Count;
-                animation1.CmdTrackPointersList = new int[animation1.CMDTracks.Count].ToList();
-                animation1.Duration = d_max;
-                animation1.ValueCount = valuedict.Count;
-                animation1.ValuesList = valuedict.Keys.ToList();
+                //Use "target_name" to search the library_visual_scenes for the correct bone
+                //Will still blow up if the .dae uses matrix transforms, but meh
+                for (int j = 0; j < model.Library_Visual_Scene.Visual_Scene.Length; j++)
+                {
+                    Grendgine_Collada_Visual_Scene v = model.Library_Visual_Scene.Visual_Scene[j];
+
+                    if(v.Node != null)
+                    {
+                        List<Grendgine_Collada_Node> n_list = new List<Grendgine_Collada_Node>(v.Node);
+
+                        Grendgine_Collada_Node n = n_list[0];
+                        while (n_list.Count > 0) //Loop until we find or run out of nodes
+                        {
+                            if (n.ID == target_name) break; //Found a match, cancel the search
+                            if (n.node != null) n_list.AddRange(n.node);
+
+                            n_list.RemoveAt(0);
+                            if (n_list.Count == 0) break;
+                            n = n_list[0];
+                        }
+
+                        if (n.Translate != null) foreach (Grendgine_Collada_Translate t in n.Translate) if (t.sID == target_var.Split('.')[0]) transformtype = 0;
+                        if (n.Scale != null) foreach (Grendgine_Collada_Scale s in n.Scale) if (s.sID == target_var.Split('.')[0]) transformtype = 2;
+                        if (n.Rotate != null)
+                        {
+                            foreach (Grendgine_Collada_Rotate r in n.Rotate)
+                            {
+                                if (r.sID == target_var)
+                                {
+                                    transformtype = 1;
+
+                                    //Check the unit vectors to see what axis we're dealing with and set the bitflag
+                                    if (r.Value_As_String.StartsWith("1 0 0")) bitflag += 0;
+                                    if (r.Value_As_String.StartsWith("0 1 0")) bitflag += 1;
+                                    if (r.Value_As_String.StartsWith("0 0 1")) bitflag += 2;
+                                }
+                            }
+                        }
+                    }
+                }
+
+
+                for (int j = 0; j < an.Sampler.Length; j++)
+                {
+                    for (int k = 0; k < an.Sampler[j].Input.Length; k++)
+                    {
+                        if (an.Sampler[j].Input[k].Semantic == Grendgine_Collada_Input_Semantic.INPUT)
+                        {
+                            inputID = an.Sampler[j].Input[k].source.Split('#')[1];
+                        }
+                        else if (an.Sampler[j].Input[k].Semantic == Grendgine_Collada_Input_Semantic.OUTPUT)
+                        {
+                            outputID = an.Sampler[j].Input[k].source.Split('#')[1];
+                        }
+                        else if (an.Sampler[j].Input[k].Semantic == Grendgine_Collada_Input_Semantic.INTERPOLATION)
+                        {
+                            interpID = an.Sampler[j].Input[k].source.Split('#')[1];
+                        }
+                        else if (an.Sampler[j].Input[k].Semantic == Grendgine_Collada_Input_Semantic.IN_TANGENT)
+                        {
+                            intangentID = an.Sampler[j].Input[k].source.Split('#')[1];
+                        }
+                        else if (an.Sampler[j].Input[k].Semantic == Grendgine_Collada_Input_Semantic.OUT_TANGENT)
+                        {
+                            outtangentID = an.Sampler[j].Input[k].source.Split('#')[1];
+                        }
+                    }
+                }
+
+                for (int j = 0; j < an.Source.Length; j++)
+                {
+                    if (an.Source[j].ID == inputID)
+                    {
+                        foreach (string str in an.Source[j].Float_Array.Value_As_String.Trim().Split(' '))
+                        {
+                            tempsteps.Add((int)Math.Round(float.Parse(str) * framerate));
+                        }
+                    }
+                    if (an.Source[j].ID == outputID)
+                    {
+                        foreach (string str in an.Source[j].Float_Array.Value_As_String.Trim().Split(' '))
+                        {
+                            if (!valuedict.TryGetValue(float.Parse(str), out _))
+                            {
+                                valuedict.Add(float.Parse(str), valuedict.Count);
+                            }
+
+                            tempindices.Add(valuedict[float.Parse(str)]);
+                        }
+
+                        if (an.Source[j].Technique_Common.Accessor.Param[0].Name == "X") bitflag += 0x00;
+                        else if (an.Source[j].Technique_Common.Accessor.Param[0].Name == "Y") bitflag += 0x01;
+                        else if (an.Source[j].Technique_Common.Accessor.Param[0].Name == "Z") bitflag += 0x02;
+                    }
+                    if (an.Source[j].ID == interpID)
+                    {
+
+                    }
+                    if (an.Source[j].ID == intangentID)
+                    {
+
+                    }
+                    if (an.Source[j].ID == outtangentID)
+                    {
+
+                    }
+                }
+
+                d_max = Math.Max(d_max, tempsteps.Max());
+
+                CMDTrack cmd = new CMDTrack()
+                {
+                    TransformType = transformtype,
+                    BitFlag = bitflag,
+                    BoneID = boneID,
+                    StepCount = tempsteps.Count,
+                    StepsList = tempsteps,
+                    IndicesListPointer = 0,
+                    IndicesList = tempindices
+                };
+
+                newAnim.CMDTracks.Add(cmd);
             }
-            
-            return animation1;
+
+            //foreach (Grendgine_Collada_Animation an in model.Library_Animations.Animation)
+            //{
+            //    int boneID = -1;
+            //    byte bitflag = 0;
+            //    byte transformtype = 3;
+            //    List<int> tempsteps = new List<int>() { 0 };
+            //    List<int> tempindices = new List<int>() { 0 };
+
+            //    foreach (string str in an.ID.Trim().Split('_'))
+            //    {
+            //        if (master_bone_dict.TryGetValue(str, out boneID) && boneID > 0) break;
+            //        boneID = -1;
+            //    }
+
+            //    if (an.ID.Contains("location"))
+            //    {
+            //        transformtype = 0;
+
+            //        if (an.ID.Contains("location_X")) bitflag = 0;
+            //        else if (an.ID.Contains("location_Y")) bitflag = 1;
+            //        else bitflag = 2;
+            //    }
+            //    else if (an.ID.Contains("rotation_euler"))
+            //    {
+            //        transformtype = 1;
+
+            //        if (an.ID.Contains("rotation_euler_X")) bitflag = 0;
+            //        else if (an.ID.Contains("rotation_euler_Y")) bitflag = 1;
+            //        else bitflag = 2;
+            //    }
+            //    else
+            //    {
+            //        transformtype = 2;
+
+            //        if (an.ID.Contains("scale_X")) bitflag = 0;
+            //        else if (an.ID.Contains("scale_Y")) bitflag = 1;
+            //        else bitflag = 2;
+            //    }
+
+            //    foreach (Grendgine_Collada_Source s in an.Source)
+            //    {
+            //        if (s.ID.Contains("input"))
+            //        {
+            //            foreach (string str in s.Float_Array.Value_As_String.Trim().Split(' '))
+            //            {
+            //                tempsteps.Add((int)Math.Round(float.Parse(str) * 24f));
+            //            }
+            //        }
+            //        if (s.ID.Contains("output"))
+            //        {
+            //            foreach (string str in s.Float_Array.Value_As_String.Trim().Split(' '))
+            //            {
+            //                if (!valuedict.TryGetValue(float.Parse(str), out _))
+            //                {
+            //                    valuedict.Add(float.Parse(str), valuedict.Count);
+            //                }
+
+            //                tempindices.Add(valuedict[float.Parse(str)]);
+            //            }
+            //        }
+            //        if (s.ID.Contains("interpolation"))
+            //        {
+
+            //        }
+            //    }
+
+            //    d_max = Math.Max(d_max, tempsteps.Max());
+
+            //    CMDTrack cmd = new CMDTrack()
+            //    {
+            //        TransformType = transformtype,
+            //        BitFlag = bitflag,
+            //        BoneID = boneID,
+            //        StepCount = tempsteps.Count,
+            //        StepsList = tempsteps,
+            //        IndicesListPointer = 0,
+            //        IndicesList = tempindices
+            //    };
+
+            //    newAnim.CMDTracks.Add(cmd);
+            //}
+
+            newAnim.CmdTrackCount = newAnim.CMDTracks.Count;
+            newAnim.CmdTrackPointersList = new int[newAnim.CMDTracks.Count].ToList();
+            newAnim.Duration = d_max;
+            newAnim.ValueCount = valuedict.Count;
+            newAnim.ValuesList = valuedict.Keys.ToList();
+
+            return newAnim;
         }
 
         public static Grendgine_Collada_Library_Geometries EMOtoCollada_Library_Geometries2(EMO emo)
@@ -1321,6 +1477,8 @@ namespace USF4_Stage_Tool
                     string time_vals = string.Empty;
                     string trans_vals = string.Empty;
                     string tangent_vals = string.Empty;
+                    string bezier_in_vals = string.Empty;
+                    string bezier_out_vals = string.Empty;
                     string interp_vals = string.Empty; //In SF4 anims, intangent == outtangent so we only need one list of tangent vals
 
                     if ((c.BitFlag & 0x10) == 0x10)
@@ -1361,34 +1519,48 @@ namespace USF4_Stage_Tool
                     foreach (int t in c.StepsList)
                     {
                         time_vals += $"{Convert.ToSingle(t) / 60f} ";
-                        interp_vals += "LINEAR ";
+                        interp_vals += "BEZIER ";
                     }
 
                     for (int i = 0; i < c.StepsList.Count; i++)
                     {
                         int masked_index;
                         int masked_tangent;
+                        float bezier_in;
+                        float bezier_out;
 
                         if ((c.BitFlag & 0x40) == 0)
                         {
                             masked_index = c.IndicesList[i] & 0b0011111111111111;
-                            masked_tangent = c.IndicesList[i] >> 14;
+                            masked_tangent = (c.IndicesList[i] >> 14);
+
+                            if (masked_tangent == -2) masked_tangent = 2;
                         }
                         else
                         {
                             masked_index = c.IndicesList[i] & 0b00111111111111111111111111111111;
                             masked_tangent = c.IndicesList[i] >> 30;
+
+                            if (masked_tangent == -2) masked_tangent = 2;
                         }
-                            
+
                         trans_vals += $"{a.ValuesList[masked_index]} ";
+
 
                         if (masked_tangent != 0)
                         {
-                            tangent_vals += $"0 {a.ValuesList[masked_index + masked_tangent]} ";
+                            bezier_in = a.ValuesList[masked_index] - a.ValuesList[masked_index + masked_tangent] / 3f;
+                            bezier_out = a.ValuesList[masked_index] + a.ValuesList[masked_index + masked_tangent] / 3f;
+                            //tangent_vals += $"0 {a.ValuesList[masked_index + masked_tangent]} ";
+                            bezier_in_vals += $"0 {bezier_in} ";
+                            bezier_out_vals += $"0 {bezier_out} ";
                         }
                         else
                         {
-                            tangent_vals += "0 0 ";
+                            bezier_in_vals += "0 0 ";
+                            bezier_out_vals += "0 0 ";
+
+                            //tangent_vals += "0 0 ";
                         }
                     }
 
@@ -1460,7 +1632,7 @@ namespace USF4_Stage_Tool
                                 {
                                     ID = $"{name}-intangents-array",
                                     Count = 2 * c.StepsList.Count,
-                                    Value_As_String = tangent_vals
+                                    Value_As_String = bezier_in_vals,
                                 },
                                 Technique_Common = new Grendgine_Collada_Technique_Common_Source()
                                 {
@@ -1497,7 +1669,7 @@ namespace USF4_Stage_Tool
                                 {
                                     ID = $"{name}-outtangents-array",
                                     Count = c.StepsList.Count,
-                                    Value_As_String = tangent_vals
+                                    Value_As_String = bezier_out_vals
                                 },
                                 Technique_Common = new Grendgine_Collada_Technique_Common_Source()
                                 {
@@ -1563,16 +1735,16 @@ namespace USF4_Stage_Tool
                                         Semantic = Grendgine_Collada_Input_Semantic.OUTPUT,
                                         source = $"#{name}-output"
                                     },
-                                    //new Grendgine_Collada_Input_Unshared()
-                                    //{
-                                    //    Semantic = Grendgine_Collada_Input_Semantic.IN_TANGENT,
-                                    //    source = $"#{name}-intangents"
-                                    //},
-                                    //new Grendgine_Collada_Input_Unshared()
-                                    //{
-                                    //    Semantic = Grendgine_Collada_Input_Semantic.OUT_TANGENT,
-                                    //    source = $"#{name}-outtangents"
-                                    //},
+                                    new Grendgine_Collada_Input_Unshared()
+                                    {
+                                        Semantic = Grendgine_Collada_Input_Semantic.IN_TANGENT,
+                                        source = $"#{name}-intangents"
+                                    },
+                                    new Grendgine_Collada_Input_Unshared()
+                                    {
+                                        Semantic = Grendgine_Collada_Input_Semantic.OUT_TANGENT,
+                                        source = $"#{name}-outtangents"
+                                    },
                                     new Grendgine_Collada_Input_Unshared()
                                     {
                                         Semantic = Grendgine_Collada_Input_Semantic.INTERPOLATION,
