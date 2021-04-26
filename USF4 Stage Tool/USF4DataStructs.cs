@@ -1637,18 +1637,18 @@ namespace USF4_Stage_Tool
 					//But seems to be a lot of negative values where the UV floats should be, which isn't impossible but is weird
 					if ((Models[i].BitFlag & 0x80) == 0x80)
 					{
-						//Utils.AddFloatAsBytes(Data, Models[i].VertexData[j].???);
-						//Utils.AddFloatAsBytes(Data, Models[i].VertexData[j].???);
-						//Utils.AddFloatAsBytes(Data, Models[i].VertexData[j].???);
-						Utils.AddFloatAsBytes(Data, 0f);
-						Utils.AddFloatAsBytes(Data, 0f);
-						Utils.AddFloatAsBytes(Data, 0.5f);
+						//Utils.AddFloatAsBytes(Data, 1f);
+						//Utils.AddFloatAsBytes(Data, 0f);
+						//Utils.AddFloatAsBytes(Data, 0f);
+						Utils.AddFloatAsBytes(Data, Models[i].VertexData[j].ntangentX);
+						Utils.AddFloatAsBytes(Data, Models[i].VertexData[j].ntangentY);
+						Utils.AddFloatAsBytes(Data, Models[i].VertexData[j].ntangentZ);
 					}
 
 					//UV Colour. Default to white TODO modify to accept user defined colour
 					if ((Models[i].BitFlag & 0x40) == 0x40)
 					{
-						Data.Add(0xFF); Data.Add(0xFF); Data.Add(0xFF); Data.Add(0xFF);
+						Utils.AddFloatAsBytes(Data, Models[i].VertexData[j].colour);
 					}
 
 					//TODO Bone weights
@@ -1798,12 +1798,12 @@ namespace USF4_Stage_Tool
 
 					ReadPosition += 0x08;
 				}
-
+				//Normal tangent (used for normal mapping)
 				if ((BitFlag & 0x80) == 0x80)
 				{
-					v.U2 = Utils.ReadFloat(VertexListPointer + i * BitDepth + ReadPosition + 0x00, Data);
-					v.V2 = Utils.ReadFloat(VertexListPointer + i * BitDepth + ReadPosition + 0x04, Data);
-					v.blend = Utils.ReadFloat(VertexListPointer + i * BitDepth + ReadPosition + 0x08, Data);
+					v.ntangentX = Utils.ReadFloat(VertexListPointer + i * BitDepth + ReadPosition + 0x00, Data);
+					v.ntangentY = Utils.ReadFloat(VertexListPointer + i * BitDepth + ReadPosition + 0x04, Data);
+					v.ntangentZ = Utils.ReadFloat(VertexListPointer + i * BitDepth + ReadPosition + 0x08, Data);
 
 					ReadPosition += 0x0C;
 				}
@@ -1973,9 +1973,9 @@ namespace USF4_Stage_Tool
 		public float U;
 		public float V;
 
-		public float U2;
-		public float V2;
-		public float blend;
+		public float ntangentX;
+		public float ntangentY;
+		public float ntangentZ;
 
 		public float nX;
 		public float nY;

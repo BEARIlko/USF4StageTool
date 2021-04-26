@@ -87,6 +87,7 @@ namespace USF4_Stage_Tool
 
 		public Form1()
 		{
+
 			InitializeComponent();
 			debugOutputForm = new DebugOutput();
 			CheckForIllegalCrossThreadCalls = false;
@@ -1614,13 +1615,19 @@ namespace USF4_Stage_Tool
 			//lbSelNODE_ListData.Items.Add($"Face encoding mode: {m.ReadMode}");
 		}
 
-		void TreeDisplaySubModelData(SubModel m)
+		void TreeDisplaySubModelData(SubModel sm)
 		{
 			lbSelNODE_ListData.Items.Clear();
-			lbSelNODE_ListData.Items.Add($"Bone Integers Count: {m.BoneIntegersCount}");
-			lbSelNODE_ListData.Items.Add($"Daisy Chain Length: {m.DaisyChainLength}");
-			lbSelNODE_ListData.Items.Add($"Daisy Chain Compression: {100 * m.DaisyChainLength / (GeometryIO.FaceIndicesFromDaisyChain(m.DaisyChain).Count * 3)}%");
-			lbSelNODE_ListData.Items.Add($"Material Index: {m.MaterialIndex}");
+			lbSelNODE_ListData.Items.Add($"Bone Integers Count: {sm.BoneIntegersCount}");
+			lbSelNODE_ListData.Items.Add($"Daisy Chain Length: {sm.DaisyChainLength}");
+			lbSelNODE_ListData.Items.Add($"Daisy Chain Compression: {100 * sm.DaisyChainLength / (GeometryIO.FaceIndicesFromDaisyChain(sm.DaisyChain).Count * 3)}%");
+			lbSelNODE_ListData.Items.Add($"Material Index: {sm.MaterialIndex}");
+			lbSelNODE_ListData.Items.Add($"Bone integers:");
+
+			foreach (int i in sm.BoneIntegersList)
+            {
+				lbSelNODE_ListData.Items.Add($"{i}");
+            }
 		}
 
 		void TreeDisplayEMMData(EMM e)
@@ -1890,7 +1897,6 @@ namespace USF4_Stage_Tool
 
 		private void Form1_Load(object sender, EventArgs e)
 		{
-
 			pnlEO_EMG.Visible = false;
 			pnlEO_MOD.Visible = false;
 
@@ -2289,6 +2295,7 @@ namespace USF4_Stage_Tool
 			{
 				lines[i] = lines[i].Replace(@"""", "");
 				lines[i] = lines[i].Replace("\t", " ");
+				lines[i] = lines[i].Replace("   ", " ");
 				lines[i] = lines[i].Replace("  ", " ");
 				lines[i] = lines[i].Trim().Split(delim)[0];
 			}
@@ -2371,6 +2378,8 @@ namespace USF4_Stage_Tool
 				{
 					while (lines[i + 1] != "end") //Read lines until the next line is the end-of-block marker
 					{
+						Console.WriteLine($"i = {i}");
+
 						string[] vert;
 
 						i++;
@@ -4288,7 +4297,11 @@ namespace USF4_Stage_Tool
 				string extension = diagOpenOBJ.FileName.Split('.').Last();
 				string name = diagOpenOBJ.SafeFileName;
 
-				EMZ targetEMZ = WorkingEMZ;
+				EMZ targetEMZ;
+
+				if (LastSelectedTreeNode.Tag.ToString() == "EMZ") targetEMZ = WorkingEMZ;
+				else targetEMZ = WorkingTEXEMZ;
+
 
 				if (filepath.Trim() != string.Empty)
 				{
@@ -4316,7 +4329,7 @@ namespace USF4_Stage_Tool
 					}
 					else AddStatus($"File {name} added to .EMZ");
 
-					targetEMZ.Files.Add(WorkingEMZ.Files.Count, file);
+					targetEMZ.Files.Add(targetEMZ.Files.Count, file);
 					targetEMZ.NumberOfFiles++;
 					targetEMZ.FileNamePointersList.Add(0x00);
 					targetEMZ.FileLengthsList.Add(0x00);
@@ -4502,26 +4515,33 @@ namespace USF4_Stage_Tool
 
         private void injectColladaAsEMGExperimentalToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
 			EMO emo = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
 
 			Skeleton skel = emo.Skeleton;
 
-			EMG emg = GeometryIO.GrendgineCollada(out List<Node> tempnodes);
-			
-			for(int i = 0; i < tempnodes.Count; i++)
-            {
-				Node n = skel.Nodes[i];
-				n.NodeMatrix = tempnodes[i].NodeMatrix;
-				n.SkinBindPoseMatrix = tempnodes[i].SkinBindPoseMatrix;
+			EMG tempemg = GeometryIO.GrendgineCollada2(skel, out List<Node> tempnodes);
 
-				skel.Nodes.RemoveAt(i);
-				skel.Nodes.Insert(i, n);
-            }
-			
-			skel.GenerateBytes();
+			EMG emg = emo.EMGs[SelectedEMGNumberInTree];
+			Model m = emg.Models[0];
+			SubModel sm = m.SubModels[0];
 
-			emo.Skeleton = skel;
+			m.VertexData = new List<Vertex>(tempemg.Models[0].VertexData);
+			m.VertexCount = m.VertexData.Count;
+
+			sm.BoneIntegersList = tempemg.Models[0].SubModels[0].BoneIntegersList;
+			sm.BoneIntegersCount = sm.BoneIntegersList.Count;
+			sm.DaisyChain = tempemg.Models[0].SubModels[0].DaisyChain;
+			sm.DaisyChainLength = sm.DaisyChain.Length;
+
+			m.SubModels = new List<SubModel>() { sm };
+			m.SubModelsCount = 1;
+			m.SubModelPointersList = new List<int>() { 0 };
+
+			emg.Models = new List<Model>() { m };
+			emg.ModelPointersList = new List<int>() { 0 };
+			emg.ModelCount = 1;
+			emg.GenerateBytes();
+
 			emo.EMGs.RemoveAt(SelectedEMGNumberInTree);
 			emo.EMGs.Insert(SelectedEMGNumberInTree, emg);
 			emo.GenerateBytes();
@@ -4933,6 +4953,40 @@ namespace USF4_Stage_Tool
 				Console.ReadLine();
 				
 			}
+		}
+
+        private void setColourToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			EMO emo = (EMO)WorkingEMZ.Files[LastSelectedTreeNode.Parent.Index];
+			EMG emg = emo.EMGs[LastSelectedTreeNode.Index];
+
+			for(int i = 0; i < emg.Models.Count; i++)
+            {
+				Model m = emg.Models[i];
+
+				List<Vertex> tempverts = new List<Vertex>();
+				for (int j = 0; j < m.VertexData.Count; j++)
+                {
+					Vertex v = m.VertexData[j];
+					v.colour = Utils.ReadFloat(0, new byte[] { 0xFE, 0xFE, 0xFE, 0xFF });
+					v.ntangentX = 1;
+					v.ntangentY = 0;
+					v.ntangentZ = 0;
+
+					tempverts.Add(v);
+                }
+
+				m.VertexData = tempverts;
+				emg.Models.RemoveAt(i);
+				emg.Models.Insert(i, m);
+            }
+
+			emg.GenerateBytes();
+			emo.EMGs.RemoveAt(LastSelectedTreeNode.Index);
+			emo.EMGs.Insert(LastSelectedTreeNode.Index, emg);
+			emo.GenerateBytes();
+			WorkingEMZ.Files.Remove(LastSelectedTreeNode.Parent.Index);
+			WorkingEMZ.Files.Add(LastSelectedTreeNode.Parent.Index, emo);
 		}
     }
 }

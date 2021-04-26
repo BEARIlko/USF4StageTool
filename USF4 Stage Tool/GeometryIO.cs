@@ -1285,6 +1285,23 @@ namespace USF4_Stage_Tool
 
             foreach (Node n in emo.Skeleton.Nodes) //Column-major order
             {
+                Matrix4x4.Invert(n.SkinBindPoseMatrix, out Matrix4x4 inverse);
+
+                Utils.DecomposeMatrixXYZ(inverse, out float tx, out float ty, out float tz,
+                                                               out float rx, out float ry, out float rz,
+                                                               out float sx, out float sy, out float sz);
+
+                Matrix4x4 test = new Matrix4x4(1.000000f, -0.000975f, -0.000163f, -0.033028f,
+                                               0.000973f,  0.999910f, -0.013357f, -0.067872f,
+                                               0.000176f,  0.013357f,  0.999911f, -0.508433f,
+                                               0.000000f,  0.000000f,  0.000000f,  1.000000f);
+
+                test = Matrix4x4.Transpose(test);
+
+                Utils.DecomposeMatrixXYZ(test, out float tx2, out float ty2, out float tz2,
+                                                               out float rx2, out float ry2, out float rz2,
+                                                               out float sx2, out float sy2, out float sz2);
+
                 sbp_string += n.SkinBindPoseMatrix.M11.ToString() + " ";
                 sbp_string += n.SkinBindPoseMatrix.M21.ToString() + " ";
                 sbp_string += n.SkinBindPoseMatrix.M31.ToString() + " ";
@@ -1476,10 +1493,10 @@ namespace USF4_Stage_Tool
                     string target;
                     string time_vals = string.Empty;
                     string trans_vals = string.Empty;
-                    string tangent_vals = string.Empty;
-                    string bezier_in_vals = string.Empty;
-                    string bezier_out_vals = string.Empty;
-                    string interp_vals = string.Empty; //In SF4 anims, intangent == outtangent so we only need one list of tangent vals
+                    string interp_vals = string.Empty; 
+                    string tangent_vals = string.Empty; //In SF4 anims, intangent == outtangent so we only need one list of tangent vals
+                    string bezier_in_vals = string.Empty; //...but Blender doesn't support Hermite import, so we have to convert to Bezier
+                    string bezier_out_vals = string.Empty; //equivalent Bezier in- and out- control handles will differ even if intangent == outtangent
 
                     if ((c.BitFlag & 0x10) == 0x10)
                     {
@@ -1790,7 +1807,7 @@ namespace USF4_Stage_Tool
 
         public static EMG GrendgineCollada(out List<Node> Skeleton)
         {
-            Grendgine_Collada model = Grendgine_Collada.Grendgine_Load_File("USAMananim no rot.dae");
+            Grendgine_Collada model = Grendgine_Collada.Grendgine_Load_File("clothes.dae");
 
             Skeleton = new List<Node>();
 
@@ -2033,6 +2050,7 @@ namespace USF4_Stage_Tool
                     nZ = normal_list[tri_indices[i * 3 + 1]].nZ,
                     U = texture_list[tri_indices[i * 3 + 2]].U,
                     V = texture_list[tri_indices[i * 3 + 2]].V,
+
                 });
             }
 
@@ -2139,6 +2157,393 @@ namespace USF4_Stage_Tool
             };
 
             emg.GenerateBytes();
+
+            Utils.WriteDataToStream("skin.emg", emg.HEXBytes);
+
+            return emg;
+        }
+
+        public static EMG GrendgineCollada2(Skeleton skel, out List<Node> Skeleton)
+        {
+            Grendgine_Collada model = Grendgine_Collada.Grendgine_Load_File("clothes.dae");
+
+            Skeleton = new List<Node>();
+
+            List<float> position_floats = new List<float>();
+            List<float> normal_floats = new List<float>();
+            List<float> texture_floats = new List<float>();
+            List<int> tri_indices = new List<int>();
+
+            List<Vertex> position_list = new List<Vertex>();
+            List<Normal> normal_list = new List<Normal>();
+            List<UVMap> texture_list = new List<UVMap>();
+
+            List<Vertex> VertexList = new List<Vertex>();
+            List<int[]> FaceIndices = new List<int[]>();
+
+            Dictionary<string, int> master_bone_dict = new Dictionary<string, int>();
+            List<string> bone_names = new List<string>();
+            List<Matrix4x4> bindpose_matrices = new List<Matrix4x4>();
+
+            List<int> vert_bonecounts = new List<int>();
+            List<int> bone_indices = new List<int>();
+            List<double> bone_floats = new List<double>();
+
+            foreach (Grendgine_Collada_Geometry g in model.Library_Geometries.Geometry)
+            {
+                //Triangles...
+                foreach (string str in g.Mesh.Triangles[0].P.Value_As_String.Split(' '))
+                {
+                    tri_indices.Add(int.Parse(str));
+                }
+
+                //Vertex positions/normals/UVs
+                foreach (Grendgine_Collada_Source s in g.Mesh.Source)
+                {
+                    if (s.ID.Contains("mesh-positions"))
+                    {
+                        foreach (string str in s.Float_Array.Value_As_String.Split(' '))
+                        {
+                            position_floats.Add(float.Parse(str));
+                        }
+                    }
+                    else if (s.ID.Contains("mesh-normals"))
+                    {
+                        foreach (string str in s.Float_Array.Value_As_String.Split(' '))
+                        {
+                            normal_floats.Add(float.Parse(str));
+                        }
+                    }
+                    else if (s.ID.Contains("mesh-map"))
+                    {
+                        foreach (string str in s.Float_Array.Value_As_String.Split(' '))
+                        {
+                            texture_floats.Add(float.Parse(str));
+                        }
+                    }
+                }
+            }
+
+            foreach (Grendgine_Collada_Controller c in model.Library_Controllers.Controller)
+            {
+                foreach (Grendgine_Collada_Source s in c.Skin.Source)
+                {
+                    if (s.ID.Contains("skin-bind_poses"))
+                    {
+                        List<float> bpf = new List<float>();
+
+                        foreach (string str in s.Float_Array.Value_As_String.Trim().Split(' '))
+                        {
+                            bpf.Add(float.Parse(str));
+                        }
+
+                        for (int i = 0; i < bpf.Count / 16; i++)
+                        {
+                            bindpose_matrices.Add(new Matrix4x4(bpf[16 * i + 0], bpf[16 * i + 4], bpf[16 * i + 8], bpf[16 * i + 12],
+                                                                bpf[16 * i + 1], bpf[16 * i + 5], bpf[16 * i + 9], bpf[16 * i + 13],
+                                                                bpf[16 * i + 2], bpf[16 * i + 6], bpf[16 * i + 10], bpf[16 * i + 14],
+                                                                bpf[16 * i + 3], bpf[16 * i + 7], bpf[16 * i + 11], bpf[16 * i + 15]));
+                        }
+                    }
+                    if (s.ID.Contains("skin-joints"))
+                    {
+                        foreach (string str in s.Name_Array.Value_Pre_Parse.Trim().Split(' '))
+                        {
+                            if (!master_bone_dict.TryGetValue(str, out _))
+                            {
+                                master_bone_dict.Add(str, master_bone_dict.Count);
+                            }
+                        }
+                    }
+                    if (s.ID.Contains("skin-weights"))
+                    {
+                        foreach (string str in s.Float_Array.Value_As_String.Split(' '))
+                        {
+                            bone_floats.Add(float.Parse(str));
+                        }
+                    }
+                }
+
+                foreach (string str in c.Skin.Vertex_Weights.V.Value_As_String.Split(' '))
+                {
+                    vert_bonecounts.Add(int.Parse(str));
+                }
+                foreach (string str in c.Skin.Vertex_Weights.VCount.Value_As_String.Trim().Split(' '))
+                {
+                    bone_indices.Add(int.Parse(str));
+                }
+            }
+
+            //Actual bones (nodes) are recursively stored in the visual scenes library
+
+            Grendgine_Collada_Node current_node;
+
+            foreach (Grendgine_Collada_Visual_Scene v in model.Library_Visual_Scene.Visual_Scene)
+            {
+
+                foreach (Grendgine_Collada_Node n in v.Node)
+                {
+                    List<Grendgine_Collada_Node> q = n.node.ToList();
+                    //Depth-first search for nodes. Importing the master node-name list seems to be broken
+                    //Hoping depth-first is always right, if not have to match bones later using names
+                    while (q.Count > 0)
+                    {
+                        current_node = q[0];
+
+                        Matrix4x4 current_matrix = new Matrix4x4();
+
+                        //Compile transform matrix...
+                        foreach (Grendgine_Collada_Matrix m in current_node.Matrix)
+                        {
+                            string[] strings = m.Value_As_String.Trim().Split(' ');
+                            float[] mf = new float[16];
+                            for (int i = 0; i < 16; i++)
+                            {
+                                mf[i] = float.Parse(strings[i]);
+                            }
+                            current_matrix = new Matrix4x4(mf[0], mf[4], mf[8], mf[12],
+                                                            mf[1], mf[5], mf[9], mf[13],
+                                                            mf[2], mf[6], mf[10], mf[14],
+                                                            mf[3], mf[7], mf[11], mf[15]);
+                            //current_matrix = new Matrix4x4(mf[0], mf[1], mf[2], mf[3],
+                            //                                mf[4], mf[5], mf[6], mf[7],
+                            //                                mf[8], mf[9], mf[10], mf[11],
+                            //                                mf[12], mf[13], mf[14], mf[15]);
+                        }
+
+                        List<string> children = new List<string>();
+
+                        if (current_node.node != null)
+                        {
+                            foreach (Grendgine_Collada_Node nc in current_node.node)
+                            {
+                                children.Add(nc.Name);
+                            }
+                        }
+
+                        //Test for "extra" nodes that shouldn't be there, add to skeleton if it's a real node
+                        if (master_bone_dict.TryGetValue(current_node.Name, out _))
+                        {
+                            Skeleton.Add(new Node()
+                            {
+                                Name = current_node.Name,
+                                NodeMatrix = current_matrix,
+                                SkinBindPoseMatrix = bindpose_matrices[Skeleton.Count],
+                                child_strings = children
+                            });
+                        }
+
+                        q.RemoveAt(0);
+                        if (current_node.node == null) continue; //No more children? break and start over
+
+                        for (int j = 0; j < current_node.node.Length; j++)
+                        {
+                            q.Insert(0, current_node.node[current_node.node.Length - (j + 1)]); //Adding them in reverse order
+                        }
+                    };
+                }
+            }
+
+            //Compile indexes - these are the equivalent of OBJ V/VN/VT indexes
+            int pointer = 0;
+            for (int i = 0; i < position_floats.Count / 3; i++)
+            {
+                List<int> tempIDs = new List<int>();
+                List<float> tempFloats = new List<float>();
+
+                for (int j = 0; j < bone_indices[i]; j++)
+                {
+                    tempIDs.Add(vert_bonecounts[pointer * 2]);
+                    tempFloats.Add(Convert.ToSingle(bone_floats[vert_bonecounts[pointer * 2 + 1]]));
+
+                    pointer++;
+                }
+
+                position_list.Add(new Vertex()
+                {
+                    X = position_floats[i * 3],
+                    Y = position_floats[i * 3 + 1],
+                    Z = position_floats[i * 3 + 2],
+                    BoneCount = bone_indices[i],
+                    BoneIDs = tempIDs,
+                    BoneWeights = tempFloats
+                });
+            }
+
+            for (int i = 0; i < normal_floats.Count / 3; i++)
+            {
+                normal_list.Add(new Normal()
+                {
+                    nX = normal_floats[i * 3],
+                    nY = normal_floats[i * 3 + 1],
+                    nZ = normal_floats[i * 3 + 2],
+                });
+            }
+            for (int i = 0; i < texture_floats.Count / 2; i++)
+            {
+                texture_list.Add(new UVMap()
+                {
+                    U = texture_floats[i * 2],
+                    V = texture_floats[i * 2 + 1]
+                });
+            }
+
+
+            //Working from the tri indices, construct an SF4-style vertex table
+            //Currently no vertex merging
+
+            
+
+            for (int i = 0; i < tri_indices.Count / 3; i++)
+            {
+                float nx = normal_list[tri_indices[i * 3 + 1]].nX;
+                float ny = normal_list[tri_indices[i * 3 + 1]].nY;
+
+                VertexList.Add(new Vertex()
+                {
+                    X = position_list[tri_indices[i * 3]].X,
+                    Y = position_list[tri_indices[i * 3]].Y,
+                    Z = position_list[tri_indices[i * 3]].Z,
+                    ntangentX = 1,
+                    ntangentY = 0,
+                    ntangentZ = 0,
+                    //Experiment with rotating 90 deg and see what happens
+                    //ntangentX = (float)(nx * Math.Cos(Math.PI / 2) - ny * Math.Sin(Math.PI / 2)),
+                    //ntangentY = (float)(nx * Math.Sin(Math.PI / 2) + ny * Math.Cos(Math.PI / 2)),
+                    //ntangentZ = normal_list[tri_indices[i * 3 + 1]].nZ,
+                    BoneCount = position_list[tri_indices[i * 3]].BoneCount,
+                    BoneIDs = new List<int>(position_list[tri_indices[i * 3]].BoneIDs),
+                    BoneWeights = new List<float>(position_list[tri_indices[i * 3]].BoneWeights),
+                    //BoneCount = 1,
+                    //BoneIDs = new List<int>() { 8 },
+                    //BoneWeights = new List<float>() { 1f },
+                    //nX = normal_list[tri_indices[i * 3 + 1]].nX,
+                    //nY = normal_list[tri_indices[i * 3 + 1]].nY,
+                    //nZ = normal_list[tri_indices[i * 3 + 1]].nZ,
+                    nX = -normal_list[tri_indices[i * 3 + 1]].nX,
+                    nY = -normal_list[tri_indices[i * 3 + 1]].nY,
+                    nZ = -normal_list[tri_indices[i * 3 + 1]].nZ,
+                    U = texture_list[tri_indices[i * 3 + 2]].U,
+                    V = texture_list[tri_indices[i * 3 + 2]].V,
+                    colour = Utils.ReadFloat(0, new byte[] { 0xFE, 0xFE, 0xFE, 0xFF }),
+                });
+            }
+
+            for (int i = 0; i < tri_indices.Count / 9; i++)
+            {
+                FaceIndices.Add(new int[]{
+                        i * 3, i * 3 + 1, i * 3 + 2
+                    });
+            }
+
+            int[] test = new int[tri_indices.Count / 3];
+
+            for (int i = 0; i < tri_indices.Count / 3; i++)
+            {
+                test[i] = i;
+            }
+
+            List<int> Daisy = DaisyChainFromIndices(FaceIndices);
+
+            //Replace DAE bone dictionary with EMO bone dictionary
+            Dictionary<int, int> bone_translation_dict = new Dictionary<int, int>();
+            for (int i = 0; i < skel.NodeNames.Count; i++)
+            {
+                bone_translation_dict.Add(master_bone_dict[Encoding.ASCII.GetString(skel.NodeNames[i])],i);
+            }
+
+            //Build a dictionary to translate absolute bone ref to submodel bone ref
+            Dictionary<int, int> BoneDictionary = new Dictionary<int, int>();
+
+            for (int i = 0; i < VertexList.Count; i++)
+            {
+                for (int j = 0; j < VertexList[i].BoneIDs.Count; j++)
+                {
+                    if (!BoneDictionary.TryGetValue(bone_translation_dict[VertexList[i].BoneIDs[j]], out _))
+                    {
+                        BoneDictionary.Add(bone_translation_dict[VertexList[i].BoneIDs[j]], BoneDictionary.Count);
+                    }
+                }
+            }
+
+            //BoneDictionary.Add(0, BoneDictionary.Count);
+            //Update vertex list with submodel bone refs
+            for (int i = 0; i < VertexList.Count; i++)
+            {
+                for (int j = 0; j < VertexList[i].BoneIDs.Count; j++)
+                {
+                    VertexList[i].BoneIDs[j] = BoneDictionary[bone_translation_dict[VertexList[i].BoneIDs[j]]];
+                }
+            }
+
+            EMG emg = new EMG()
+            {
+                RootBone = 0x01,
+                ModelCount = 1,
+                HEXBytes = new byte[0],
+                ModelPointersList = new List<int>() { 0x00 },
+                Models = new List<Model>()
+                {
+                    new Model()
+                    {
+                        HEXBytes = new byte[0],
+                        BitFlag = 0x02C7,
+                        BitDepth = 0x40,
+                        TextureCount = 1,
+                        TextureListPointer = 0x00,
+                        VertexCount = VertexList.Count,
+                        VertexData = VertexList,
+                        //ReadMode = 0,   //triangles
+                        ReadMode = 1, //stripped
+                        SubModelsCount = 1,
+                        SubModelsListPointer = 1,
+                        SubModelPointersList = new List<int>() { 0x00 },
+                        SubModels = new List<SubModel>
+                        {
+                            new SubModel()
+                            {
+                                //DaisyChain = test,
+                                //DaisyChainLength = test.Length,
+                                DaisyChain = Daisy.ToArray(),
+                                DaisyChainLength = Daisy.Count,
+                                SubModelName = Utils.MakeModelName("Polygon"),
+                                BoneIntegersCount = BoneDictionary.Count,
+                                //BoneIntegersCount = 1,
+                                MaterialIndex = 0,
+                                BoneIntegersList = BoneDictionary.Keys.ToList(),
+                                //BoneIntegersList = new List<int>(){8},
+                                MysteryFloats = new byte[] { 0x9E, 0xDF, 0xDD, 0xBC, 0xC5, 0x2A, 0x3B, 0x3E,
+                                    0xA7, 0x68, 0x3F, 0x3C, 0x00, 0x00, 0x80, 0x3F },
+                                HEXBytes = new byte[0]
+                            }
+                        },
+                        TexturePointersList = new List<int>() { 0x00 },
+                        Textures = new List<EMGTexture>()
+                        {
+                            new EMGTexture
+                            {
+                                TextureLayers = 2,
+                                TextureIndicesList = new List<int> { 0 , 1 },
+                                Scales_UList = new List<float> { 1f, 1f },
+                                Scales_VList = new List<float> { 1f, 1f }
+                            }
+                        },
+                        CullData = new byte[]
+                        {
+                            0x00, 0x0A, 0x1B, 0x3C, 0xC3, 0xA4, 0x9E, 0x40,
+                            0x80, 0x89, 0x27, 0x3E, 0xF6, 0x79, 0x3E, 0x41,
+                            0x50, 0x94, 0xA1, 0xC0, 0xFD, 0x14, 0x9D, 0xBF,
+                            0xEE, 0x94, 0x0A, 0xC1, 0x43, 0xB9, 0x0D, 0x43,
+                            0x5A, 0x2F, 0xA2, 0x40, 0x63, 0x47, 0x32, 0x41,
+                            0x3A, 0xD1, 0x0F, 0x41, 0xF6, 0x79, 0xBE, 0x41
+                        },
+                    }
+                }
+            };
+
+            emg.GenerateBytes();
+
+            Utils.WriteDataToStream("skin.emg", emg.HEXBytes);
 
             return emg;
         }
