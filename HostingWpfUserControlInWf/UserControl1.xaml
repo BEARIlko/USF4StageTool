@@ -3,8 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     >
 
-    <Grid>
-
+    <Grid MouseDown="Grid_MouseDown" MouseUp="Grid_MouseUp" MouseWheel="Grid_MouseWheel" MouseLeftButtonDown="Grid_MouseLeftButtonDown" MouseRightButtonDown="Grid_MouseRightButtonDown" MouseMove="Grid_MouseMove" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
         <!-- Place a Label control at the top of the view. -->
         <Label 
                 HorizontalAlignment="Center" 
@@ -14,7 +13,7 @@
                 Content="Model:"/>
 
         <!-- Viewport3D is the rendering surface. -->
-        <Viewport3D Name="myViewport" MouseLeftButtonDown="myViewport_MouseLeftButtonDown" MouseRightButtonDown="myViewport_MouseRightButtonDown" MouseWheel="myViewport_MouseWheel" >
+        <Viewport3D Name="myViewport" >
 
             <!-- Add a camera. -->
             <Viewport3D.Camera>

@@ -156,3 +156,28 @@ E:\USF4 Stage Tool 3d attempt\USF4StageTool\USF4 Stage Tool\bin\Release\System.T
 E:\USF4 Stage Tool 3d attempt\USF4StageTool\USF4 Stage Tool\bin\Release\UsefulThings.xml
 E:\USF4 Stage Tool 3d attempt\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.csproj.Fody.CopyLocal.cache
 E:\USF4 Stage Tool 3d attempt\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.csproj.CopyComplete
+E:\BEAR GITHUB\USF4StageTool\USF4 Stage Tool\bin\Release\USF4 Stage Tool.exe.config
+E:\BEAR GITHUB\USF4StageTool\USF4 Stage Tool\bin\Release\USF4 Stage Tool.exe
+E:\BEAR GITHUB\USF4StageTool\USF4 Stage Tool\bin\Release\USF4 Stage Tool.pdb
+E:\BEAR GITHUB\USF4StageTool\USF4 Stage Tool\bin\Release\CSharpImageLibrary.xml
+E:\BEAR GITHUB\USF4StageTool\USF4 Stage Tool\bin\Release\Microsoft.IO.RecyclableMemoryStream.xml
+E:\BEAR GITHUB\USF4StageTool\USF4 Stage Tool\bin\Release\Newtonsoft.Json.xml
+E:\BEAR GITHUB\USF4StageTool\USF4 Stage Tool\bin\Release\System.Buffers.xml
+E:\BEAR GITHUB\USF4StageTool\USF4 Stage Tool\bin\Release\System.Diagnostics.DiagnosticSource.xml
+E:\BEAR GITHUB\USF4StageTool\USF4 Stage Tool\bin\Release\System.Memory.xml
+E:\BEAR GITHUB\USF4StageTool\USF4 Stage Tool\bin\Release\System.Numerics.Vectors.xml
+E:\BEAR GITHUB\USF4StageTool\USF4 Stage Tool\bin\Release\System.Runtime.CompilerServices.Unsafe.xml
+E:\BEAR GITHUB\USF4StageTool\USF4 Stage Tool\bin\Release\System.Threading.Tasks.Dataflow.xml
+E:\BEAR GITHUB\USF4StageTool\USF4 Stage Tool\bin\Release\UsefulThings.xml
+E:\BEAR GITHUB\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.csprojAssemblyReference.cache
+E:\BEAR GITHUB\USF4StageTool\USF4 Stage Tool\obj\Release\USF4_Stage_Tool.CompressDaisyChain.resources
+E:\BEAR GITHUB\USF4StageTool\USF4 Stage Tool\obj\Release\USF4_Stage_Tool.DebugOutput.resources
+E:\BEAR GITHUB\USF4StageTool\USF4 Stage Tool\obj\Release\USF4_Stage_Tool.Form1.resources
+E:\BEAR GITHUB\USF4StageTool\USF4 Stage Tool\obj\Release\USF4_Stage_Tool.InputBox.resources
+E:\BEAR GITHUB\USF4StageTool\USF4 Stage Tool\obj\Release\USF4_Stage_Tool.Properties.Resources.resources
+E:\BEAR GITHUB\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.csproj.GenerateResource.cache
+E:\BEAR GITHUB\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.csproj.CoreCompileInputs.cache
+E:\BEAR GITHUB\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.csproj.Fody.CopyLocal.cache
+E:\BEAR GITHUB\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.csproj.CopyComplete
+E:\BEAR GITHUB\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.exe
+E:\BEAR GITHUB\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.pdb

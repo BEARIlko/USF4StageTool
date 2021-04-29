@@ -27,6 +27,11 @@ namespace HostingWpfUserControlInWf
         public double camDist = 5; //Distance from rotation point
         public Point3D camRotationPoint = new Point3D(0, 0, 0);
 
+        //Controls
+        public bool WheelPressed;
+        public double XOffset = 0;
+        public double YOffset = 0;
+
         public UserControl1()
         {
             InitializeComponent();
@@ -40,7 +45,7 @@ namespace HostingWpfUserControlInWf
             double y = Math.Tan(elevation) * camDist;
             double z = camDist * Math.Cos(rotation);
             //Cam.Position = new Point3D() { X = x, Y = camRotationPoint.Y, Z = camRotationPoint.Z + z };
-            Cam.Position = new Point3D() { X = x, Y = y, Z = camRotationPoint.Z + z };
+            Cam.Position = new Point3D() { X = x + XOffset, Y = y + YOffset, Z = camRotationPoint.Z + z };
             Cam.LookDirection = new Vector3D() { X = -x, Y = -camRotationPoint.Y, Z = -z };
         }
 
@@ -53,7 +58,8 @@ namespace HostingWpfUserControlInWf
         public void ResetCamera()
         {
             rotation = Math.PI;
-
+            XOffset = 0;
+            YOffset = 0;
             Cam.Position = new Point3D() { X = 0, Y = camRotationPoint.Y, Z = camDist * Math.Cos(rotation) + camRotationPoint.Z };
             Cam.LookDirection = new Vector3D() { X = -Cam.Position.X, Y = -camRotationPoint.Y, Z = -Cam.Position.Z };
         }
@@ -77,16 +83,6 @@ namespace HostingWpfUserControlInWf
                     i--;
                 }
             }
-        }
-
-        private void myViewport_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            UpdateCamera(Math.PI / 12);
-        }
-
-        private void myViewport_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            UpdateCamera(-Math.PI / 12);
         }
 
         private void CentreCamera()
@@ -130,13 +126,53 @@ namespace HostingWpfUserControlInWf
             elevation = Math.Tanh(ycentre.Average() / camDist);
         }
 
-        private void myViewport_MouseWheel(object sender, MouseWheelEventArgs e)
-        {
+		private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+            WheelPressed = true;
+		}
+
+		private void Grid_MouseUp(object sender, MouseButtonEventArgs e)
+		{
+            if (WheelPressed)
+            {
+                WheelPressed = false;
+            }
+		}
+
+		private void Grid_MouseWheel(object sender, MouseWheelEventArgs e)
+		{
             if (e.Delta > 0)
             {
                 Zoom(-2f);
             }
             else Zoom(2f);
-        }
-    }
+		}
+
+		private void Grid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+		{
+            UpdateCamera(Math.PI / 12);
+		}
+
+		private void Grid_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
+		{
+            UpdateCamera(-Math.PI / 12);
+		}
+
+		private void Grid_MouseMove(object sender, MouseEventArgs e)
+		{
+            if (WheelPressed)
+            {
+                double XCenter = myViewport.ActualWidth / 2;
+                double YCenter = myViewport.ActualHeight / 2;
+
+                double MouseX = e.GetPosition(myViewport).X;
+                double MouseY = e.GetPosition(myViewport).Y;
+
+                XOffset = (MouseX - XCenter)/100;
+                YOffset = (MouseY - YCenter)/100;
+
+                UpdateCamera(0);
+            }
+		}
+	}
 }
