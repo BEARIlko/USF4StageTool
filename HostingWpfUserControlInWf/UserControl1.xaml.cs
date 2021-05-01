@@ -32,23 +32,20 @@ namespace HostingWpfUserControlInWf
             InitializeComponent();
         }
 
-        public void TranslateCameraXY(double x, double y)
+        public void TranslateCameraXY(double x, double y) //Move the camera AND the rotation point
         {
-            //Calculate the camera's rotation around the Y axis
-            double length = Math.Sqrt(Math.Pow(Cam.LookDirection.X, 2) + Math.Pow(Cam.LookDirection.Z, 2));
-            double a = Math.PI/2 - Math.Acos(Cam.LookDirection.X / length); //90 deg - angle
-
             //Transform our initial x/y motion around the Y axis so it is applied in the camera plane
-            double xp = x * Math.Cos(a); //+ 0 * Math.Sin(a); //z translation is zero
+            double xp = (-1) * x * Math.Cos(rotation); //+ 0 * Math.Sin(a); //z translation is zero
             double yp = y;
-            double zp = -x * Math.Sin(a); //+ 0 * Math.Cos(a);
+            double zp = (-1) * -x * Math.Sin(rotation); //+ 0 * Math.Cos(a);
 
             Cam.Position = new Point3D() { X = Cam.Position.X + xp, Y = Cam.Position.Y + yp, Z = Cam.Position.Z + zp };
             camRotationPoint = new Point3D { X = camRotationPoint.X + xp, Y = camRotationPoint.Y + yp, Z = camRotationPoint.Z + zp };
         }
 
-        public void RotateCameraY(double radians)
+        public void RotateCameraY(double radians) //Rotate around rotation point, maintain distance
         {
+            //Clamp rotation between +/- 2PI otherwise rotating long enough in one direction will go out of bounds!
             rotation = (rotation + radians) % (2 * Math.PI);
             //Find camera's position offset from the rotation point in the X/Z plane
             Vector3D os = new Vector3D(Cam.Position.X - camRotationPoint.X, 0, Cam.Position.Z - camRotationPoint.Z);
@@ -63,16 +60,16 @@ namespace HostingWpfUserControlInWf
 
         public void Zoom(double dist) //Move the camera while maintaining the rotation point
         {
-            //Calculate the camera's rotation around the Y axis
-            double length = Math.Sqrt(Math.Pow(Cam.LookDirection.X, 2) + Math.Pow(Cam.LookDirection.Z, 2));
-            double a = Math.PI / 2 - Math.Acos(Cam.LookDirection.X / length); //90 deg - angle
+            //Find camera's position offset from the rotation point in the X/Z plane
+            Vector3D os = new Vector3D(Cam.Position.X - camRotationPoint.X, 0, Cam.Position.Z - camRotationPoint.Z);
 
-            //Transform our initial motion around the Y axis so it is applied in the camera plane
-            double xp = 0 * Math.Cos(a) + dist * Math.Sin(a);
-            double yp = 0;
-            double zp = - 0 * Math.Sin(a) + dist * Math.Cos(a);
+            //os.Length + dist = new circle radius
+            double xp = (os.Length + dist) * Math.Sin(rotation);
+            double yp = 0;  //We don't want any movement in the Y plane
+            double zp = (os.Length + dist) * Math.Cos(rotation);
 
-            Cam.Position = new Point3D() { X = Cam.Position.X + xp, Y = Cam.Position.Y + yp, Z = Cam.Position.Z + zp };
+            Cam.Position = new Point3D() { X = camRotationPoint.X + xp, Y = camRotationPoint.Y + yp, Z = camRotationPoint.Z + zp, };
+            Cam.LookDirection = new Vector3D(-xp, -yp, -zp);
         }
 
         public void ResetCamera()
@@ -88,7 +85,6 @@ namespace HostingWpfUserControlInWf
             Group.Children.Add(model);
             CentreCamera();
             ResetCamera();
-            //UpdateCamera(0);
         }
 
         public void ClearModels()
