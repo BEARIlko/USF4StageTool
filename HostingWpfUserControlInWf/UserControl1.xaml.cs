@@ -27,40 +27,59 @@ namespace HostingWpfUserControlInWf
         public double camDist = 5; //Distance from rotation point
         public Point3D camRotationPoint = new Point3D(0, 0, 0);
 
-        //Controls
-        public bool WheelPressed;
-        public double XOffset = 0;
-        public double YOffset = 0;
-
         public UserControl1()
         {
             InitializeComponent();
         }
 
-        public void UpdateCamera(double radians)
+        public void TranslateCameraXY(double x, double y)
         {
-            rotation += radians;
+            //Calculate the camera's rotation around the Y axis
+            double length = Math.Sqrt(Math.Pow(Cam.LookDirection.X, 2) + Math.Pow(Cam.LookDirection.Z, 2));
+            double a = Math.PI/2 - Math.Acos(Cam.LookDirection.X / length); //90 deg - angle
 
-            double x = camDist * Math.Sin(rotation);
-            double y = Math.Tan(elevation) * camDist;
-            double z = camDist * Math.Cos(rotation);
-            //Cam.Position = new Point3D() { X = x, Y = camRotationPoint.Y, Z = camRotationPoint.Z + z };
-            Cam.Position = new Point3D() { X = x + XOffset, Y = y + YOffset, Z = camRotationPoint.Z + z };
-            Cam.LookDirection = new Vector3D() { X = -x, Y = -camRotationPoint.Y, Z = -z };
+            //Transform our initial x/y motion around the Y axis so it is applied in the camera plane
+            double xp = x * Math.Cos(a); //+ 0 * Math.Sin(a); //z translation is zero
+            double yp = y;
+            double zp = -x * Math.Sin(a); //+ 0 * Math.Cos(a);
+
+            Cam.Position = new Point3D() { X = Cam.Position.X + xp, Y = Cam.Position.Y + yp, Z = Cam.Position.Z + zp };
+            camRotationPoint = new Point3D { X = camRotationPoint.X + xp, Y = camRotationPoint.Y + yp, Z = camRotationPoint.Z + zp };
         }
 
-        public void Zoom(float dist)
+        public void RotateCameraY(double radians)
         {
-            camDist += dist;
-            UpdateCamera(0);
+            rotation = (rotation + radians) % (2 * Math.PI);
+            //Find camera's position offset from the rotation point in the X/Z plane
+            Vector3D os = new Vector3D(Cam.Position.X - camRotationPoint.X, 0, Cam.Position.Z - camRotationPoint.Z);
+
+            double xp = os.Length * Math.Sin(rotation);
+            double yp = 0;  //We don't want any movement in the Y plane
+            double zp = os.Length * Math.Cos(rotation);
+
+            Cam.Position = new Point3D() { X = camRotationPoint.X + xp, Y = camRotationPoint.Y + yp, Z = camRotationPoint.Z + zp, };
+            Cam.LookDirection = new Vector3D(-xp, -yp, -zp);
+        }
+
+        public void Zoom(double dist) //Move the camera while maintaining the rotation point
+        {
+            //Calculate the camera's rotation around the Y axis
+            double length = Math.Sqrt(Math.Pow(Cam.LookDirection.X, 2) + Math.Pow(Cam.LookDirection.Z, 2));
+            double a = Math.PI / 2 - Math.Acos(Cam.LookDirection.X / length); //90 deg - angle
+
+            //Transform our initial motion around the Y axis so it is applied in the camera plane
+            double xp = 0 * Math.Cos(a) + dist * Math.Sin(a);
+            double yp = 0;
+            double zp = - 0 * Math.Sin(a) + dist * Math.Cos(a);
+
+            Cam.Position = new Point3D() { X = Cam.Position.X + xp, Y = Cam.Position.Y + yp, Z = Cam.Position.Z + zp };
         }
 
         public void ResetCamera()
         {
             rotation = Math.PI;
-            XOffset = 0;
-            YOffset = 0;
-            Cam.Position = new Point3D() { X = 0, Y = camRotationPoint.Y, Z = camDist * Math.Cos(rotation) + camRotationPoint.Z };
+            elevation = 0;
+            Cam.Position = new Point3D(0,0,-5);
             Cam.LookDirection = new Vector3D() { X = -Cam.Position.X, Y = -camRotationPoint.Y, Z = -Cam.Position.Z };
         }
 
@@ -69,7 +88,7 @@ namespace HostingWpfUserControlInWf
             Group.Children.Add(model);
             CentreCamera();
             ResetCamera();
-            UpdateCamera(0);
+            //UpdateCamera(0);
         }
 
         public void ClearModels()
@@ -122,57 +141,91 @@ namespace HostingWpfUserControlInWf
             }
 
             camRotationPoint = new Point3D(xcentre.Average(), ycentre.Average(), zcentre.Average());
+            //Cam.Position = new Point3D(camRotationPoint.X, camRotationPoint.Y, camRotationPoint.Z + 4 + Math.Max(maxX - minX, maxZ - minZ));
+            //Cam.LookDirection = new Vector3D(-camRotationPoint.X, -camRotationPoint.Y, -camRotationPoint.Z);
             camDist = 4 + Math.Max(maxX - minX, maxZ - minZ);
-            elevation = Math.Tanh(ycentre.Average() / camDist);
+            //elevation = Math.Tanh(ycentre.Average() / camDist);
         }
 
 		private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
 		{
-            WheelPressed = true;
-		}
+            if (e.MiddleButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed || e.LeftButton == MouseButtonState.Pressed)
+            {
+                Point ScreenCentre = myViewport.PointToScreen(new System.Windows.Point((int)(myViewport.ActualWidth / 2), (int)(myViewport.ActualHeight / 2)));
+                System.Windows.Forms.Cursor.Position = new System.Drawing.Point((int)ScreenCentre.X, (int)ScreenCentre.Y);
+            }
+        }
 
 		private void Grid_MouseUp(object sender, MouseButtonEventArgs e)
 		{
-            if (WheelPressed)
-            {
-                WheelPressed = false;
-            }
-		}
+
+        }
 
 		private void Grid_MouseWheel(object sender, MouseWheelEventArgs e)
 		{
-            if (e.Delta > 0)
-            {
-                Zoom(-2f);
-            }
-            else Zoom(2f);
+
 		}
 
 		private void Grid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
 		{
-            UpdateCamera(Math.PI / 12);
-		}
+
+        }
 
 		private void Grid_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
 		{
-            UpdateCamera(-Math.PI / 12);
-		}
+
+        }
 
 		private void Grid_MouseMove(object sender, MouseEventArgs e)
 		{
-            if (WheelPressed)
+            if (e.MiddleButton == MouseButtonState.Pressed)
             {
-                double XCenter = myViewport.ActualWidth / 2;
-                double YCenter = myViewport.ActualHeight / 2;
+                double XCenter = Math.Round(myViewport.ActualWidth / 2);
+                double YCenter = Math.Round(myViewport.ActualHeight / 2);
 
                 double MouseX = e.GetPosition(myViewport).X;
                 double MouseY = e.GetPosition(myViewport).Y;
 
-                XOffset = (MouseX - XCenter)/100;
-                YOffset = (MouseY - YCenter)/100;
+                TranslateCameraXY(Math.Abs(MouseX - XCenter) * (MouseX - XCenter) / 300, Math.Abs(MouseY - YCenter) * (MouseY - YCenter) / 300);
 
-                UpdateCamera(0);
+                Point ScreenCentre = myViewport.PointToScreen(new Point((int)XCenter, (int)YCenter));
+
+                System.Windows.Forms.Cursor.Position = new System.Drawing.Point((int)ScreenCentre.X, (int)ScreenCentre.Y);
             }
-		}
+
+            else if (e.RightButton == MouseButtonState.Pressed)
+            {
+                double XCenter = Math.Round(myViewport.ActualWidth / 2);
+                double YCenter = Math.Round(myViewport.ActualHeight / 2);
+
+                double MouseX = e.GetPosition(myViewport).X;
+                double MouseY = e.GetPosition(myViewport).Y;
+
+                double radians = Math.Abs(MouseX - XCenter) * (MouseX - XCenter) / 150 * Math.PI / 180;
+
+                Point ScreenCentre = myViewport.PointToScreen(new Point((int)XCenter, (int)YCenter));
+
+                System.Windows.Forms.Cursor.Position = new System.Drawing.Point((int)ScreenCentre.X, (int)ScreenCentre.Y);
+
+                RotateCameraY(radians);
+            }
+
+            else if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                double XCenter = Math.Round(myViewport.ActualWidth / 2);
+                double YCenter = Math.Round(myViewport.ActualHeight / 2);
+
+                double MouseX = e.GetPosition(myViewport).X;
+                double MouseY = e.GetPosition(myViewport).Y;
+
+                double zoom = Math.Abs(MouseY - YCenter) * (MouseY - YCenter) / 250;
+
+                Point ScreenCentre = myViewport.PointToScreen(new Point((int)XCenter, (int)YCenter));
+
+                System.Windows.Forms.Cursor.Position = new System.Drawing.Point((int)ScreenCentre.X, (int)ScreenCentre.Y);
+
+                Zoom(zoom);
+            }
+        }
 	}
 }

@@ -3,7 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     >
 
-    <Grid MouseDown="Grid_MouseDown" MouseUp="Grid_MouseUp" MouseWheel="Grid_MouseWheel" MouseLeftButtonDown="Grid_MouseLeftButtonDown" MouseRightButtonDown="Grid_MouseRightButtonDown" MouseMove="Grid_MouseMove" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
+    <Grid MouseDown="Grid_MouseDown" MouseUp="Grid_MouseUp" MouseLeftButtonDown="Grid_MouseLeftButtonDown" MouseRightButtonDown="Grid_MouseRightButtonDown" MouseMove="Grid_MouseMove" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
         <!-- Place a Label control at the top of the view. -->
         <Label 
                 HorizontalAlignment="Center" 
@@ -19,10 +19,10 @@
             <Viewport3D.Camera>
                 <PerspectiveCamera x:Name="Cam"
                         FarPlaneDistance="10999" 
-                        LookDirection="-0.5,-1,5" 
+                        LookDirection="0,0,-10" 
                         UpDirection="0,1,0" 
-                        NearPlaneDistance="1" 
-                        Position="0.5,1,-5" 
+                        NearPlaneDistance="0.1" 
+                        Position="0,0,10" 
                         FieldOfView="45" />
             </Viewport3D.Camera>
 
