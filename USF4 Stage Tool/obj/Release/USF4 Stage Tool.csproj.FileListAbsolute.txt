@@ -181,3 +181,8 @@ E:\BEAR GITHUB\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.csproj.
 E:\BEAR GITHUB\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.csproj.CopyComplete
 E:\BEAR GITHUB\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.exe
 E:\BEAR GITHUB\USF4StageTool\USF4 Stage Tool\obj\Release\USF4 Stage Tool.pdb
+E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\bin\Release\Newtonsoft.Json.xml
+E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\bin\Release\System.Buffers.xml
+E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\bin\Release\System.Memory.xml
+E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\bin\Release\System.Runtime.CompilerServices.Unsafe.xml
+E:\GIT\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\obj\Release\USF4_Stage_Tool.CompressDaisyChain.resources

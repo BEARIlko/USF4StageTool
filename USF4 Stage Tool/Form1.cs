@@ -1989,6 +1989,10 @@ namespace USF4_Stage_Tool
 				dumpRefPoseToSMDToolStripMenuItem.Visible = false;
 				rawDumpEMAToolStripMenuItem.Visible = false;
 				injectColladaAsEMGExperimentalToolStripMenuItem.Visible = false;
+				eMOToLibraryControllerToolStripMenuItem.Visible = false;
+				eMOToLibraryGeometryToolStripMenuItem.Visible = false;
+				setColourToolStripMenuItem.Visible = false;
+				closePreviewWindowToolStripMenuItem.Visible = false;
 				
 #endif
 
