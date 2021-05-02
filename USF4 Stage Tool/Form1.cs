@@ -54,6 +54,7 @@ namespace USF4_Stage_Tool
 		public int TotalNewVerts;
 		public bool ObjectLoaded;
 		public bool EncodingInProgress;
+		public bool ShiftPressed;
 		private const int MaxVertWarning = 100000;
 		private const bool WarnForMaxVerts = false;
 		private string TargetEMZFilePath;
@@ -1907,7 +1908,7 @@ namespace USF4_Stage_Tool
 				X = pSelectedTreeNodeData.Location.X + pnlOBJECTS.Location.X,
 				Y = pSelectedTreeNodeData.Location.Y + pnlOBJECTS.Location.Y
 			};
-			
+
 			EH3D.Width = pSelectedTreeNodeData.Width;
 			EH3D.Height = pSelectedTreeNodeData.Height;
 			EH3D.Visible = false;
@@ -1920,6 +1921,7 @@ namespace USF4_Stage_Tool
 			// Add the ElementHost control to the form's
 			// collection of child controls.
 			Controls.Add(EH3D);
+			
 
 			#region Set up tooltips
 			foreach (ToolStripItem ts in emgContext.Items)
@@ -4839,6 +4841,7 @@ namespace USF4_Stage_Tool
 		{
 			EH3D.Visible = true;
 			EH3D.BringToFront();
+			//btn_ClosePreview.BringToFront();
 
 			uc.ClearModels();
 
@@ -4855,9 +4858,10 @@ namespace USF4_Stage_Tool
 			AddEMGtoPreview(emo, emg);      
 		}
 
-        private void closePreviewWindowToolStripMenuItem_Click(object sender, EventArgs e)
+		private void closePreviewWindowToolStripMenuItem_Click(object sender, EventArgs e)
         {
 			uc.ClearModels();
+			//btn_ClosePreview.SendToBack();
 			EH3D.Visible = false;
         }
 
@@ -4889,10 +4893,18 @@ namespace USF4_Stage_Tool
 			}
         }
 
+        public void btn_Reset_Click(object sender, EventArgs e)
+        {
+			uc.ClearModels();
+			EH3D.Visible = false;
+			//btn_ClosePreview.SendToBack();
+        }
+
         private void previewEMOToolStripMenuItem_Click(object sender, EventArgs e)
         {
 			EH3D.Visible = true;
 			EH3D.BringToFront();
+			//btn_ClosePreview.BringToFront();
 			uc.ClearModels();
 
 			EMO emo = (EMO)WorkingEMZ.Files[LastSelectedTreeNode.Index];
@@ -4900,7 +4912,6 @@ namespace USF4_Stage_Tool
             {
 				AddEMGtoPreview(emo, emg);
             }
-
 		}
 
         private void eMOToLibraryControllerToolStripMenuItem_Click(object sender, EventArgs e)
@@ -4950,8 +4961,7 @@ namespace USF4_Stage_Tool
 			catch (Exception ex)
 			{
 				Console.WriteLine(ex.ToString());
-				Console.ReadLine();
-				
+				Console.ReadLine();	
 			}
 		}
 
@@ -4988,7 +4998,57 @@ namespace USF4_Stage_Tool
 			WorkingEMZ.Files.Remove(LastSelectedTreeNode.Parent.Index);
 			WorkingEMZ.Files.Add(LastSelectedTreeNode.Parent.Index, emo);
 		}
-    }
+
+#region keyhandling
+		protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+		{
+			if (keyData == Keys.Escape)
+			{
+				uc.ClearModels();
+				EH3D.Visible = false;
+				return true;
+			}
+			return base.ProcessCmdKey(ref msg, keyData);
+		}
+
+		private void Form1_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+        {
+			if (e.KeyCode == Keys.ShiftKey)
+			{
+				e.IsInputKey = true;
+			}
+			else if (e.KeyCode == Keys.Escape)
+            {
+				e.IsInputKey = true;
+            }
+			else if (e.KeyCode == Keys.Space)
+			{
+				e.IsInputKey = true;
+			}
+		}
+
+        private void Form1_KeyDown(object sender, KeyEventArgs e)
+        {
+			if (e.KeyCode == Keys.ShiftKey)
+			{
+				uc.ShiftPressed = true;
+			}
+			else if (e.KeyCode == Keys.Space)
+			{
+				uc.CentreCamera();
+				uc.RotateCameraY(0);
+			}
+		}
+
+        private void Form1_KeyUp(object sender, KeyEventArgs e)
+        {
+			if (e.KeyCode == Keys.ShiftKey)
+			{
+				uc.ShiftPressed = false;
+			}
+		}
+#endregion
+	}
 }
 
 
