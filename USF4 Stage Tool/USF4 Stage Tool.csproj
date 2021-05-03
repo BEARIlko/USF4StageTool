@@ -328,7 +328,6 @@
   <ItemGroup>
     <Compile Include="ChunkSpy.cs" />
     <Compile Include="Animation Functions.cs" />
-    <Compile Include="Collada141.cs" />
     <Compile Include="CompressDaisyChain.cs">
       <SubType>Form</SubType>
     </Compile>

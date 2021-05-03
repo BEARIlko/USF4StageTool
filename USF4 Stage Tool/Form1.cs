@@ -16,7 +16,6 @@ using System.Windows.Forms.Integration;
 using static KopiLua.Lua;
 using static CSharpImageLibrary.ImageFormats;
 using System.Globalization;
-using Collada141;
 using System.Windows.Media.Media3D;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -43,8 +42,8 @@ namespace USF4_Stage_Tool
 		public const string TEXEMZFileFilter = "TEX.EMZ (.tex.emz)|*.tex.emz";
 		public const string EMGFileFilter = "EMG (.emg)|*.emg";
 		public const string EMOFileFilter = "EMO (.emo)|*.emo";
-		public const string EMAFileFilter = "EMO (.ema)|*.ema";
-		public const string EMMFileFilter = "EMO (.emm)|*.emm";
+		public const string EMAFileFilter = "EMA (.ema)|*.ema";
+		public const string EMMFileFilter = "EMM (.emm)|*.emm";
 		public const string EMBFileFilter = "EMZ (.emb)|*.emb";
 		public const string LUAFileFilter = "LUA (.lua)|*.lua";
 		public const string TXTFileFilter = "Text file (.txt)|*.txt";
@@ -959,6 +958,7 @@ namespace USF4_Stage_Tool
 
 		//Open USF4 Modding Google DOC
 		private void USF4ModdingDocumentToolStripMenuItem_Click(object sender, EventArgs e) { System.Diagnostics.Process.Start("https://docs.google.com/document/d/1dU-uFvhQksLNEzEc4OWpj9nfEGy7gh5-HwGZ8NsOiTY"); }
+		private void userGuideToolStripMenuItem_Click(object sender, EventArgs e) { System.Diagnostics.Process.Start("https://docs.google.com/document/d/1MS_3PxLq1Q-zPYWutZz6AoTLeGhdUa_GJ_pm-rP6zOc"); }
 
 		EMG NewEMGFromOBJ(EMG template, bool AddNewName)
 		{
@@ -1525,12 +1525,6 @@ namespace USF4_Stage_Tool
 			Utils.DecomposeMatrixXYZ(inverse, out tx, out ty, out tz, out rx, out ry, out rz, out _, out _, out _);
 			lbSelNODE_ListData.Items.Add($"SBP Position: ({tx.ToString("0.0000")}, {ty.ToString("0.0000")}, {tz.ToString("0.0000")})");
 			lbSelNODE_ListData.Items.Add($"SBP Rotation: ({rx.ToString("0.0000")}, {ry.ToString("0.0000")}, {rz.ToString("0.0000")})");
-
-			lbSelNODE_ListData.Items.Add($"R1: {m.M11.ToString("0.0000")}, {m.M21.ToString("0.0000")}, {m.M31.ToString("0.0000")}, {m.M41.ToString("0.0000")}");
-			lbSelNODE_ListData.Items.Add($"R1: {m.M12.ToString("0.0000")}, {m.M22.ToString("0.0000")}, {m.M32.ToString("0.0000")}, {m.M42.ToString("0.0000")}");
-			lbSelNODE_ListData.Items.Add($"R1: {m.M13.ToString("0.0000")}, {m.M23.ToString("0.0000")}, {m.M33.ToString("0.0000")}, {m.M43.ToString("0.0000")}");
-			lbSelNODE_ListData.Items.Add($"R1: {m.M14.ToString("0.0000")}, {m.M24.ToString("0.0000")}, {m.M34.ToString("0.0000")}, {m.M44.ToString("0.0000")}");
-
 		}
 		void TreeDisplayEMGData(EMG emg)
 		{
@@ -1550,7 +1544,7 @@ namespace USF4_Stage_Tool
 			if ((m.BitFlag & 0x01) == 0x01) { lbSelNODE_ListData.Items.Add($"    Vertex Co-ordinates"); }
 			if ((m.BitFlag & 0x02) == 0x02) { lbSelNODE_ListData.Items.Add($"    Vertex Normals"); }
 			if ((m.BitFlag & 0x04) == 0x04) { lbSelNODE_ListData.Items.Add($"    UV Map"); }
-			if ((m.BitFlag & 0x80) == 0x80) { lbSelNODE_ListData.Items.Add($"    UV Map 2"); }
+			if ((m.BitFlag & 0x80) == 0x80) { lbSelNODE_ListData.Items.Add($"    Vertex Tangents"); }
 			if ((m.BitFlag & 0x40) == 0x40) { lbSelNODE_ListData.Items.Add($"    Vertex Color"); }
 			if ((m.BitFlag & 0x200) == 0x200) { lbSelNODE_ListData.Items.Add($"    Bone Weights"); }
 			lbSelNODE_ListData.Items.Add($"---------------------------");
@@ -1623,12 +1617,16 @@ namespace USF4_Stage_Tool
 			lbSelNODE_ListData.Items.Add($"Daisy Chain Length: {sm.DaisyChainLength}");
 			lbSelNODE_ListData.Items.Add($"Daisy Chain Compression: {100 * sm.DaisyChainLength / (GeometryIO.FaceIndicesFromDaisyChain(sm.DaisyChain).Count * 3)}%");
 			lbSelNODE_ListData.Items.Add($"Material Index: {sm.MaterialIndex}");
-			lbSelNODE_ListData.Items.Add($"Bone integers:");
+			
 
-			foreach (int i in sm.BoneIntegersList)
-            {
-				lbSelNODE_ListData.Items.Add($"{i}");
-            }
+			if (sm.BoneIntegersList != null && sm.BoneIntegersList.Count > 0)
+			{
+				lbSelNODE_ListData.Items.Add($"Bone integers:");
+				foreach (int i in sm.BoneIntegersList)
+				{
+					lbSelNODE_ListData.Items.Add($"{i}");
+				}
+			}
 		}
 
 		void TreeDisplayEMMData(EMM e)
@@ -1987,7 +1985,6 @@ namespace USF4_Stage_Tool
 				InjectAnimationtoolStripMenuItem1.Visible = false;
 				AddAnimationtoolStripMenuItem2.Visible = false;
 				dumpRefPoseToSMDToolStripMenuItem.Visible = false;
-				rawDumpEMAToolStripMenuItem.Visible = false;
 				injectColladaAsEMGExperimentalToolStripMenuItem.Visible = false;
 				eMOToLibraryControllerToolStripMenuItem.Visible = false;
 				eMOToLibraryGeometryToolStripMenuItem.Visible = false;
@@ -3555,7 +3552,6 @@ namespace USF4_Stage_Tool
 			}
 
 			DeleteAnimaiontoolStripMenuItem3.Visible = !emaclick;
-			InjectAnimationtoolStripMenuItem1.Visible = !emaclick;
 		}
 
         private void DeleteAnimaiontoolStripMenuItem3_Click(object sender, EventArgs e)
