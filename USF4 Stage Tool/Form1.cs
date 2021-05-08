@@ -959,6 +959,7 @@ namespace USF4_Stage_Tool
 		//Open USF4 Modding Google DOC
 		private void USF4ModdingDocumentToolStripMenuItem_Click(object sender, EventArgs e) { System.Diagnostics.Process.Start("https://docs.google.com/document/d/1dU-uFvhQksLNEzEc4OWpj9nfEGy7gh5-HwGZ8NsOiTY"); }
 		private void userGuideToolStripMenuItem_Click(object sender, EventArgs e) { System.Diagnostics.Process.Start("https://docs.google.com/document/d/1MS_3PxLq1Q-zPYWutZz6AoTLeGhdUa_GJ_pm-rP6zOc"); }
+		private void sourcecodeOnGitHubToolStripMenuItem_Click(object sender, EventArgs e) { System.Diagnostics.Process.Start("https://github.com/BEARIlko/USF4StageTool"); }
 
 		EMG NewEMGFromOBJ(EMG template, bool AddNewName)
 		{
@@ -5056,8 +5057,9 @@ namespace USF4_Stage_Tool
 				uc.ShiftPressed = false;
 			}
 		}
-#endregion
-	}
+        #endregion
+
+    }
 }
 
 

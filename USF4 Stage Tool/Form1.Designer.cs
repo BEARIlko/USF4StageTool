@@ -106,6 +106,7 @@
             this.saveEncodedOBJToHEXToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.informationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.uSF4ModdingDocumentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.userGuideToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.emgContext = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.emgContextInjectOBJ = new System.Windows.Forms.ToolStripMenuItem();
             this.insertOBJAsNewEMGToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -184,7 +185,7 @@
             this.previewEMOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.eMOToLibraryControllerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.eMOToLibraryGeometryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.userGuideToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.sourcecodeOnGitHubToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pnlOBJECTS.SuspendLayout();
             this.pOBJProperties.SuspendLayout();
             this.pSelectedTreeNodeData.SuspendLayout();
@@ -1020,6 +1021,8 @@
             this.debugToolStripMenuItem.Name = "debugToolStripMenuItem";
             this.debugToolStripMenuItem.Size = new System.Drawing.Size(54, 20);
             this.debugToolStripMenuItem.Text = "Debug";
+            this.debugToolStripMenuItem.Visible = false;
+            this.debugToolStripMenuItem.Click += new System.EventHandler(this.debugToolStripMenuItem_Click);
             // 
             // consoleMessagesOutputToolStripMenuItem
             // 
@@ -1050,7 +1053,8 @@
             // 
             this.informationToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.uSF4ModdingDocumentToolStripMenuItem,
-            this.userGuideToolStripMenuItem});
+            this.userGuideToolStripMenuItem,
+            this.sourcecodeOnGitHubToolStripMenuItem});
             this.informationToolStripMenuItem.Name = "informationToolStripMenuItem";
             this.informationToolStripMenuItem.Size = new System.Drawing.Size(82, 20);
             this.informationToolStripMenuItem.Text = "Information";
@@ -1062,6 +1066,14 @@
             this.uSF4ModdingDocumentToolStripMenuItem.Size = new System.Drawing.Size(211, 22);
             this.uSF4ModdingDocumentToolStripMenuItem.Text = "USF4 Modding Document";
             this.uSF4ModdingDocumentToolStripMenuItem.Click += new System.EventHandler(this.USF4ModdingDocumentToolStripMenuItem_Click);
+            // 
+            // userGuideToolStripMenuItem
+            // 
+            this.userGuideToolStripMenuItem.BackColor = System.Drawing.Color.SandyBrown;
+            this.userGuideToolStripMenuItem.Name = "userGuideToolStripMenuItem";
+            this.userGuideToolStripMenuItem.Size = new System.Drawing.Size(211, 22);
+            this.userGuideToolStripMenuItem.Text = "User Guide";
+            this.userGuideToolStripMenuItem.Click += new System.EventHandler(this.userGuideToolStripMenuItem_Click);
             // 
             // emgContext
             // 
@@ -1664,12 +1676,13 @@
             this.eMOToLibraryGeometryToolStripMenuItem.Text = "EMO to Library_Geometry";
             this.eMOToLibraryGeometryToolStripMenuItem.Click += new System.EventHandler(this.eMOToLibraryGeometryToolStripMenuItem_Click);
             // 
-            // userGuideToolStripMenuItem
+            // sourcecodeOnGitHubToolStripMenuItem
             // 
-            this.userGuideToolStripMenuItem.BackColor = System.Drawing.Color.SandyBrown;
-            this.userGuideToolStripMenuItem.Name = "userGuideToolStripMenuItem";
-            this.userGuideToolStripMenuItem.Size = new System.Drawing.Size(211, 22);
-            this.userGuideToolStripMenuItem.Text = "User Guide";
+            this.sourcecodeOnGitHubToolStripMenuItem.BackColor = System.Drawing.Color.SandyBrown;
+            this.sourcecodeOnGitHubToolStripMenuItem.Name = "sourcecodeOnGitHubToolStripMenuItem";
+            this.sourcecodeOnGitHubToolStripMenuItem.Size = new System.Drawing.Size(211, 22);
+            this.sourcecodeOnGitHubToolStripMenuItem.Text = "Sourcecode on GitHub";
+            this.sourcecodeOnGitHubToolStripMenuItem.Click += new System.EventHandler(this.sourcecodeOnGitHubToolStripMenuItem_Click);
             // 
             // Form1
             // 
@@ -1875,6 +1888,7 @@
         private System.Windows.Forms.ToolStripMenuItem eMOToLibraryGeometryToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem setColourToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem userGuideToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem sourcecodeOnGitHubToolStripMenuItem;
     }
 }
 
