@@ -343,7 +343,8 @@ namespace USF4_Stage_Tool
 
 	public class LUA : USF4File
 	{
-	}
+
+    }
 
 	public class EMM : USF4File
 	{

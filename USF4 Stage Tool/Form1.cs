@@ -4316,12 +4316,21 @@ namespace USF4_Stage_Tool
 					if (extension == "emo") file = new EMO();
 					else if (extension == "emm") file = new EMM();
 					else if (extension == "emb") file = new EMB();
-					else if (extension == "lua") file = new LUA();
 					else if (extension == "ema") file = new EMA();
 					else if (extension == "csb") file = new CSB();
+					else if (extension == "lua") file = new LUA();
 					else file = new OtherFile();
 
 					file.ReadFile(bytes);
+
+					//Check if we've got a lua SCRIPT instead of lua BYTECODE
+					//At some point we want to handle this properly, but for now just throw an error and cancel
+					if (extension == "lua" && Utils.ReadInt(true, 0, bytes) != USF4Methods.LUA)
+					{
+						AddStatus("Add File cancelled. LUA file must be in bytecode format to be added.");
+						return;
+					}
+
 					file.Name = Encoding.ASCII.GetBytes(name);
 
 					if (extension == "emb")
