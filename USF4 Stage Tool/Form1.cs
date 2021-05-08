@@ -5057,9 +5057,14 @@ namespace USF4_Stage_Tool
 				uc.ShiftPressed = false;
 			}
 		}
-        #endregion
+		#endregion
 
-    }
+		private void Form1_ResizeEnd(object sender, EventArgs e)
+		{
+			EH3D.Width = pSelectedTreeNodeData.Width;
+			EH3D.Height = pSelectedTreeNodeData.Height;
+		}
+	}
 }
 
 
