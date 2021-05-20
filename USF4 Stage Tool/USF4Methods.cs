@@ -15,12 +15,13 @@ namespace USF4_Stage_Tool
 		public static int EMM = 0x4D4D4523;
 		public static int EMO = 0x4F4D4523;
 		public static int LUA = 0x61754C1B;
+		public static int DDS = 0x20534444;
 
 		public static void CheckFile(int FileNumber)
 		{
 			if (FileNumber == LUA)
 			{
-				
+
 			}
 		}
 	}

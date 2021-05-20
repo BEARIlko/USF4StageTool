@@ -5,4 +5,4 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>", Scope = "member", Target = "~M:USF4_Stage_Tool.Form1.addDDSToolStripMenuItem1_Click(System.Object,System.EventArgs)")]
+[assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>", Scope = "member", Target = "~M:USF4_Stage_Tool.Form1.cmEMBaddDDSToolStripMenuItem1_Click(System.Object,System.EventArgs)")]

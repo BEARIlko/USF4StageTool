@@ -6,41 +6,45 @@ using System.Text;
 
 namespace USF4_Stage_Tool
 {
-    #region USF4 Structs
+	#region USF4 Structs
 
-    public class USF4File
-    {
+	public class USF4File
+	{
 		public byte[] HEXBytes;
 		public byte[] Name;
 		public virtual void ReadFile(byte[] Data)
-        {
+		{
 			HEXBytes = Data;
-        }
+		}
 		public virtual byte[] GenerateBytes()
-        {
+		{
 			return HEXBytes;
-        }
+		}
 		public virtual void SaveFile(string path)
-        {
+		{
 			Utils.WriteDataToStream(path, GenerateBytes());
+		}
+		public virtual void DeleteSubfile(int index)
+        {
+
         }
 	}
 
-	public class EMZ : USF4File
-    {
+	public class EMB : USF4File
+	{
 		public int NumberOfFiles;
 		public int FileListPointer;
 		public int FileNamesPointer;
 		public List<int> FilePointersList;
-		public Dictionary<int, USF4File> Files;
+		public List<USF4File> Files;
 		public List<int> FileLengthsList;
 		public List<int> FileNamePointersList;       //Each entry in this list points to an entry in the EMZ file name list
 		public List<byte[]> FileNamesList;
 
-		public EMZ()
-        {
+		public EMB()
+		{
 		}
-		public EMZ(byte[] Data)
+		public EMB(byte[] Data)
 		{
 			HEXBytes = Data;
 			NumberOfFiles = Utils.ReadInt(true, 0x0C, Data);
@@ -48,10 +52,9 @@ namespace USF4_Stage_Tool
 			FileNamesPointer = Utils.ReadInt(true, 0x1C, Data);
 			FileLengthsList = new List<int>();
 			FilePointersList = new List<int>();
-			Files = new Dictionary<int, USF4File>();
+			Files = new List<USF4File>();
 			FileNamesList = new List<byte[]>();
 			FileNamePointersList = new List<int>();
-
 
 			for (int i = 0; i < NumberOfFiles; i++)
 			{
@@ -69,13 +72,13 @@ namespace USF4_Stage_Tool
 				else if (FileType == USF4Methods.LUA) file = new LUA();
 				else if (FileType == USF4Methods.EMA) file = new EMA();
 				else if (FileType == USF4Methods.CSB) file = new CSB();
+				else if (FileType == USF4Methods.DDS) file = new DDS();
 				else file = new OtherFile();
 
 				file.ReadFile(Data.Slice(FilePointersList[i] + FileListPointer + (i * 8), FileLengthsList[i]));
 				file.Name = FileNamesList[i];
-				Files.Add(i, file);
+				Files.Add(file);
 			}
-
 		}
 		public override void ReadFile(byte[] Data)
 		{
@@ -85,7 +88,7 @@ namespace USF4_Stage_Tool
 			FileNamesPointer = Utils.ReadInt(true, 0x1C, Data);
 			FileLengthsList = new List<int>();
 			FilePointersList = new List<int>();
-			Files = new Dictionary<int, USF4File>();
+			Files = new List<USF4File>();
 			FileNamesList = new List<byte[]>();
 			FileNamePointersList = new List<int>();
 
@@ -94,8 +97,18 @@ namespace USF4_Stage_Tool
 			{
 				FilePointersList.Add(Utils.ReadInt(true, FileListPointer + (i * 8), Data));
 				FileLengthsList.Add(Utils.ReadInt(true, FileListPointer + (i * 8) + 4, Data));
-				FileNamePointersList.Add(Utils.ReadInt(true, FileNamesPointer + (i * 4), Data));
-				FileNamesList.Add(Utils.ReadZeroTermStringToArray(FileNamePointersList[i], Data, Data.Length));
+
+				if (FileNamesPointer == 0x00) //if there wasn't a file index, add a dummy one
+				{
+					FileNamePointersList.Add(0x00);
+					FileNamesList.Add(new byte[] { 0x44, 0x44, 0x53 });
+				}
+				else
+				{
+					FileNamePointersList.Add(Utils.ReadInt(true, FileNamesPointer + (i * 4), Data));
+					FileNamesList.Add(Utils.ReadZeroTermStringToArray(FileNamePointersList[i], Data, Data.Length));
+				}
+
 				int FileType = Utils.ReadInt(true, FilePointersList[i] + FileListPointer + (i * 8), Data);
 
 				USF4File file;
@@ -106,11 +119,12 @@ namespace USF4_Stage_Tool
 				else if (FileType == USF4Methods.LUA) file = new LUA();
 				else if (FileType == USF4Methods.EMA) file = new EMA();
 				else if (FileType == USF4Methods.CSB) file = new CSB();
+				else if (FileType == USF4Methods.DDS) file = new DDS();
 				else file = new OtherFile();
 
 				file.ReadFile(Data.Slice(FilePointersList[i] + FileListPointer + (i * 8), FileLengthsList[i]));
 				file.Name = FileNamesList[i];
-				Files.Add(i, file);
+				Files.Add(file);
 			}
 
 		}
@@ -170,7 +184,17 @@ namespace USF4_Stage_Tool
 
 			HEXBytes = Data.ToArray();
 
-            return Data.ToArray();
+			return Data.ToArray();
+		}
+		public override void DeleteSubfile(int index)
+		{
+			NumberOfFiles--;
+			FileLengthsList.RemoveAt(index);
+			FilePointersList.RemoveAt(index);
+			Files.RemoveAt(index);
+			FileNamesList.RemoveAt(index);
+			FileNamePointersList.RemoveAt(index);
+			GenerateBytes();
 		}
 	}
 
@@ -179,172 +203,22 @@ namespace USF4_Stage_Tool
 
 	}
 
-	public class EMB : USF4File
+	public class DDS : USF4File
 	{
-		public int NumberOfFiles;
-		public int FileListPointer;
-		public int FileNameListPointer;
-		public List<DDS> DDSFiles;
-		public List<int> FilePointerList;
-		public List<int> FileLengthList;
-		public List<int> FileNamePointerList;
-		public List<byte[]> FileNameList; //Normally EMB packs don't have file lists, but we can add one without damaging anything!
-
-		public EMB()
-        {
-
-        }
-		public EMB(byte[] Data, byte[] name)
-        {
-			HEXBytes = Data;
-			Name = name;
-			NumberOfFiles = Utils.ReadInt(true, 0x0C, Data);
-			FileListPointer = Utils.ReadInt(true, 0x18, Data);
-			FileNameListPointer = Utils.ReadInt(true, 0x1C, Data);
-			FileNamePointerList = new List<int>();
-			FileNameList = new List<byte[]>();
-			FilePointerList = new List<int>();
-			FileLengthList = new List<int>();
-			DDSFiles = new List<DDS>();
-
-			for (int i = 0; i < NumberOfFiles; i++)
-			{
-				FilePointerList.Add(Utils.ReadInt(true, FileListPointer + i * 8, Data));
-				FileLengthList.Add(Utils.ReadInt(true, FileListPointer + i * 8 + 0x04, Data));
-			}
-			for (int i = 0; i < NumberOfFiles; i++)
-			{
-				if (FileNameListPointer == 0x00) //if there wasn't a file index, add a dummy one
-				{
-					FileNamePointerList.Add(0x00);
-					FileNameList.Add(new byte[] { 0x44, 0x44, 0x53 });
-				}
-				else
-				{
-					FileNamePointerList.Add(Utils.ReadInt(true, FileNameListPointer + i * 4, Data));
-					FileNameList.Add(Utils.ReadZeroTermStringToArray(FileNamePointerList[i], HEXBytes, HEXBytes.Length));
-				}
-			}
-			for (int i = 0; i < NumberOfFiles; i++)
-			{
-				DDS WorkingDDS = new DDS();
-				WorkingDDS.HEXBytes = HEXBytes.Slice(FilePointerList[i] + FileListPointer + (i * 8), FileLengthList[i]);
-				DDSFiles.Add(WorkingDDS);
-			}
-		}
-        public override void ReadFile(byte[] Data)
-        {
-			HEXBytes = Data;
-			NumberOfFiles = Utils.ReadInt(true, 0x0C, Data);
-			FileListPointer = Utils.ReadInt(true, 0x18, Data);
-			FileNameListPointer = Utils.ReadInt(true, 0x1C, Data);
-			FileNamePointerList = new List<int>();
-			FileNameList = new List<byte[]>();
-			FilePointerList = new List<int>();
-			FileLengthList = new List<int>();
-			DDSFiles = new List<DDS>();
-
-			for (int i = 0; i < NumberOfFiles; i++)
-			{
-				FilePointerList.Add(Utils.ReadInt(true, FileListPointer + i * 8, Data));
-				FileLengthList.Add(Utils.ReadInt(true, FileListPointer + i * 8 + 0x04, Data));
-			}
-			for (int i = 0; i < NumberOfFiles; i++)
-			{
-				if (FileNameListPointer == 0x00) //if there wasn't a file index, add a dummy one
-				{
-					FileNamePointerList.Add(0x00);
-					FileNameList.Add(new byte[] { 0x44, 0x44, 0x53 });
-				}
-				else
-				{
-					FileNamePointerList.Add(Utils.ReadInt(true, FileNameListPointer + i * 4, Data));
-					FileNameList.Add(Utils.ReadZeroTermStringToArray(FileNamePointerList[i], HEXBytes, HEXBytes.Length));
-				}
-			}
-			for (int i = 0; i < NumberOfFiles; i++)
-			{
-				DDS WorkingDDS = new DDS();
-				WorkingDDS.HEXBytes = HEXBytes.Slice(FilePointerList[i] + FileListPointer + (i * 8), FileLengthList[i]);
-				DDSFiles.Add(WorkingDDS);
-			}
-		}
-        public override byte[] GenerateBytes()
-        {
-			List<byte> Data = new List<byte>();
-
-			Data.AddRange(new List<byte> { 0x23, 0x45, 0x4D, 0x42, 0xFE, 0xFF, 0x20, 0x00, 0x01, 0x00, 0x01, 0x00 });
-			Utils.AddIntAsBytes(Data, DDSFiles.Count, true);
-			Utils.AddPaddingZeros(Data, 0x18, Data.Count);
-			Utils.AddIntAsBytes(Data, FileListPointer, true);
-
-			int FileNameListPointerPosition = Data.Count;
-			Utils.AddIntAsBytes(Data, FileNameListPointer, true);
-
-			List<int> FilePointerPositions = new List<int>();
-			List<int> FileLengthPositions = new List<int>();
-			List<int> FileNamePointerPositions = new List<int>();
-
-			for (int i = 0; i < DDSFiles.Count; i++)
-			{
-				FilePointerPositions.Add(Data.Count);
-				Utils.AddIntAsBytes(Data, FilePointerList[i], true);
-				FileLengthPositions.Add(Data.Count);
-				Utils.AddIntAsBytes(Data, FileLengthList[i], true);
-			}
-
-			Utils.UpdateIntAtPosition(Data, FileNameListPointerPosition, Data.Count, out FileNameListPointer);
-			for (int i = 0; i < DDSFiles.Count; i++)
-			{
-				FileNamePointerPositions.Add(Data.Count);
-				Utils.AddIntAsBytes(Data, FileNamePointerList[i], true);
-			}
-			for (int i = 0; i < DDSFiles.Count; i++)
-			{
-				Utils.AddZeroToLineEnd(Data);
-				Utils.UpdateIntAtPosition(Data, FilePointerPositions[i], Data.Count - FilePointerPositions[i]);
-				FilePointerList[i] = Data.Count - FilePointerPositions[i];
-				Utils.UpdateIntAtPosition(Data, FileLengthPositions[i], DDSFiles[i].HEXBytes.Length);
-				FileLengthList[i] = DDSFiles[i].HEXBytes.Length;
-
-				Utils.AddCopiedBytes(Data, 0x00, DDSFiles[i].HEXBytes.Length, DDSFiles[i].HEXBytes);
-			}
-			Utils.AddZeroToLineEnd(Data);
-
-			for (int i = 0; i < DDSFiles.Count; i++)
-			{
-				Utils.UpdateIntAtPosition(Data, FileNamePointerPositions[i], Data.Count);
-				FileNamePointerList[i] = Data.Count;
-				Utils.AddCopiedBytes(Data, 0x00, FileNameList[i].Length, FileNameList[i]);
-				Data.Add(0x00);
-			}
-			Utils.AddZeroToLineEnd(Data);
-
-
-			HEXBytes = Data.ToArray();
-
-			return Data.ToArray();
-		}
-	}
-
-	public struct DDS
-	{
-		public byte[] HEXBytes;
-		public byte[] Name;
+		
 	}
 
 	public class CSB : USF4File
-	{	
+	{
 		public CSB()
-        {
+		{
 
-        }
+		}
 	}
 
 	public class LUA : USF4File
 	{
-
-    }
+	}
 
 	public class EMM : USF4File
 	{
@@ -353,9 +227,9 @@ namespace USF4_Stage_Tool
 		public List<Material> Materials;
 
 		public EMM()
-        {
+		{
 
-        }
+		}
 
 		public EMM(byte[] Data, byte[] name)
 		{
@@ -372,8 +246,8 @@ namespace USF4_Stage_Tool
 			}
 		}
 
-        public override void ReadFile(byte[] Data)
-        {
+		public override void ReadFile(byte[] Data)
+		{
 			HEXBytes = Data;
 			MaterialCount = Utils.ReadInt(true, 0x10, Data);
 			MaterialPointersList = new List<int>();
@@ -385,7 +259,7 @@ namespace USF4_Stage_Tool
 				Materials.Add(new Material(Data.Slice(MaterialPointersList[i] + 0x10, Data.Length - (MaterialPointersList[i] + 0x10))));
 			}
 		}
-        public override byte[] GenerateBytes()
+		public override byte[] GenerateBytes()
 		{
 			List<byte> Data = new List<byte>();
 			List<int> MaterialPointerPositions = new List<int>();
@@ -414,10 +288,18 @@ namespace USF4_Stage_Tool
 
 			return Data.ToArray();
 		}
+
+		public override void DeleteSubfile(int index)
+		{
+			MaterialCount--;
+			MaterialPointersList.RemoveAt(index);
+			Materials.RemoveAt(index);
+			GenerateBytes();
+		}
 	}
 
 	public class EME : USF4File //TODO - Still being read as "Other File" at the moment
-    {	
+	{
 		public int EffectCount;
 		public List<Effect> Effects;
 	}
@@ -444,9 +326,9 @@ namespace USF4_Stage_Tool
 		public Skeleton Skeleton;
 
 		public EMA()
-        {
+		{
 
-        }
+		}
 		public EMA(byte[] Data, byte[] name)
 		{
 			Name = name;
@@ -556,8 +438,8 @@ namespace USF4_Stage_Tool
 			else Skeleton = new Skeleton();
 		}
 
-        public override void ReadFile(byte[] Data)
-        {
+		public override void ReadFile(byte[] Data)
+		{
 			HEXBytes = Data;
 			//Populate EMA header data
 			AnimationPointersList = new List<int>();
@@ -663,7 +545,7 @@ namespace USF4_Stage_Tool
 			}
 			else Skeleton = new Skeleton();
 		}
-        public override byte[] GenerateBytes()
+		public override byte[] GenerateBytes()
 		{
 			List<Byte> Data = new List<byte>();
 
@@ -823,6 +705,14 @@ namespace USF4_Stage_Tool
 
 			return Data.ToArray();
 		}
+
+		public override void DeleteSubfile(int index)
+		{
+			AnimationCount--;
+			AnimationPointersList.RemoveAt(index);
+			Animations.RemoveAt(index);
+			GenerateBytes();
+		}
 	}
 
 	public struct Animation
@@ -945,9 +835,9 @@ namespace USF4_Stage_Tool
 		public Skeleton Skeleton;
 
 		public EMO()
-        {
+		{
 
-        }
+		}
 
 		public EMO(byte[] Data, byte[] name)
 		{
@@ -986,8 +876,8 @@ namespace USF4_Stage_Tool
 				NamesList.Add(Utils.ReadZeroTermStringToArray(NamingPointersList[i] + 0x20, HEXBytes, HEXBytes.Length));
 			}
 		}
-        public override void ReadFile(byte[] Data)
-        {
+		public override void ReadFile(byte[] Data)
+		{
 			temp_bitdepth = 0;
 			HEXBytes = Data;
 			SkeletonPointer = Utils.ReadInt(true, 0x10, Data);
@@ -1022,8 +912,8 @@ namespace USF4_Stage_Tool
 				NamesList.Add(Utils.ReadZeroTermStringToArray(NamingPointersList[i] + 0x20, HEXBytes, HEXBytes.Length));
 			}
 		}
-        public override byte[] GenerateBytes()
-        {
+		public override byte[] GenerateBytes()
+		{
 			List<byte> Data = new List<byte>();
 			List<int> EMGIndexPositions = new List<int>();
 			List<int> NamesIndexPositions = new List<int>();
@@ -1083,10 +973,20 @@ namespace USF4_Stage_Tool
 			Utils.UpdateIntAtPosition(Data, SkeletonPosition, Data.Count, out SkeletonPointer);
 			Utils.AddCopiedBytes(Data, 0x00, Skeleton.HEXBytes.Length, Skeleton.HEXBytes);
 			Utils.AddZeroToLineEnd(Data);
-			
+
 			HEXBytes = Data.ToArray();
 
 			return Data.ToArray();
+		}
+		public override void DeleteSubfile(int index)
+		{
+			if (index < EMGs.Count)
+			{
+				EMGCount--;
+				EMGPointersList.RemoveAt(index);
+				EMGs.RemoveAt(index);
+				GenerateBytes();
+			}
 		}
 	}
 
@@ -1104,7 +1004,7 @@ namespace USF4_Stage_Tool
 		public int SecondaryMatrixPointer;
 		public int IKDataPointer;
 		public int MysteryShort; //I've seen 0x00, 0x01, 0x02, 0x03. EMA and EMO don't always match.
-		public float MysteryFloat1;	//These two "floats" might be a checksum to ensure the EMO and EMA skeletons match?
+		public float MysteryFloat1; //These two "floats" might be a checksum to ensure the EMO and EMA skeletons match?
 		public float MysteryFloat2;
 
 		public List<Node> Nodes;
@@ -1145,7 +1045,7 @@ namespace USF4_Stage_Tool
 			MysteryShort = Utils.ReadInt(false, 0x36, Data);       //1 REALLY no idea what these are
 			MysteryFloat1 = Utils.ReadFloat(0x38, Data);           //2		Are these some kind of checksum to make sure EMA and EMO skels match?
 			MysteryFloat2 = Utils.ReadFloat(0x3C, Data);           //3
-			
+
 
 			for (int i = 0; i < NodeCount; i++)
 			{
@@ -1459,19 +1359,19 @@ namespace USF4_Stage_Tool
 	}
 
 	public struct IKNode
-    {
+	{
 		public List<int> BoneList; //Possibly?
 		public int BoneCount;
 		public int BoneListPointer;
-    }
+	}
 
 	public struct IKDataBlock
-    {
+	{
 		public int BitFlag;
 		public int Length;
 		public List<int> IKShorts;
 		public List<float> IKFloats;
-    }
+	}
 
 	public class EMG : USF4File
 	{
@@ -1480,9 +1380,9 @@ namespace USF4_Stage_Tool
 		public List<Model> Models;
 		public List<int> ModelPointersList;
 		public EMG()
-        {
+		{
 
-        }
+		}
 		public EMG(byte[] Data)
 		{
 			HEXBytes = Data;
@@ -1490,7 +1390,7 @@ namespace USF4_Stage_Tool
 			ModelCount = Math.Max(Utils.ReadInt(false, 0x06, Data), 1);     //If model count < 1, set to 1. TODO less hacky fix
 			ModelPointersList = new List<int>();
 			Models = new List<Model>();
-			
+
 			for (int i = 0; i < ModelCount; i++)
 			{
 				ModelPointersList.Add(Utils.ReadInt(true, 0x08 + i * 4, HEXBytes));
@@ -1503,7 +1403,27 @@ namespace USF4_Stage_Tool
 			HEXBytes = HEXBytes.Slice(0, length);
 		}
 
-		public override byte[] GenerateBytes()
+        public override void ReadFile(byte[] Data)
+        {
+			HEXBytes = Data;
+			RootBone = Utils.ReadInt(false, 0x04, Data);
+			ModelCount = Math.Max(Utils.ReadInt(false, 0x06, Data), 1);     //If model count < 1, set to 1. TODO less hacky fix
+			ModelPointersList = new List<int>();
+			Models = new List<Model>();
+
+			for (int i = 0; i < ModelCount; i++)
+			{
+				ModelPointersList.Add(Utils.ReadInt(true, 0x08 + i * 4, HEXBytes));
+				Models.Add(new Model(HEXBytes.Slice(ModelPointersList[i], HEXBytes.Length - ModelPointersList[i])));
+			}
+
+			int length;
+			length = Models.Last().VertexListPointer + (Models.Last().VertexCount * Models.Last().BitDepth);
+			length = length + ModelPointersList.Last();
+			HEXBytes = HEXBytes.Slice(0, length);
+		}
+
+        public override byte[] GenerateBytes()
 		{
 			List<byte> Data = new List<byte>();
 
@@ -1633,23 +1553,21 @@ namespace USF4_Stage_Tool
 						Utils.AddFloatAsBytes(Data, Models[i].VertexData[j].V);
 					}
 
-					//TODO ??? Three floats. AE says something about Tex2?
-					//2nd texture layer, UV mapping plus blend ratio?
-					//But seems to be a lot of negative values where the UV floats should be, which isn't impossible but is weird
+					//Vertex Tangents
 					if ((Models[i].BitFlag & 0x80) == 0x80)
 					{
-						//Utils.AddFloatAsBytes(Data, 1f);
-						//Utils.AddFloatAsBytes(Data, 0f);
-						//Utils.AddFloatAsBytes(Data, 0f);
-						Utils.AddFloatAsBytes(Data, Models[i].VertexData[j].ntangentX);
-						Utils.AddFloatAsBytes(Data, Models[i].VertexData[j].ntangentY);
-						Utils.AddFloatAsBytes(Data, Models[i].VertexData[j].ntangentZ);
+						//Utils.AddFloatAsBytes(Data, Models[i].VertexData[j].???);
+						//Utils.AddFloatAsBytes(Data, Models[i].VertexData[j].???);
+						//Utils.AddFloatAsBytes(Data, Models[i].VertexData[j].???);
+						Utils.AddFloatAsBytes(Data, 0f);
+						Utils.AddFloatAsBytes(Data, 0f);
+						Utils.AddFloatAsBytes(Data, 1f);
 					}
 
 					//UV Colour. Default to white TODO modify to accept user defined colour
 					if ((Models[i].BitFlag & 0x40) == 0x40)
 					{
-						Utils.AddFloatAsBytes(Data, Models[i].VertexData[j].colour);
+						Data.Add(0xFF); Data.Add(0xFF); Data.Add(0xFF); Data.Add(0xFF);
 					}
 
 					//TODO Bone weights
@@ -1679,6 +1597,14 @@ namespace USF4_Stage_Tool
 			HEXBytes = Data.ToArray();
 
 			return Data.ToArray();
+		}
+
+		public override void DeleteSubfile(int index)
+		{
+			ModelCount--;
+			ModelPointersList.RemoveAt(index);
+			Models.RemoveAt(index);
+			GenerateBytes();
 		}
 	}
 
@@ -1799,7 +1725,7 @@ namespace USF4_Stage_Tool
 
 					ReadPosition += 0x08;
 				}
-				//Normal tangent (used for normal mapping)
+
 				if ((BitFlag & 0x80) == 0x80)
 				{
 					v.ntangentX = Utils.ReadFloat(VertexListPointer + i * BitDepth + ReadPosition + 0x00, Data);
@@ -1849,7 +1775,7 @@ namespace USF4_Stage_Tool
 
 	public struct SubModel
 	{
-		public int MaterialIndex;					//Index from the EMG texture list
+		public int MaterialIndex;                   //Index from the EMG texture list
 		public int DaisyChainLength;
 		public int[] DaisyChain;
 		public byte[] HEXBytes;
@@ -1867,7 +1793,7 @@ namespace USF4_Stage_Tool
 			DaisyChainLength = Utils.ReadInt(false, 0x12, Data);
 			BoneIntegersCount = Utils.ReadInt(false, 0x14, Data);
 			SubModelName = Utils.ReadStringToArray(0x16, 0x20, Data, Data.Length);
-			
+
 			DaisyChain = new int[DaisyChainLength];
 			for (int i = 0; i < DaisyChainLength; i++)
 			{
@@ -1883,8 +1809,8 @@ namespace USF4_Stage_Tool
 		}
 	}
 
-	public struct ObjFile	//Top level file structure for OBJ
-    {
+	public struct ObjFile   //Top level file structure for OBJ
+	{
 		public List<ObjObject> ObjObjects;
 		public List<Vertex> Verts;
 		public List<UVMap> Textures;
@@ -1907,7 +1833,7 @@ namespace USF4_Stage_Tool
 	public struct ObjMaterial   //"usemtl " grouping => submodel
 	{
 		public string Name;
-		public int lastV; 
+		public int lastV;
 		public int lastT;
 		public int lastN;
 		public List<string> lines;
@@ -2043,7 +1969,7 @@ namespace USF4_Stage_Tool
 	}
 
 	public struct Weights
-    {
+	{
 		public List<int> BoneID;
 		public List<float> BoneWeights;
 	}

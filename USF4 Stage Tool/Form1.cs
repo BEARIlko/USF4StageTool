@@ -1,33 +1,30 @@
 ﻿using CSharpImageLibrary;
+using grendgine_collada;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Numerics;
-using System.Security.Policy;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.Integration;
-using static KopiLua.Lua;
-using static CSharpImageLibrary.ImageFormats;
-using System.Globalization;
-using System.Windows.Media.Media3D;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Interop;
-using System.Diagnostics;
-using grendgine_collada;
+using System.Windows.Media.Media3D;
 using System.Xml.Serialization;
+using static CSharpImageLibrary.ImageFormats;
+using static KopiLua.Lua;
 
 namespace USF4_Stage_Tool
 {
 
-	public partial class Form1 : Form
+    public partial class Form1 : Form
 	{
 		[System.Runtime.InteropServices.DllImport("gdi32.dll")]
 		public static extern bool DeleteObject(IntPtr hObject);
@@ -71,8 +68,10 @@ namespace USF4_Stage_Tool
 		DateTime StartTime;     //Used for ETA/ETR Calculation
 		List<int> VertexDaisyChain = new List<int>();
 
-		EMZ WorkingEMZ;
-		EMZ WorkingTEXEMZ;
+		EMB WorkingEMZ;
+		EMB WorkingTEXEMZ;
+		public List<USF4File> master_USF4FileList = new List<USF4File>();
+		public List<ObjModel> master_ModelFileList = new List<ObjModel>();
 		ElementHost EH3D = new ElementHost();
 		HostingWpfUserControlInWf.UserControl1 uc = new HostingWpfUserControlInWf.UserControl1();
 		ObjFile WorkingObjFile;
@@ -123,10 +122,17 @@ namespace USF4_Stage_Tool
 					await Task.Run(() => { ReadOBJ(filepath); });
 					if (ValidateOBJ())
 					{
-
 						lbOBJNameProperty.Text = Path.GetFileName(filepath);
-						_ = Task.Delay(10).ContinueWith(t => EncodeTheOBJ());
+						await Task.Run(() =>
+						{
+							EncodeTheOBJ();
+						});
 
+						tvTreeModel.Nodes.Add(new TreeNode()
+						{
+							Tag = WorkingObject,
+							Text = WorkingFileName
+						});
 					}
 					else
 					{
@@ -1139,207 +1145,243 @@ namespace USF4_Stage_Tool
 			return skel;
 		}
 
-		LUA ReadLUA(byte[] Data)
-		{
-			LUA nLUA = new LUA();
-			return nLUA;
-		}
-
 		#region Tree Methods
-		public void ClearTree() { tvTree.Nodes.Clear(); }
+		public void ClearTree() { tvTreeUSF4.Nodes.Clear(); }
 
-		void RefreshTree(bool AfterOpen)
+		void RefreshTree(TreeView tree)
 		{
-			var savedExpansionState = tvTree.Nodes.GetExpansionState();
-			tvTree.BeginUpdate();
+			var savedExpansionState = tree.Nodes.GetExpansionState();
+			tree.BeginUpdate();
 			ClearTree();
-			if (WorkingEMZ != null && WorkingEMZ.Files != null) FillTreeEMZ(WorkingEMZ, TargetEMZFilePath);
-			if (WorkingTEXEMZ != null && WorkingTEXEMZ.Files != null) FillTreeEMZ(WorkingTEXEMZ, TargetTEXEMZFilePath);
-			if (!AfterOpen)
-			{
-				tvTree.Nodes.SetExpansionState(savedExpansionState);
+			FillTreeUSF4();
+
+			tree.Nodes.SetExpansionState(savedExpansionState);
+			
+			if(master_USF4FileList == null || master_USF4FileList.Count == 0)
+            {	
+				//If there's no files open, reset the CM strip to open file...
+				CM = new ContextMenuStrip();
+				CM.Items.Clear();
+				CM.Items.Add(new ToolStripMenuItem($"Open file...", null, cmUNIVopenFileToolStripMenuItem_Click));
+				tree.ContextMenuStrip = CM;
 			}
-			tvTree.EndUpdate();
-			tvTree.SelectedNode = TreeViewExtensions.SelectedNodeBeforeRefresh; //Not working??
+			tree.SelectedNode = TreeViewExtensions.SelectedNodeBeforeRefresh; //Not working??
+			tree.EndUpdate();
 		}
 
-		public void FillTreeEMZ(EMZ sourceEMZ, string filepath)
+		public void FillTreeUSF4()
 		{
-			TreeNode NodeEMZ = new TreeNode("EMZ - " + filepath);
-			NodeEMZ.Tag = "EMZ";
-			if (filepath.Contains("tex.emz")) NodeEMZ.Tag = "TEX";
-			tvTree.Nodes.Add(NodeEMZ);
-			for (int i = 0; i < sourceEMZ.Files.Count; i++)
+			foreach (USF4File uf in master_USF4FileList)
 			{
-				USF4File file = sourceEMZ.Files[i];
-				string nodeName = Encoding.UTF8.GetString(sourceEMZ.FileNamesList[i]);
-				if (file.GetType() == typeof(EMO))
+				tvTreeUSF4.Nodes.Add(GenerateUSF4Node(uf));
+			}
+		}
+
+		public TreeNode GenerateUSF4Node(USF4File uf)
+		{
+			TreeNode n = new TreeNode()
+			{
+				Text = Encoding.ASCII.GetString(uf.Name),
+				Tag = uf
+			};
+			if (uf.GetType() == typeof(EMM))
+			{
+				EMM emm = (EMM)uf;
+				foreach (Material m in emm.Materials)
 				{
-					TreeNode nodeEMO = AddTreeNode(NodeEMZ, nodeName, "EMO");
-					EMO emo = (EMO)sourceEMZ.Files[i];
-					for (int j = 0; j < emo.EMGCount; j++)
+					n.Nodes.Add(new TreeNode()
 					{
-						TreeNode nodeEMG = AddTreeNode(nodeEMO, "EMG " + j, "EMG");
-						for (int m = 0; m < emo.EMGs[j].ModelCount; m++)
+						Text = Encoding.ASCII.GetString(m.Name),
+						Tag = m
+					});
+				}
+			}
+			else if (uf.GetType() == typeof(EMB))
+			{
+				EMB emb = (EMB)uf;
+				foreach (USF4File child in emb.Files)
+				{
+					n.Nodes.Add(GenerateUSF4Node(child));
+				}
+			}
+			else if (uf.GetType() == typeof(EMO))
+			{
+				EMO emo = (EMO)uf;
+				for (int i = 0; i < emo.EMGs.Count; i++)
+				{
+					EMG emg = emo.EMGs[i];
+					TreeNode EMGn = new TreeNode()
+					{
+						Text = $"EMG {i}",
+						Tag = emg
+					};
+
+					for (int j = 0; j < emg.Models.Count; j++)
+					{
+						Model mod = emg.Models[j];
+						TreeNode Modn = new TreeNode()
 						{
-							Model mod = emo.EMGs[j].Models[m];
-							TreeNode nodeModel = AddTreeNode(nodeEMG, "Model " + m, "Model");
-							for (int sm = 0; sm < mod.SubModelsCount; sm++)
+							Text = $"Model {j}",
+							Tag = mod
+						};
+
+						for (int k = 0; k < mod.SubModels.Count; k++)
+						{
+							SubModel sm = mod.SubModels[k];
+							TreeNode SMn = new TreeNode()
 							{
-								SubModel sMod = mod.SubModels[sm];
-								AddTreeNode(nodeModel, Encoding.UTF8.GetString(sMod.SubModelName), "SubModel");
-							}
+								Text = Encoding.ASCII.GetString(sm.SubModelName).Replace('\0',' ').Trim(),
+								Tag = sm
+							};
+							Modn.Nodes.Add(SMn);
 						}
-						//nodeEMG.Text =$"{nodeEMG.Text} - [{Encoding.UTF8.GetString(emo.EMGList[j].Models[0].SubModels[0].SubModelName)} ----]";
-
+						EMGn.Nodes.Add(Modn);
 					}
-					if (emo.Skeleton.Nodes != null)
+					n.Nodes.Add(EMGn);
+				}
+
+				if (emo.Skeleton.Nodes != null)
+				{
+					TreeNode nodeSkeleton = new TreeNode()
 					{
-						TreeNode nodeSkeleton = AddTreeNode(nodeEMO, "Skeleton", "Skeleton");
-						for (int k = 0; k < emo.Skeleton.Nodes.Count; k++)
+						Text = "Skeleton",
+						Tag = emo.Skeleton
+					};
+					for (int i = 0; i < emo.Skeleton.Nodes.Count; i++)
+					{
+						nodeSkeleton.Nodes.Add(new TreeNode()
 						{
-							AddTreeNode(nodeSkeleton, k + " " + Encoding.ASCII.GetString(emo.Skeleton.NodeNames[k]), "Node");
-						}
+							Text = Encoding.ASCII.GetString(emo.Skeleton.NodeNames[i]),
+							Tag = emo.Skeleton.Nodes[i]
+						});
 					}
-					else { AddTreeNode(nodeEMO, "No skeleton data", "No skeleton data"); }
+					n.Nodes.Add(nodeSkeleton);
 				}
-
-				if (file.GetType() == typeof(EMM))
+				else
 				{
-					TreeNode nodeEMM = AddTreeNode(NodeEMZ, nodeName, "EMM");
-					EMM emm = (EMM)sourceEMZ.Files[i];
-					for (int j = 0; j < emm.MaterialCount; j++)
+					n.Nodes.Add(new TreeNode()
 					{
-						AddTreeNode(nodeEMM, Encoding.UTF8.GetString(emm.Materials[j].Name), "Material");
-					}
-				}
-				if (file.GetType() == typeof(LUA))
-				{
-					AddTreeNode(NodeEMZ, nodeName, "LUA");
-				}
-
-				if (file.GetType() == typeof(EMB))
-				{
-					TreeNode nodeEMB = AddTreeNode(NodeEMZ, nodeName, "EMB");
-					EMB emb = (EMB)sourceEMZ.Files[i];
-					for (int j = 0; j < emb.DDSFiles.Count; j++)
-					{
-						AddTreeNode(nodeEMB, j + "  " + Encoding.UTF8.GetString(emb.FileNameList[j]), "DDS");
-					}
-				}
-				if (file.GetType() == typeof(CSB))
-				{
-					AddTreeNode(NodeEMZ, nodeName, "CSB");
-				}
-				if (file.GetType() == typeof(EMA))
-				{
-					TreeNode nodeEMA = AddTreeNode(NodeEMZ, nodeName, "EMA");
-					EMA ema = (EMA)sourceEMZ.Files[i];
-					for (int j = 0; j < ema.Animations.Count; j++)
-					{
-						AddTreeNode(nodeEMA, j + "  " + Encoding.ASCII.GetString(ema.Animations[j].Name), "Animation");
-					}
-
-					if (ema.Skeleton.Nodes != null)
-					{
-						TreeNode nodeSkeleton = AddTreeNode(nodeEMA, "Skeleton", "Skeleton");
-						for (int k = 0; k < ema.Skeleton.Nodes.Count; k++)
-						{
-							AddTreeNode(nodeSkeleton, k + " " + Encoding.ASCII.GetString(ema.Skeleton.NodeNames[k]), "Node");
-						}
-					}
-					else { AddTreeNode(nodeEMA, "No skeleton data", "No skeleton data"); }
-
-				}
-				if (file.GetType() == typeof(OtherFile))
-				{
-					AddTreeNode(NodeEMZ, nodeName, "OtherFile");
+						Text = "No skeleton data",
+						Tag = new Skeleton()
+					});
 				}
 			}
-			NodeEMZ.Expand();
-		}
-		//Add and tag EMO as Child to the target EMZ
-		TreeNode AddTreeNode(TreeNode Root, string Name, string tag)
-		{
-			TreeNode Child = new TreeNode(Name); Child.Tag = tag;
-			Root.Nodes.Add(Child);
-			return Child;
+
+			else if (uf.GetType() == typeof(EMA))
+			{
+				EMA ema = (EMA)uf;
+
+				for (int i = 0; i < ema.Animations.Count; i++)
+				{
+					n.Nodes.Add(new TreeNode()
+					{
+						Text = Encoding.ASCII.GetString(ema.Animations[i].Name),
+						Tag = ema.Animations[i]
+					});
+				}
+				if (ema.Skeleton.Nodes != null)
+				{
+					TreeNode nodeSkeleton = new TreeNode()
+					{
+						Text = "Skeleton",
+						Tag = ema.Skeleton
+					};
+					for (int i = 0; i < ema.Skeleton.Nodes.Count; i++)
+					{
+						nodeSkeleton.Nodes.Add(new TreeNode()
+						{
+							Text = Encoding.ASCII.GetString(ema.Skeleton.NodeNames[i]),
+							Tag = ema.Skeleton.Nodes[i]
+						});
+					}
+					n.Nodes.Add(nodeSkeleton);
+				}
+				else
+				{
+					n.Nodes.Add(new TreeNode()
+					{
+						Text = "No skeleton data",
+						Tag = new Skeleton()
+					});
+				}
+			}
+			return n;
 		}
 
 		private void TvTree_AfterSelect(object sender, TreeViewEventArgs e)
 		{
 			string title = string.Empty;
 			string sep = " / ";
-			CM = cmEmpty;
-			LastSelectedTreeNode = tvTree.SelectedNode;
+			LastSelectedTreeNode = tvTreeUSF4.SelectedNode;
 			Console.WriteLine("Last Node Index: " + LastSelectedTreeNode.Index);
-			tvTree.SelectedNode = e.Node;
+			tvTreeUSF4.SelectedNode = e.Node;
 			pbPreviewDDS.Visible = false;
 			pbPreviewDDS.SendToBack();
 
 			//Hide edit panels
+			pnlEO_EMO.Visible = false;
 			pnlEO_EMG.Visible = false;
 			pnlEO_MOD.Visible = false;
 			pnlEO_SUBMOD.Visible = false;
 			pnlEO_MaterialEdit.Visible = false;
 			lbSelNODE_ListData.Visible = true;
 
+			//Find top level node for current item
+			TreeNode n = LastSelectedTreeNode;
+			while (n.Parent != null) n = n.Parent;
+			string topnode = n.Text;
+
+			CM = cmEmpty;
+			CM.Items.Clear();
+			tvTreeUSF4.ContextMenuStrip = CM;
+
 			//Do the selected index stuff
-			if (e.Node.Tag.ToString() == "EMZ")
+			if (e.Node.Tag.GetType() == typeof(EMB))
 			{
-				CM = emzContext;
-				SelectedEMZNumberInTree = e.Node.Index;
-				TreeDisplayEMZData();
-			}
-			if (e.Node.Tag.ToString() == "TEX")
-			{
-				CM = emzContext;
-				SelectedEMZNumberInTree = e.Node.Index;
-				TreeDisplayEMZData();
-			}
-			if (e.Node.Tag.ToString() == "EMM")
-			{
-				CM = emmContext;
+				CM.Items.Add(new ToolStripMenuItem($"Add DDS to {LastSelectedTreeNode.Text}", null, cmEMBaddDDSToolStripMenuItem1_Click));
 				title = e.Node.Text;
-				TreeDisplayEMMData((EMM)WorkingEMZ.Files[e.Node.Index]);
 			}
-			if (e.Node.Tag.ToString() == "EMB")
+			if (e.Node.Tag.GetType() == typeof(EMM))
 			{
-				CM = embContext;
+				CM.Items.Add(new ToolStripMenuItem($"Add new Material to {LastSelectedTreeNode.Text}", null, cmEMMaddNewMaterialToolStripMenuItem_Click));
 				title = e.Node.Text;
-				//TreeDisplayEMBData((EMB)WorkingEMZ.Files[e.Node.Index]);
+				TreeDisplayEMMData((EMM)e.Node.Tag);
 			}
-			if (e.Node.Tag.ToString() == "EMA")
-			{
-				CM = emaContext;
-				title = e.Node.Text;
-				//TreeDisplayEMBData((EMA)WorkingEMZ.Files[e.Node.Index]);
-			}
-			if (e.Node.Tag.ToString() == "Material")
+			if (e.Node.Tag.GetType() == typeof(Material))
 			{
 				pnlEO_MaterialEdit.Visible = true;
 				lbSelNODE_ListData.Visible = false;
-				CM = matContext;
+				CM.Items.Add(new ToolStripMenuItem($"Add new Material to {LastSelectedTreeNode.Parent.Text}", null, cmEMMaddNewMaterialToolStripMenuItem_Click));
+				CM.Items.Add(new ToolStripMenuItem($"Rename {LastSelectedTreeNode.Text}", null, cmMATrenameMaterialToolStripMenuItem_Click));
+
 				title = e.Node.Text;
-				TreeDisplayEMMDetails();
+				TreeDisplayEMMDetails((Material)e.Node.Tag);
 			}
-			if (e.Node.Tag.ToString() == "Animation")
+			if (e.Node.Tag.GetType() == typeof(EMA))
 			{
-				CM = emaContext;
 				title = e.Node.Text;
 				lbSelNODE_ListData.Items.Clear();
-				//TreeDisplayEMMData((EMM)WorkingEMZ.Files[e.Node.Index]);
+				TreeDisplayEMAData((EMA)e.Node.Tag);
 			}
-			if (e.Node.Tag.ToString() == "DDS")
+			if (e.Node.Tag.GetType() == typeof(Animation))
 			{
+				title = e.Node.Text;
+				lbSelNODE_ListData.Items.Clear();
+			}
+			if (e.Node.Tag.GetType() == typeof(DDS))
+			{
+				if (e.Node.Parent != null)
+				{
+					CM.Items.Add(new ToolStripMenuItem($"Add DDS to {LastSelectedTreeNode.Parent.Text}", null, cmEMBaddDDSToolStripMenuItem1_Click));
+					CM.Items.Add(new ToolStripMenuItem($"Inject DDS into {LastSelectedTreeNode.Text}", null, cmDDSinjectDDSToolStripMenuItem1_Click));
+				}
+				CM.Items.Add(new ToolStripMenuItem($"Rename {LastSelectedTreeNode.Text}", null, cmDDSrenameDDSToolStripMenuItem_Click));
+				title = e.Node.Text;
 				try
 				{
-					CM = ddsContext;
-					title = e.Node.Text;
 					pbPreviewDDS.Visible = true;
 					pbPreviewDDS.BringToFront();
-					EMB emb = (EMB)WorkingTEXEMZ.Files[e.Node.Parent.Index];
-					DDS dds = emb.DDSFiles[e.Node.Index];
+					DDS dds = (DDS)e.Node.Tag;
 					ImageEngineImage IE = new ImageEngineImage(dds.HEXBytes);
 					pbPreviewDDS.BackgroundImage = Utils.BitmapFromBytes(IE.Save(new ImageEngineFormatDetails(ImageEngineFormat.PNG), new MipHandling()));
 					IE.Dispose();
@@ -1349,109 +1391,112 @@ namespace USF4_Stage_Tool
 					AddStatus($"Error while trying to read this DDS.");
 				}
 			}
-			if (e.Node.Tag.ToString() == "LUA")
+			if (e.Node.Tag.GetType() == typeof(LUA))
 			{
-				CM = luaContext;
+				CM.Items.Add(new ToolStripMenuItem($"Inject LUA script into {LastSelectedTreeNode.Text}", null, cmLUAinjectLUAScriptToolStripMenuItem_Click));
+				CM.Items.Add(new ToolStripMenuItem($"Extract LUA script from {LastSelectedTreeNode.Text}", null, cmLUAextractLUAScriptToolStripMenuItem_Click));
+				CM.Items.Add(new ToolStripMenuItem($"Inject LUA bytecode into {LastSelectedTreeNode.Text}", null, cmLUAinjectLUAbytecodeToolStripMenuItem_Click));
 				title = e.Node.Text;
 				lbSelNODE_ListData.Items.Clear();
 			}
-			if (e.Node.Tag.ToString() == "CSB")
+			if (e.Node.Tag.GetType() == typeof(CSB))
 			{
-				CM = csbContext;
+				CM.Items.Add(new ToolStripMenuItem($"Inject CSB into {LastSelectedTreeNode.Text}", null, cmCSBinjectCSBToolStripMenuItem_Click));
 				title = e.Node.Text;
 				lbSelNODE_ListData.Items.Clear();
 			}
-			if (e.Node.Tag.ToString() == "EMO")
+			if (e.Node.Tag.GetType() == typeof(EMO))
 			{
-				CM = emoContext;
-				SelectedEMONumberInTree = e.Node.Index;
-				TreeDisplayEMOData((EMO)WorkingEMZ.Files[e.Node.Index]);
-
+				CM.Items.Add(new ToolStripMenuItem($"Add OBJ as new EMG in {LastSelectedTreeNode.Text}", null, cmEMOinsertOBJAsNewEMGToolStripMenuItem_Click));
+				CM.Items.Add(new ToolStripMenuItem($"Add EMG to {LastSelectedTreeNode.Text}", null, cmEMOaddEMGToolStripMenuItem_Click));
+				CM.Items.Add(new ToolStripMenuItem($"Export {LastSelectedTreeNode.Text} to OBJ", null, cmEMOexportEMOAsOBJToolStripMenuItem_Click));
+				CM.Items.Add(new ToolStripMenuItem($"Preview {LastSelectedTreeNode.Text}", null, cmEMOpreviewEMOToolStripMenuItem_Click));
+				CM.Items.Add(new ToolStripMenuItem($"Expand {LastSelectedTreeNode.Text}", null, cmEMOexpandAllToolStripMenuItem_Click));
+				CM.Items.Add(new ToolStripMenuItem($"Collapse {LastSelectedTreeNode.Text}", null, cmEMOcollapseAllToolStripMenuItem_Click));
+				pnlEO_EMO.Visible = true;
+				TreeDisplayEMOData((EMO)e.Node.Tag);
 				title = e.Node.Text;
 			}
-			if (e.Node.Tag.ToString() == "EMA")
+			if (e.Node.Tag.GetType() == typeof(EMG))
 			{
-				CM = emaContext;
-				TreeDisplayEMAData((EMA)WorkingEMZ.Files[e.Node.Index]);
-
-				title = e.Node.Text;
-			}
-			if (e.Node.Tag.ToString() == "EMG")
-			{
-				CM = emgContext;
-				SelectedEMGNumberInTree = e.Node.Index;
-				SelectedEMONumberInTree = e.Node.Parent.Index;  //Get The Parrent EMO Index
-				EMO sEMO = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
-				TreeDisplayEMGData(sEMO.EMGs[SelectedEMGNumberInTree]);
+				CM.Items.Add(new ToolStripMenuItem($"Inject OBJ as {LastSelectedTreeNode.Text} (Overwrite)", null, cmEMGinjectOBJToolStripMenuItem_Click));
+				if(e.Node.Parent != null)
+                {
+					CM.Items.Add(new ToolStripMenuItem($"Add OBJ as new EMG in {LastSelectedTreeNode.Parent.Text}", null, cmEMGaddOBJAsNewEMGToolStripMenuItem_Click));
+					title = $"{e.Node.Parent.Text}{sep}{e.Node.Text}";
+				}
+				else title = $"{e.Node.Text}";
+				CM.Items.Add(new ToolStripMenuItem($"Export {LastSelectedTreeNode.Text} to OBJ", null, cmEMGexportEMGAsOBJToolStripMenuItem_Click));
+				CM.Items.Add(new ToolStripMenuItem($"Preview {LastSelectedTreeNode.Text}", null, cEMGpreviewToolStripMenuItem_Click));
+				TreeDisplayEMGData((EMG)e.Node.Tag);
 				pnlEO_EMG.Visible = true;
-				title = $"{e.Node.Parent.Text}{sep}{e.Node.Text}";
+				
 			}
-			if (e.Node.Tag.ToString() == "Skeleton")
+			if (e.Node.Tag.GetType() == typeof(Model))
 			{
-				CM = cmEmpty;
-				lbSelNODE_ListData.Items.Clear();
-			}
-			if (e.Node.Tag.ToString() == "Node")
-			{
-				CM = cmEmpty;
-				Node node;
-				if (LastSelectedTreeNode.Parent.Parent.Tag.ToString() == "EMA")
-				{
-					EMA ema = (EMA)WorkingEMZ.Files[LastSelectedTreeNode.Parent.Parent.Index];
-					node = ema.Skeleton.Nodes[LastSelectedTreeNode.Index];
-				}
-				else
-				{
-					EMO emo = (EMO)WorkingEMZ.Files[LastSelectedTreeNode.Parent.Parent.Index];
-					node = emo.Skeleton.Nodes[LastSelectedTreeNode.Index];
-				}
-
-				TreeDisplaySkelNodeData(node);
-
-				title = e.Node.Text;
-			}
-			if (e.Node.Tag.ToString() == "Model")
-			{
-				CM = emgContext;
-				SelectedEMGNumberInTree = e.Node.Parent.Index;
-				SelectedEMONumberInTree = e.Node.Parent.Parent.Index;
-				SelectedModelNumberInTree = e.Node.Index;
-				EMO sEMO = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
-				TreeDisplayModelData(sEMO.EMGs[SelectedEMGNumberInTree].Models[e.Node.Index]);
+				CM.Items.Add(new ToolStripMenuItem($"Export {LastSelectedTreeNode.Text} to OBJ", null, cmMODexportModelAsOBJToolStripMenuItem_Click));
+				CM.Items.Add(new ToolStripMenuItem($"Preview {LastSelectedTreeNode.Text}", null, cEMGpreviewToolStripMenuItem_Click));
+				TreeDisplayModelData((Model)e.Node.Tag);
 				pnlEO_MOD.Visible = true;
 				title = $"{e.Node.Parent.Parent.Text}{sep}{e.Node.Parent.Text}{sep}{e.Node.Text}";
 			}
-			if (e.Node.Tag.ToString() == "SubModel")
+			if (e.Node.Tag.GetType() == typeof(SubModel))
 			{
-				CM = emgContext;
-				SelectedSubModelNumberInTree = e.Node.Index;
-				SelectedModelNumberInTree = e.Node.Parent.Index;
-				SelectedEMGNumberInTree = e.Node.Parent.Parent.Index;
-				SelectedEMONumberInTree = e.Node.Parent.Parent.Parent.Index;
-				EMO sEMO = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
-				TreeDisplaySubModelData(sEMO.EMGs[SelectedEMGNumberInTree].Models[e.Node.Parent.Index].SubModels[e.Node.Index]);
+				CM.Items.Add(new ToolStripMenuItem($"Export {LastSelectedTreeNode.Text} to OBJ", null, cmSUBMexportSubmodelAsOBJToolStripMenuItem_Click));
+				CM.Items.Add(new ToolStripMenuItem($"Preview {LastSelectedTreeNode.Text}", null, cEMGpreviewToolStripMenuItem_Click));
+				TreeDisplaySubModelData((SubModel)e.Node.Tag);
 				pnlEO_SUBMOD.Visible = true;
 				tbEO_SubModName.Text = $"{e.Node.Text}";
-				tbEO_SubModMaterial.Text = $"{sEMO.EMGs[SelectedEMGNumberInTree].Models[e.Node.Parent.Index].SubModels[e.Node.Index].MaterialIndex}";
+				tbEO_SubModMaterial.Text = $"{((SubModel)e.Node.Tag).MaterialIndex}";
 				title = $"{e.Node.Text}";
 			}
+			if (e.Node.Tag.GetType() == typeof(Skeleton))
+			{
+				TreeDisplaySkeletonData((Skeleton)e.Node.Tag);
+				title = $"{e.Node.Parent.Text} Skeleton";
+			}
+			if (e.Node.Tag.GetType() == typeof(Node))
+			{
+				TreeDisplaySkelNodeData((Node)e.Node.Tag);
+
+				title = e.Node.Text;
+			}
+
+			//Set up local node universal options, if appropriate
+			//If current node is a USF4 file, we can dump it:
+			if (LastSelectedTreeNode.Parent != null && typeof(USF4File).IsAssignableFrom(LastSelectedTreeNode.Tag.GetType()))
+			{
+				CM.Items.Add(new ToolStripMenuItem($"Raw dump {LastSelectedTreeNode.Text}", null, cmUNIVrawDumpFileToolStripMenuItem_Click));
+			}
+			//If current node PARENT is a USF4 file, we can call generic USF4File.DeleteSubfile():
+			if (LastSelectedTreeNode.Tag.GetType() != typeof(Skeleton) && LastSelectedTreeNode.Parent != null && typeof(USF4File).IsAssignableFrom(LastSelectedTreeNode.Parent.Tag.GetType()))
+			{
+				CM.Items.Add(new ToolStripMenuItem($"Delete {LastSelectedTreeNode.Text}", null, cmUNIVdeleteFileToolStripMenuItem_Click));
+			}
+			//Add seperator before listing "top node" options
+			if (CM.Items.Count > 0) CM.Items.Add("-");
+			//Setup "top node" universal options
+			CM.Items.Add(new ToolStripMenuItem($"Save {topnode}", null, cmUNIVsaveFileToolStripMenuItem_Click));
+			CM.Items.Add(new ToolStripMenuItem($"Close {topnode}", null, cmUNIVcloseFileToolStripMenuItem_Click));
+			CM.Items.Add("-");
+			CM.Items.Add(new ToolStripMenuItem($"Open file...", null, cmUNIVopenFileToolStripMenuItem_Click));
+
 			lbSelNODE_Title.Text = title;
-			Console.WriteLine($"EMO {SelectedEMONumberInTree} EMG {SelectedEMGNumberInTree} MOD {SelectedModelNumberInTree} SubModel {SelectedSubModelNumberInTree}");
 		}
 
 		private void TvTree_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
 		{
-			tvTree.SelectedNode = tvTree.GetNodeAt(e.Location);
-			if (e.Button == MouseButtons.Right) { CM.Show(tvTree, e.Location); }
+			tvTreeUSF4.SelectedNode = tvTreeUSF4.GetNodeAt(e.Location);
+			if (e.Button == MouseButtons.Right) { CM.Show(tvTreeUSF4, e.Location); }
 		}
 
-		void TreeDisplayEMMDetails()
+		void TreeDisplayEMMDetails(Material mat)
 		{
 			lvShaderProperties.Clear();
 			Utils.ReadShaders();
+			Utils.ReadShadersProperties();
 			FillShaderComboBox();
-			EMM emm = (EMM)WorkingEMZ.Files[LastSelectedTreeNode.Parent.Index];
-			Material mat = emm.Materials[LastSelectedTreeNode.Index];
+			FillShaderPropertiesComboBox();
 			Console.WriteLine("Shader Name: " + Encoding.ASCII.GetString(mat.Name));
 
 			if (!Utils.Shaders.TryGetValue(Encoding.ASCII.GetString(mat.Shader), out _))
@@ -1471,6 +1516,16 @@ namespace USF4_Stage_Tool
 			}
 		}
 
+		void TreeDisplaySkeletonData(Skeleton skel)
+        {
+			lbSelNODE_ListData.Items.Clear();
+
+			for (int i = 0; i < skel.Nodes.Count; i++)
+            {
+				lbSelNODE_ListData.Items.Add($"{i}:\t{Encoding.ASCII.GetString(skel.NodeNames[i])}");
+			}
+        }
+
 		void AddPropertyLineToTextBox(string Line)
 		{
 			lvShaderProperties.Text = lvShaderProperties.Text + Line + Environment.NewLine;
@@ -1482,24 +1537,21 @@ namespace USF4_Stage_Tool
 		}
 		void OpenEMONode(bool SelectTheEMG) //false for deleting so we select only the EMO
 		{
-			tvTree.SelectedNode = tvTree.Nodes[0].Nodes[SelectedEMONumberInTree]; //FIX
-			tvTree.SelectedNode.Expand();
-			if (SelectTheEMG) tvTree.SelectedNode = tvTree.SelectedNode.Nodes[SelectedEMGNumberInTree];
+			//tvTree.SelectedNode = LastSe; //FIX
+			//tvTree.SelectedNode.Expand();
+			//if (SelectTheEMG) tvTree.SelectedNode = tvTree.SelectedNode.Nodes[SelectedEMGNumberInTree];
 		}
 		#endregion Tree Methods
 
 		#region Tree Display Related
-		void TreeDisplayEMZData()
-		{
-			lbSelNODE_ListData.Items.Clear();
-			if ((string)tvTree.Nodes[SelectedEMZNumberInTree].Tag == "EMZ") lbSelNODE_ListData.Items.Add($"File Count: {WorkingEMZ.Files.Count}");
-			if ((string)tvTree.Nodes[SelectedEMZNumberInTree].Tag == "TEX") lbSelNODE_ListData.Items.Add($"File Count: {WorkingTEXEMZ.Files.Count}");
-		}
+
 		void TreeDisplayEMOData(EMO emo)
 		{
 			lbSelNODE_ListData.Items.Clear();
 			lbSelNODE_ListData.Items.Add($"EMG Count: {emo.EMGCount}");
+			lbSelNODE_ListData.Items.Add($"Matching material Count: {emo.NumberEMMMaterials}");
 			lbSelNODE_ListData.Items.Add($"Skeleton node count: {emo.Skeleton.NodeCount}");
+			tbEMOmatcount.Text = $"{emo.NumberEMMMaterials}";
 		}
 		void TreeDisplayEMAData(EMA ema)
 		{
@@ -1545,7 +1597,7 @@ namespace USF4_Stage_Tool
 			if ((m.BitFlag & 0x01) == 0x01) { lbSelNODE_ListData.Items.Add($"    Vertex Co-ordinates"); }
 			if ((m.BitFlag & 0x02) == 0x02) { lbSelNODE_ListData.Items.Add($"    Vertex Normals"); }
 			if ((m.BitFlag & 0x04) == 0x04) { lbSelNODE_ListData.Items.Add($"    UV Map"); }
-			if ((m.BitFlag & 0x80) == 0x80) { lbSelNODE_ListData.Items.Add($"    Vertex Tangents"); }
+			if ((m.BitFlag & 0x80) == 0x80) { lbSelNODE_ListData.Items.Add($"    UV Map 2"); }
 			if ((m.BitFlag & 0x40) == 0x40) { lbSelNODE_ListData.Items.Add($"    Vertex Color"); }
 			if ((m.BitFlag & 0x200) == 0x200) { lbSelNODE_ListData.Items.Add($"    Bone Weights"); }
 			lbSelNODE_ListData.Items.Add($"---------------------------");
@@ -1568,23 +1620,19 @@ namespace USF4_Stage_Tool
 			//Try to find the EMB matching the current model...
 			matchingemb = new EMB();
 
-			if (WorkingTEXEMZ != null && WorkingTEXEMZ.Files != null)
+			//Find the parent EMO, if there is one:
+			TreeNode n = LastSelectedTreeNode;
+			while (n.Tag.GetType() != typeof(EMO) && n.Parent != null)
 			{
-				for (int i = 0; i < WorkingTEXEMZ.Files.Count; i++)
-				{
-					object file = WorkingTEXEMZ.Files[i];
-					if (file.GetType() == typeof(EMB))
-					{
-						byte[] targetemo = Utils.ChopByteArray(WorkingEMZ.FileNamesList[SelectedEMONumberInTree], 0, WorkingEMZ.FileNamesList[SelectedEMONumberInTree].Length - 1);
-						byte[] targetemb = Utils.ChopByteArray(WorkingTEXEMZ.FileNamesList[i], 0, WorkingTEXEMZ.FileNamesList[i].Length - 1);
-
-						if (Encoding.ASCII.GetString(targetemo) == Encoding.ASCII.GetString(targetemb))
-						{
-							matchingemb = (EMB)WorkingTEXEMZ.Files[i];
-						}
-					}
-				}
+				n = n.Parent;
 			}
+			//If we found an EMO, search the file list for a matching EMB
+			if (n.Tag.GetType() == typeof(EMO))
+			{
+				USF4File result = FindMatch(master_USF4FileList, typeof(EMB), ((EMO)n.Tag).Name);
+				if (result.GetType() == typeof(EMB)) matchingemb = (EMB)result;
+			}
+
 			//Clear the grid and re-populate
 			modelTextureGrid.Rows.Clear();
 			if (m.Textures.Count > 0)
@@ -1598,9 +1646,9 @@ namespace USF4_Stage_Tool
 						//If we have a matching EMB, set the tooltip to be the indexed DDS name
 						try
 						{
-							if (matchingemb.FileNameList != null)
+							if (matchingemb.FileNamesList != null)
 							{
-								modelTextureGrid.Rows[i + j].Cells[2].ToolTipText = Encoding.ASCII.GetString(matchingemb.FileNameList[m.Textures[i].TextureIndicesList[j]]).Replace('\0', ' ').Trim();
+								modelTextureGrid.Rows[i + j].Cells[2].ToolTipText = Encoding.ASCII.GetString(matchingemb.FileNamesList[m.Textures[i].TextureIndicesList[j]]).Replace('\0', ' ').Trim();
 							}
 						}//If the index is out of range (ie higher than number of DDSs in the emb) catch and clear the string
 						catch { modelTextureGrid.Rows[i + j].Cells[2].ToolTipText = string.Empty; }
@@ -1619,13 +1667,17 @@ namespace USF4_Stage_Tool
 			lbSelNODE_ListData.Items.Add($"Daisy Chain Compression: {100 * sm.DaisyChainLength / (GeometryIO.FaceIndicesFromDaisyChain(sm.DaisyChain).Count * 3)}%");
 			lbSelNODE_ListData.Items.Add($"Material Index: {sm.MaterialIndex}");
 
-
 			if (sm.BoneIntegersList != null && sm.BoneIntegersList.Count > 0)
 			{
+				Skeleton skel = new Skeleton();
+				if(LastSelectedTreeNode.Parent.Parent.Parent != null)
+                {
+					skel = ((EMO)LastSelectedTreeNode.Parent.Parent.Parent.Tag).Skeleton;
+                }
 				lbSelNODE_ListData.Items.Add($"Bone integers:");
 				foreach (int i in sm.BoneIntegersList)
 				{
-					lbSelNODE_ListData.Items.Add($"{i}");
+					lbSelNODE_ListData.Items.Add($"{i}:\t{Encoding.ASCII.GetString(skel.NodeNames[i])}");
 				}
 			}
 		}
@@ -1636,6 +1688,32 @@ namespace USF4_Stage_Tool
 			lbSelNODE_ListData.Items.Add($"Materials Count: {e.MaterialCount}");
 		}
 		#endregion Tree Display Related		
+
+		public USF4File FindMatch(List<USF4File> target_list, Type type, byte[] b_name)
+		{
+			USF4File match = new USF4File();
+
+			string target_name = Encoding.ASCII.GetString(Utils.ChopByteArray(b_name, 0, b_name.Length - 1));
+
+			foreach (USF4File uf in target_list)
+			{
+				string check_name = Encoding.ASCII.GetString(Utils.ChopByteArray(uf.Name, 0, uf.Name.Length - 1));
+				if (uf.GetType() == type && check_name == target_name)
+				{
+					return uf;
+				}
+
+				if (uf.GetType() == typeof(EMB))
+				{
+					match = FindMatch(((EMB)uf).Files, type, b_name);
+					if (match.GetType() == type)
+					{
+						return match;
+					}
+				}
+			}
+			return match;
+		}
 
 		private void BtnSaveEMO_Click(object sender, EventArgs e)
 		{
@@ -1684,31 +1762,31 @@ namespace USF4_Stage_Tool
 
 						if (filepath.Contains("tex.emz"))
 						{
-							WorkingTEXEMZ = new EMZ(bytes);
+							WorkingTEXEMZ = new EMB(bytes);
 							TargetTEXEMZFilePath = filepath;
 							TargetTEXEMZFileName = friendlyName;
-							RefreshTree(true);
+							RefreshTree(tvTreeUSF4);
 							AddStatus($"Opened {filepath}");
 						}
 						else
 						{
-							WorkingEMZ = new EMZ(bytes);
+							WorkingEMZ = new EMB(bytes);
 							TargetEMZFilePath = filepath;
 							TargetEMZFileName = friendlyName;
 							FillShaderComboBox();
 							FillShaderPropertiesComboBox();
 							Utils.SaveShaders();
 							Utils.SaveShadersProperties();
-							RefreshTree(true);
+							RefreshTree(tvTreeUSF4);
 							AddStatus($"Opened {filepath}");
 						}
 					}
 					catch
 					{
 						MessageBox.Show("Error opening EMZ. Please confirm file is valid.", TStrings.STR_Information);
-						if (filepath.Contains("tex.emz")) { WorkingTEXEMZ = new EMZ(); }
-						else { WorkingEMZ = new EMZ(); }
-						RefreshTree(true);
+						if (filepath.Contains("tex.emz")) { WorkingTEXEMZ = new EMB(); }
+						else { WorkingEMZ = new EMB(); }
+						RefreshTree(tvTreeUSF4);
 					}
 				}
 			}
@@ -1730,7 +1808,7 @@ namespace USF4_Stage_Tool
 		{
 			string filepath;
 
-			EMZ targetEMZ;
+			EMB targetEMZ;
 			saveFileDialog1.InitialDirectory = string.Empty;
 
 			if (Tag == "EMZ")
@@ -1763,14 +1841,14 @@ namespace USF4_Stage_Tool
 		void WriteEMZToNewFile(string filepath, string Tag)
 		{
 
-			EMZ SourceEMZ;
+			EMB SourceEMZ;
 			if (Tag == "EMZ")
 				SourceEMZ = WorkingEMZ;
 			else
 				SourceEMZ = WorkingTEXEMZ;
 		}
 
-		void TreeContextInjectOBJ_Click(object sender, EventArgs e)
+		void cmEMGinjectOBJToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (ObjectLoaded && !EncodingInProgress)
 			{
@@ -1789,42 +1867,26 @@ namespace USF4_Stage_Tool
 
 		void InjectOBJ()
 		{
-			EMO emo = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
-			EMG targetEMG = emo.EMGs[SelectedEMGNumberInTree];
+			EMG targetEMG = (EMG)LastSelectedTreeNode.Tag;
 			EMG newEMG = NewEMGFromOBJ(targetEMG, false);
-			emo.EMGs.RemoveAt(SelectedEMGNumberInTree);
-			emo.EMGs.Insert(SelectedEMGNumberInTree, newEMG);
-			emo.GenerateBytes();
-			WorkingEMZ.Files.Remove(SelectedEMONumberInTree);
-			WorkingEMZ.Files.Add(SelectedEMONumberInTree, emo);
-
-			RefreshTree(false);
+			if (LastSelectedTreeNode.Parent != null)
+			{
+				EMO emo = (EMO)LastSelectedTreeNode.Parent.Tag;
+				emo.EMGs.RemoveAt(LastSelectedTreeNode.Index);
+				emo.EMGs.Insert(LastSelectedTreeNode.Index, newEMG);
+				emo.GenerateBytes();
+				AddStatus($"OBJ {WorkingFileName} injected into {Encoding.ASCII.GetString(emo.Name)} EMG {LastSelectedTreeNode.Index}.");
+			}
+			else
+			{
+				newEMG.Name = targetEMG.Name;
+				master_USF4FileList.RemoveAt(LastSelectedTreeNode.Index);
+				master_USF4FileList.Insert(LastSelectedTreeNode.Index, newEMG);
+				AddStatus($"OBJ {WorkingFileName} injected into {targetEMG.Name}.");
+			}
+			RefreshTree(tvTreeUSF4);
 			OpenEMONode(true);
 			InjectObjAfterOpen = false;
-			AddStatus("OBJ " + WorkingFileName + " injected in " + Encoding.ASCII.GetString(emo.Name) + " EMG " + SelectedEMGNumberInTree);
-		}
-
-		void ExtractOtherFile()
-		{
-			OtherFile OF = (OtherFile)WorkingEMZ.Files[LastSelectedTreeNode.Index];
-			saveFileDialog1.Filter = "";
-			saveFileDialog1.FileName = Encoding.ASCII.GetString(WorkingEMZ.FileNamesList[LastSelectedTreeNode.Index]);
-			if (saveFileDialog1.ShowDialog() == DialogResult.OK)
-			{
-				Utils.WriteDataToStream(saveFileDialog1.FileName, OF.HEXBytes);
-			}
-		}
-
-		void RawDumpCSB()
-		{
-			CSB csb = (CSB)WorkingEMZ.Files[LastSelectedTreeNode.Index];
-			saveFileDialog1.Filter = CSBFileFilter;
-			saveFileDialog1.FileName = Encoding.ASCII.GetString(csb.Name);
-			if (saveFileDialog1.ShowDialog() == DialogResult.OK)
-			{
-				Utils.WriteDataToStream(saveFileDialog1.FileName, csb.HEXBytes);
-				AddStatus($"Extracted {Encoding.ASCII.GetString(csb.Name)}");
-			}
 		}
 
 		void InjectCSB()
@@ -1832,19 +1894,25 @@ namespace USF4_Stage_Tool
 			diagOpenOBJ.Filter = CSBFileFilter;
 			if (diagOpenOBJ.ShowDialog() == DialogResult.OK)
 			{
-				CSB csb = (CSB)WorkingEMZ.Files[LastSelectedTreeNode.Index];
+				CSB csb = (CSB)LastSelectedTreeNode.Tag;
 				FileStream fsSource = new FileStream(diagOpenOBJ.FileName, FileMode.Open, FileAccess.Read);
 				byte[] bytes;
 				using (BinaryReader br = new BinaryReader(fsSource, Encoding.ASCII)) { bytes = br.ReadBytes((int)fsSource.Length); }
 				csb.HEXBytes = bytes;
-				WorkingEMZ.Files.Remove(LastSelectedTreeNode.Index);
-				WorkingEMZ.Files.Add(LastSelectedTreeNode.Index, csb);
+				
+				if(LastSelectedTreeNode.Parent != null)
+                {
+					EMB emb = (EMB)LastSelectedTreeNode.Parent.Tag;
+					emb.Files.RemoveAt(LastSelectedTreeNode.Index);
+					emb.Files.Insert(LastSelectedTreeNode.Index, csb);
+                }
+
 				AddStatus($"Injected {diagOpenOBJ.SafeFileName} into {LastSelectedTreeNode.Text}");
-				RefreshTree(false);
+				RefreshTree(tvTreeUSF4);
 			}
 		}
 
-		private void InsertOBJAsNewEMGToolStripMenuItem_Click(object sender, EventArgs e)
+		private void cmEMGaddOBJAsNewEMGToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			AddOBJAsNewEMG();
 		}
@@ -1861,7 +1929,14 @@ namespace USF4_Stage_Tool
 			}
 			else if (ObjectLoaded)
 			{
-				EMO targetEMO = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
+				TreeNode n = LastSelectedTreeNode;
+				while (n.Tag.GetType() != typeof(EMO) && n.Parent != null)
+                {
+					n = n.Parent;
+                }
+				EMO targetEMO = new EMO();
+				if (n.Tag.GetType() == typeof(EMO)) targetEMO = (EMO)n.Tag;
+
 				EMG newEMG = new EMG(targetEMO.EMGs[0].HEXBytes);
 				newEMG = NewEMGFromOBJ(newEMG, true);
 				int NamingListPointer = targetEMO.NamingListPointer;
@@ -1869,9 +1944,8 @@ namespace USF4_Stage_Tool
 				targetEMO.EMGPointersList.Add(NamingListPointer + 0x10);
 				targetEMO.EMGs.Add(newEMG);
 				targetEMO.GenerateBytes();
-				WorkingEMZ.Files.Remove(SelectedEMONumberInTree);
-				WorkingEMZ.Files.Add(SelectedEMONumberInTree, targetEMO);
-				RefreshTree(false);
+
+				RefreshTree(tvTreeUSF4);
 				OpenEMONode(true);
 				AddStatus("OBJ " + WorkingFileName + " added as new  EMG " + (targetEMO.EMGCount - 1) + " in " + Encoding.ASCII.GetString(targetEMO.Name));
 			}
@@ -1882,21 +1956,25 @@ namespace USF4_Stage_Tool
 			if (tbEMGRootBone.Text.Trim() != string.Empty)
 			{
 				int newRootBone = int.Parse(tbEMGRootBone.Text.Trim());
-				EMO emo = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
-				EMG emg = emo.EMGs[SelectedEMGNumberInTree];
+				EMG emg = (EMG)LastSelectedTreeNode.Tag;
 				emg.RootBone = newRootBone;
 				emg.GenerateBytes();
-				emo.EMGs.RemoveAt(SelectedEMGNumberInTree);
-				emo.EMGs.Insert(SelectedEMGNumberInTree, emg);
-				emo.GenerateBytes();
-				WorkingEMZ.Files.Remove(SelectedEMONumberInTree);
-				WorkingEMZ.Files.Add(SelectedEMONumberInTree, emo);
+
+				if(LastSelectedTreeNode.Parent != null)
+                {
+					EMO emo = (EMO)LastSelectedTreeNode.Parent.Tag;
+					emo.EMGs.RemoveAt(SelectedEMGNumberInTree);
+					emo.EMGs.Insert(SelectedEMGNumberInTree, emg);
+					emo.GenerateBytes();
+                }
+				AddStatus("EMG changes saved.");
 				TreeDisplayEMGData(emg);
 			}
 		}
 
 		private void Form1_Load(object sender, EventArgs e)
 		{
+			pnlEO_EMO.Visible = false;
 			pnlEO_EMG.Visible = false;
 			pnlEO_MOD.Visible = false;
 
@@ -1911,6 +1989,10 @@ namespace USF4_Stage_Tool
 			EH3D.Width = pSelectedTreeNodeData.Width;
 			EH3D.Height = pSelectedTreeNodeData.Height;
 			EH3D.Visible = false;
+
+			CM = new ContextMenuStrip();
+			CM.Items.Add(new ToolStripMenuItem($"Open file...", null, cmUNIVopenFileToolStripMenuItem_Click));
+			tvTreeUSF4.ContextMenuStrip = CM;
 
 			// Create the WPF UserControl.
 			uc = new HostingWpfUserControlInWf.UserControl1();
@@ -2004,9 +2086,8 @@ namespace USF4_Stage_Tool
 
 		private void BntEO_ModSave_Click(object sender, EventArgs e)
 		{
-			EMO emo = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
-			EMG emg = emo.EMGs[SelectedEMGNumberInTree];
-			Model model = emg.Models[SelectedModelNumberInTree];
+			EMG emg = (EMG)LastSelectedTreeNode.Parent.Tag;
+			Model model = (Model)LastSelectedTreeNode.Tag;
 
 			List<EMGTexture> temptexlist = new List<EMGTexture>();
 			List<int> temppointerlist = new List<int>();
@@ -2067,7 +2148,6 @@ namespace USF4_Stage_Tool
 					AddStatus("Unable to save model changes due to formatting error. Reverted to previous values.");
 					if (Layers > 2) { AddStatus("Texture entry can't have more than 2 layers."); }
 					TreeDisplayModelData(model);
-					return;
 				}
 
 			}
@@ -2082,41 +2162,35 @@ namespace USF4_Stage_Tool
 			model.TextureCount = model.Textures.Count;
 			model.TexturePointersList = temppointerlist;
 
-			emg.Models.RemoveAt(SelectedModelNumberInTree);
-			emg.Models.Insert(SelectedModelNumberInTree, model);
+			emg.Models.RemoveAt(LastSelectedTreeNode.Index);
+			emg.Models.Insert(LastSelectedTreeNode.Index, model);
 			emg.GenerateBytes();
-			emo.EMGs.RemoveAt(SelectedEMGNumberInTree);
-			emo.EMGs.Insert(SelectedEMGNumberInTree, emg);
-			emo.GenerateBytes();
-			WorkingEMZ.Files.Remove(SelectedEMONumberInTree);
-			WorkingEMZ.Files.Add(SelectedEMONumberInTree, emo);
+			if(LastSelectedTreeNode.Parent.Parent != null)
+            {
+				EMO emo = (EMO)LastSelectedTreeNode.Parent.Parent.Tag;
+				emo.EMGs.RemoveAt(LastSelectedTreeNode.Parent.Index);
+				emo.EMGs.Insert(LastSelectedTreeNode.Parent.Index, emg);
+				emo.GenerateBytes();
+			}
+			RefreshTree(tvTreeUSF4);
 			TreeDisplayModelData(model);
 			AddStatus("Model changes saved.");
 		}
 
 		private void DeleteEMGToolStripMenuItem_Click(object sender, EventArgs e)
 		{
+			if (LastSelectedTreeNode.Parent == null)
+			{
+				AddStatus("Couldn't delete EMG as it is not part of an EMO.");
+				return;
+			}
 			DialogResult = MessageBox.Show("Delete EMG?", TStrings.STR_Information, MessageBoxButtons.OKCancel);
 			if (DialogResult == DialogResult.OK)
 			{
-				DeleteEMG((EMO)WorkingEMZ.Files[SelectedEMONumberInTree], SelectedEMGNumberInTree);
+				((EMO)LastSelectedTreeNode.Parent.Tag).DeleteSubfile(LastSelectedTreeNode.Index);
+				RefreshTree(tvTreeUSF4);
 				AddStatus("EMG deleted.");
 			}
-		}
-
-		void DeleteEMG(EMO emo, int EMGIndex)
-		{
-			emo.EMGCount -= 1;
-			if (emo.EMGCount == 1)
-			{
-				emo.temp_bitdepth = emo.EMGs[0].Models[0].BitDepth;
-			}
-			emo.EMGs.RemoveAt(EMGIndex);
-			emo.EMGPointersList.RemoveAt(EMGIndex); //Doesn't matter which one we remove, they all get re-generated later
-			emo.GenerateBytes();
-			WorkingEMZ.Files.Remove(SelectedEMONumberInTree);
-			WorkingEMZ.Files.Add(SelectedEMONumberInTree, emo);
-			RefreshTree(false);
 		}
 
 		private void SaveEncodedOBJToolStripMenuItem_Click(object sender, EventArgs e)
@@ -2129,17 +2203,22 @@ namespace USF4_Stage_Tool
 			SaveEncodedOBJHex();
 		}
 
-		private void BntEO_SubModSave_Click(object sender, EventArgs e)
+		private void BtnEO_SubModSave_Click(object sender, EventArgs e)
 		{
 			if (tbEO_SubModName.Text.Trim() != string.Empty && Int32.TryParse(tbEO_SubModMaterial.Text.Trim(), out int smMaterial))
 			{
 				string value = tbEO_SubModName.Text.Trim();
 				byte[] newName = Utils.MakeModelName(value);
 				byte[] oldName;
-				EMO emo = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
-				EMG emg = emo.EMGs[SelectedEMGNumberInTree];
-				Model model = emg.Models[SelectedModelNumberInTree];
-				SubModel sm = model.SubModels[SelectedSubModelNumberInTree];
+
+				TreeNode n = LastSelectedTreeNode;
+				EMO emo = new EMO();
+				while (n.Tag.GetType() != typeof(EMO) && n.Parent != null) n = n.Parent;
+				if(n.Tag.GetType() == typeof(EMO)) emo = (EMO)n.Tag;
+
+				EMG emg = (EMG)LastSelectedTreeNode.Parent.Parent.Tag;
+				Model model = (Model)LastSelectedTreeNode.Parent.Tag;
+				SubModel sm = (SubModel)LastSelectedTreeNode.Tag;
 				oldName = sm.SubModelName;
 				if (Encoding.ASCII.GetString(oldName) == Encoding.ASCII.GetString(newName) && sm.MaterialIndex == smMaterial)
 				{
@@ -2151,122 +2230,85 @@ namespace USF4_Stage_Tool
 				if (Encoding.ASCII.GetString(oldName) == Encoding.ASCII.GetString(newName))
 				{
 					AddStatus("Material index updated.");
-					return;
 				}
 				sm.SubModelName = newName;
 
 				AddStatus("Submodel info updated.");
 
-				EMM emm = new EMM();
-				bool found = false;
-				bool alreadyExists = false;
-				int emmPosition = 0;
-				for (int i = 0; i < WorkingEMZ.Files.Count; i++)
-				{
-					object file = WorkingEMZ.Files[i];
-					if (file.GetType() == typeof(EMM))
-					{
-						emm = (EMM)file;
-						byte[] subName = Utils.ChopByteArray(emm.Name, 0x00, emm.Name.Length - 1);
-						byte[] targetName = Utils.ChopByteArray(emo.Name, 0x00, emo.Name.Length - 1);
-						Console.WriteLine($" Comparing: {Encoding.ASCII.GetString(subName)} to {Encoding.ASCII.GetString(targetName)}");
-						if (Encoding.ASCII.GetString(subName) == Encoding.ASCII.GetString(targetName))
-						{
-							Console.WriteLine("Matching EMM found!");
-							emmPosition = i;
+				model.SubModels.RemoveAt(LastSelectedTreeNode.Index);
+				model.SubModels.Insert(LastSelectedTreeNode.Index, sm);
 
-							foreach (Material m in emm.Materials)
-							{
-								if (Encoding.ASCII.GetString(m.Name) == Encoding.ASCII.GetString(newName))
-								{
-									alreadyExists = true;
-									break;
-								}
-							}
-							for (int j = 0; j < emm.MaterialCount; j++)
-							{
-								if (alreadyExists) break;
-								Console.WriteLine($" Comparing Material name to old SubModel Name: {Encoding.ASCII.GetString(emm.Materials[j].Name)} to {Encoding.ASCII.GetString(oldName)}");
-								if (Encoding.ASCII.GetString(emm.Materials[j].Name) == Encoding.ASCII.GetString(oldName))
-								{
-									Console.WriteLine("Match material found!");
-									emm.Materials.Add(new Material(emm.Materials[j].HEXBytes, newName));
-									Console.WriteLine("New Material Name: " + Encoding.ASCII.GetString(newName));
-									found = true;
-									break;
-								}
-							}
-							if (!alreadyExists)
-							{
-								emm.MaterialCount += 1;
-								emm.MaterialPointersList.Add(0);
-							}
-							break;
-						}
-					}
-					else
-					{
-						Console.WriteLine("Found nothing");
-					}
-				}
-				if (!found & !alreadyExists) Console.Write("Did not find material");
-				if (alreadyExists) Console.Write("Found existing material");
-				if (found)
-				{
-					emm.GenerateBytes();
-					WorkingEMZ.Files.Remove(emmPosition);
-					WorkingEMZ.Files.Add(emmPosition, emm);
-				}
-
-				model.SubModels.RemoveAt(SelectedSubModelNumberInTree);
-				model.SubModels.Insert(SelectedSubModelNumberInTree, sm);
-
-				emg.Models.RemoveAt(SelectedModelNumberInTree);
-				emg.Models.Insert(SelectedModelNumberInTree, model);
+				emg.Models.RemoveAt(LastSelectedTreeNode.Parent.Index);
+				emg.Models.Insert(LastSelectedTreeNode.Parent.Index, model);
 				emg.GenerateBytes();
 
-				emo.EMGs.RemoveAt(SelectedEMGNumberInTree);
-				emo.EMGs.Insert(SelectedEMGNumberInTree, emg);
-				if (found) emo.NumberEMMMaterials += 1;
-				emo.GenerateBytes();
-
-				WorkingEMZ.Files.Remove(SelectedEMONumberInTree);
-				WorkingEMZ.Files.Add(SelectedEMONumberInTree, emo);
+				if (emo.EMGs != null)
+				{
+					emo.EMGs.RemoveAt(LastSelectedTreeNode.Parent.Parent.Index);
+					emo.EMGs.Insert(LastSelectedTreeNode.Parent.Parent.Index, emg);
+					emo.GenerateBytes();
+				}
 
 				lbSelNODE_Title.Text = Encoding.ASCII.GetString(sm.SubModelName);
 
-				RefreshTree(false);
+				RefreshTree(tvTreeUSF4);
 				TreeDisplaySubModelData(sm);
 			}
 		}
 
-		async void button1_Click(object sender, EventArgs e)
+		public void button1_Click(object sender, EventArgs e)
 		{
 			diagOpenOBJ.RestoreDirectory = true;
 			diagOpenOBJ.FileName = string.Empty;
 			diagOpenOBJ.InitialDirectory = LastOpenFolder;
-			diagOpenOBJ.Filter = SMDFileFilter;
+			diagOpenOBJ.Filter = string.Empty;
 
 			if (diagOpenOBJ.ShowDialog() == DialogResult.OK)
 			{
 				string filepath = diagOpenOBJ.FileName;
 				if (filepath.Trim() != string.Empty)
 				{
-					LastOpenFolder = Path.GetDirectoryName(filepath);
-					WorkingFileName = diagOpenOBJ.SafeFileName;
-					SMDModel someSMD = new SMDModel();
-					await Task.Run(() => { someSMD = ReadSMD(filepath); });
+					try
+					{
+						FileStream fsSource = new FileStream(filepath, FileMode.Open, FileAccess.Read);
+						byte[] bytes;
+						using (BinaryReader br = new BinaryReader(fsSource, Encoding.ASCII)) { bytes = br.ReadBytes((int)fsSource.Length); }
 
-					EMA testEMA = SimpleEMAFromSMD(someSMD);
+						if (Encoding.ASCII.GetString(Utils.ChopByteArray(bytes, 0x00, 0x04)) == "#EMZ")
+						{
+							Console.WriteLine("File looks compressed, attempting inflation...");
 
-					WorkingEMZ.Files.Add(WorkingEMZ.Files.Count, testEMA);
-					WorkingEMZ.FileNamesList.Add(new byte[11] { 0x54, 0x52, 0x4E, 0x5F, 0x44, 0x52, 0x4D, 0x2E, 0x65, 0x6D, 0x61 });
-					WorkingEMZ.FileLengthsList.Add(testEMA.HEXBytes.Length);
-					WorkingEMZ.FileNamePointersList.Add(0x00);
-					WorkingEMZ.FilePointersList.Add(0x00);
-					WorkingEMZ.NumberOfFiles++;
+							bytes = Utils.ChopByteArray(bytes, 0x10, bytes.Length - 0x10);
 
-					RefreshTree(false);
+							List<byte> zipbytes = bytes.ToList();
+
+							bytes = ZlibDecoder.Inflate(zipbytes).ToArray();
+						}
+
+						int FileType = Utils.ReadInt(true, 0, bytes);
+
+						USF4File file;
+
+						if (FileType == USF4Methods.EMO) file = new EMO();
+						else if (FileType == USF4Methods.EMM) file = new EMM();
+						else if (FileType == USF4Methods.EMB) file = new EMB();
+						else if (FileType == USF4Methods.LUA) file = new LUA();
+						else if (FileType == USF4Methods.EMA) file = new EMA();
+						else if (FileType == USF4Methods.CSB) file = new CSB();
+						else if (FileType == USF4Methods.DDS) file = new DDS();
+						else file = new OtherFile();
+
+						file.ReadFile(bytes);
+						file.Name = Encoding.ASCII.GetBytes(diagOpenOBJ.SafeFileName);
+						master_USF4FileList.Add(file);
+
+						RefreshTree(tvTreeUSF4);
+					}
+					catch
+					{
+						MessageBox.Show("Error opening file. Please confirm file is valid.", TStrings.STR_Information);
+						RefreshTree(tvTreeUSF4);
+					}
 				}
 			}
 		}
@@ -3009,47 +3051,43 @@ namespace USF4_Stage_Tool
 
 		private void SaveEMZToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			SaveEMZToFile((string)tvTree.Nodes[SelectedEMZNumberInTree].Tag);
+			SaveEMZToFile((string)tvTreeUSF4.Nodes[SelectedEMZNumberInTree].Tag);
 		}
 
 		private void CloseEMZToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			if ((string)tvTree.Nodes[SelectedEMZNumberInTree].Tag == "EMZ")
+			if ((string)tvTreeUSF4.Nodes[SelectedEMZNumberInTree].Tag == "EMZ")
 			{
-				WorkingEMZ = new EMZ();
+				WorkingEMZ = new EMB();
 				AddStatus(".EMZ closed.");
 			}
-			if ((string)tvTree.Nodes[SelectedEMZNumberInTree].Tag == "TEX")
+			if ((string)tvTreeUSF4.Nodes[SelectedEMZNumberInTree].Tag == "TEX")
 			{
-				WorkingTEXEMZ = new EMZ();
+				WorkingTEXEMZ = new EMB();
 				AddStatus(".TEX.EMZ closed.");
 			}
-			tvTree.Nodes.RemoveAt(SelectedEMZNumberInTree);
+			tvTreeUSF4.Nodes.RemoveAt(SelectedEMZNumberInTree);
 		}
 
 		private void deleteMaterialToolStripMenuItem1_Click(object sender, EventArgs e)
 		{
-			DialogResult = MessageBox.Show("Are you sure", TStrings.STR_Information, MessageBoxButtons.OKCancel);
+			DialogResult = MessageBox.Show("Are you sure?", TStrings.STR_Information, MessageBoxButtons.OKCancel);
 			if (DialogResult == DialogResult.OK)
 			{
-				EMM emm = (EMM)WorkingEMZ.Files[LastSelectedTreeNode.Parent.Index];
-				emm.MaterialCount -= 1;
-				emm.Materials.RemoveAt(LastSelectedTreeNode.Index);
-				emm.MaterialPointersList.RemoveAt(0);
-				emm.GenerateBytes();
-				WorkingEMZ.Files.Remove(LastSelectedTreeNode.Parent.Index);
-				WorkingEMZ.Files.Add(LastSelectedTreeNode.Parent.Index, emm);
-				RefreshTree(false);
+				EMM emm = (EMM)LastSelectedTreeNode.Parent.Tag;
+				emm.DeleteSubfile(LastSelectedTreeNode.Index);
+
+				RefreshTree(tvTreeUSF4);
 				AddStatus("Material '" + LastSelectedTreeNode.Text.Replace("\0", "") + "' deleted from '" + Encoding.ASCII.GetString(emm.Name).Replace("\0", "") + "'");
 			}
 		}
 
-		private void injectDDSToolStripMenuItem1_Click(object sender, EventArgs e)
+		private void cmDDSinjectDDSToolStripMenuItem1_Click(object sender, EventArgs e)
 		{
+			EMB emb = (EMB)LastSelectedTreeNode.Parent.Tag;
+			DDS dds = (DDS)LastSelectedTreeNode.Tag;
 			try
 			{
-				EMB emb = (EMB)WorkingTEXEMZ.Files[LastSelectedTreeNode.Parent.Index];
-				DDS dds = emb.DDSFiles[LastSelectedTreeNode.Index];
 				diagOpenOBJ.RestoreDirectory = true;
 				diagOpenOBJ.FileName = string.Empty;
 				diagOpenOBJ.InitialDirectory = LastOpenFolder;
@@ -3068,26 +3106,32 @@ namespace USF4_Stage_Tool
 					byte[] bytes;
 					using (BinaryReader br = new BinaryReader(fsSource, Encoding.ASCII)) { bytes = br.ReadBytes((int)fsSource.Length); }
 					dds.HEXBytes = bytes;
-					emb.DDSFiles.RemoveAt(LastSelectedTreeNode.Index);
-					emb.DDSFiles.Insert(LastSelectedTreeNode.Index, dds);
+					emb.Files.RemoveAt(LastSelectedTreeNode.Index);
+					emb.Files.Insert(LastSelectedTreeNode.Index, dds);
 					emb.GenerateBytes();
-					WorkingTEXEMZ.Files.Remove(LastSelectedTreeNode.Parent.Index);
-					WorkingTEXEMZ.Files.Add(LastSelectedTreeNode.Parent.Index, emb);
-					RefreshTree(false);
+					RefreshTree(tvTreeUSF4);
+				}
+			}
+			catch
+            {
+				MessageBox.Show("Something went wrong while encoding/injecting texture!", TStrings.STR_Error);
+			}
+
+			try
+            {
+				{ 
 					ImageEngineImage IE = new ImageEngineImage(dds.HEXBytes);
 					pbPreviewDDS.BackgroundImage = Utils.BitmapFromBytes(IE.Save(new ImageEngineFormatDetails(ImageEngineFormat.PNG), new MipHandling()));
 					IE.Dispose();
-
-
 				}
 			}
 			catch
 			{
-				MessageBox.Show("Something went wrong while encoding/injecting texture!", TStrings.STR_Error);
+				AddStatus($"Error while trying to read this DDS.");
 			}
 		}
 
-		private void addDDSToolStripMenuItem1_Click(object sender, EventArgs e)
+		private void cmEMBaddDDSToolStripMenuItem1_Click(object sender, EventArgs e)
 		{
 			AddNewDDSToEMB();
 		}
@@ -3099,14 +3143,13 @@ namespace USF4_Stage_Tool
 
 		void AddNewDDSToEMB()
 		{
+			EMB emb;
+			if (LastSelectedTreeNode.Tag.GetType() == typeof(EMB)) emb = (EMB)LastSelectedTreeNode.Tag;
+			else emb = (EMB)LastSelectedTreeNode.Parent.Tag;
+			DDS dds = new DDS();
+			
 			try
 			{
-				int index;
-
-				if (LastSelectedTreeNode.Tag.ToString() == "EMB") index = LastSelectedTreeNode.Index;
-				else index = LastSelectedTreeNode.Parent.Index;
-				EMB emb = (EMB)WorkingTEXEMZ.Files[index];
-				DDS dds = new DDS();
 				diagOpenOBJ.RestoreDirectory = true;
 				diagOpenOBJ.FileName = string.Empty;
 				diagOpenOBJ.InitialDirectory = LastOpenFolder;
@@ -3118,40 +3161,39 @@ namespace USF4_Stage_Tool
 					byte[] bytes;
 					using (BinaryReader br = new BinaryReader(fsSource, Encoding.ASCII)) { bytes = br.ReadBytes((int)fsSource.Length); }
 					dds.HEXBytes = bytes;
+					dds.Name = Encoding.ASCII.GetBytes(diagOpenOBJ.SafeFileName);
 					emb.NumberOfFiles += 1;
-					emb.FileLengthList.Add(0);
-					emb.FileNameList.Add(Encoding.ASCII.GetBytes(diagOpenOBJ.SafeFileName));
-					emb.FilePointerList.Add(0);
-					emb.FileNamePointerList.Add(0);
-					emb.DDSFiles.Add(dds);
+					emb.FileLengthsList.Add(0);
+					emb.FileNamesList.Add(Encoding.ASCII.GetBytes(diagOpenOBJ.SafeFileName));
+					emb.FilePointersList.Add(0);
+					emb.FileNamePointersList.Add(0);
+					emb.Files.Add(dds);
 					emb.GenerateBytes();
-					WorkingTEXEMZ.Files.Remove(index);
-					WorkingTEXEMZ.Files.Add(index, emb);
-					RefreshTree(false);
-					ImageEngineImage IE = new ImageEngineImage(dds.HEXBytes);
-					pbPreviewDDS.BackgroundImage = Utils.BitmapFromBytes(IE.Save(new ImageEngineFormatDetails(ImageEngineFormat.PNG), new MipHandling()));
-					IE.Dispose();
+					RefreshTree(tvTreeUSF4);					
 				}
+			}
+			catch
+            {
+				AddStatus($"Error while trying to read this DDS.");
+			}
+		
+			try
+            {
+				ImageEngineImage IE = new ImageEngineImage(dds.HEXBytes);
+				pbPreviewDDS.BackgroundImage = Utils.BitmapFromBytes(IE.Save(new ImageEngineFormatDetails(ImageEngineFormat.PNG), new MipHandling()));
+				IE.Dispose();
 			}
 			catch
 			{
 				MessageBox.Show("Something went wrong while encoding/injecting texture!", TStrings.STR_Error);
 			}
+
 		}
 
 		private void deleteDDSToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			EMB emb = (EMB)WorkingTEXEMZ.Files[LastSelectedTreeNode.Parent.Index];
-			emb.NumberOfFiles -= 1;
-			emb.FileLengthList.RemoveAt(0);
-			emb.FileNameList.RemoveAt(LastSelectedTreeNode.Index);
-			emb.FilePointerList.RemoveAt(0);
-			emb.FileNamePointerList.RemoveAt(0);
-			emb.DDSFiles.RemoveAt(LastSelectedTreeNode.Index);
-			emb.GenerateBytes();
-			WorkingTEXEMZ.Files.Remove(LastSelectedTreeNode.Parent.Index);
-			WorkingTEXEMZ.Files.Add(LastSelectedTreeNode.Parent.Index, emb);
-			RefreshTree(false);
+			((EMB)LastSelectedTreeNode.Parent.Tag).DeleteSubfile(LastSelectedTreeNode.Index);
+			RefreshTree(tvTreeUSF4);
 		}
 
 		private void btnSaveEMZ_Click_1(object sender, EventArgs e)
@@ -3177,8 +3219,8 @@ namespace USF4_Stage_Tool
 
 			string ShaderName = Utils.Shaders.ElementAt(SelectedShaderID).Key;
 			byte[] StringBytes = Encoding.ASCII.GetBytes(ShaderName);
-			EMM emm = (EMM)WorkingEMZ.Files[LastSelectedTreeNode.Parent.Index];
-			Material mat = emm.Materials[LastSelectedTreeNode.Index]; //Saved for index
+			EMM emm = (EMM)LastSelectedTreeNode.Parent.Tag;
+			Material mat = (Material)LastSelectedTreeNode.Tag; //Saved for index
 			string[] PropertyLines = Regex.Split(lvShaderProperties.Text, Environment.NewLine);
 			Material newMat = new Material();
 			newMat.PropertyNamesList = new List<byte[]>();
@@ -3197,9 +3239,7 @@ namespace USF4_Stage_Tool
 			emm.Materials.RemoveAt(LastSelectedTreeNode.Index);
 			emm.Materials.Insert(LastSelectedTreeNode.Index, newMat);
 			emm.GenerateBytes();
-			WorkingEMZ.Files.Remove(LastSelectedTreeNode.Parent.Index);
-			WorkingEMZ.Files.Add(LastSelectedTreeNode.Parent.Index, emm);
-			RefreshTree(false);
+			RefreshTree(tvTreeUSF4);
 			AddStatus("Material '" + Encoding.ASCII.GetString(newMat.Name).Replace("\0", "") + "' saved with shader '" + ShaderName.Replace("\0", "") + "'");
 		}
 
@@ -3217,10 +3257,16 @@ namespace USF4_Stage_Tool
 				EMO emo;
 				EMM emm;
 				string newMatName = IB.EnteredValue.Trim();
-				if ((string)LastSelectedTreeNode.Tag == "EMM")
+				if (LastSelectedTreeNode.Tag.GetType() == typeof(EMM))
+				{
 					emmNode = LastSelectedTreeNode;
+					emm = (EMM)LastSelectedTreeNode.Tag;
+				}
 				else
+				{
 					emmNode = LastSelectedTreeNode.Parent;
+					emm = (EMM)LastSelectedTreeNode.Parent.Tag;
+				}
 
 				foreach (TreeNode n in emmNode.Nodes)
 				{
@@ -3230,8 +3276,6 @@ namespace USF4_Stage_Tool
 						return;
 					}
 				}
-
-				emm = (EMM)WorkingEMZ.Files[emmNode.Index];
 
 				Material newMat = new Material();
 				newMat.Name = Utils.MakeModelName(IB.EnteredValue.Trim());
@@ -3243,29 +3287,17 @@ namespace USF4_Stage_Tool
 				emm.MaterialCount += 1;
 				emm.MaterialPointersList.Add(0);
 				emm.GenerateBytes();
-				WorkingEMZ.Files.Remove(emmNode.Index);
-				WorkingEMZ.Files.Add(emmNode.Index, emm);
 
 				//Find matching EMO
-				for (int i = 0; i < WorkingEMZ.Files.Count; i++)
+				USF4File match = FindMatch(master_USF4FileList, typeof(EMO), emm.Name);
+				if (match.GetType() == typeof(EMO))
 				{
-					int FileType = Utils.ReadInt(true, WorkingEMZ.FilePointersList[i] + WorkingEMZ.FileListPointer + (i * 8), WorkingEMZ.HEXBytes);
-					if (FileType == USF4Methods.EMO)
-					{
-						emo = (EMO)WorkingEMZ.Files[i];
-						byte[] subName = Utils.ChopByteArray(emo.Name, 0x04, 0x03);
-						byte[] targetName = Utils.ChopByteArray(emm.Name, 0x04, 0x03);
-						if (Encoding.ASCII.GetString(subName) == Encoding.ASCII.GetString(targetName))
-						{
-							emo.NumberEMMMaterials = emm.MaterialCount;
-							emo.GenerateBytes();
-							WorkingEMZ.Files.Remove(i);
-							WorkingEMZ.Files.Add(i, emo);
-							break;
-						}
-					}
+					emo = (EMO)match;
+					emo.NumberEMMMaterials = emm.MaterialCount;
+					emo.GenerateBytes();
 				}
-				RefreshTree(false);
+
+				RefreshTree(tvTreeUSF4);
 				AddStatus("Material '" + newMatName + "' added to '" + Encoding.ASCII.GetString(emm.Name).Replace("\0", "") + "'");
 			}
 			else
@@ -3286,7 +3318,7 @@ namespace USF4_Stage_Tool
 			string ChunkSpy_script = CodeStrings.ChunkSpy1;
 
 			lua_State L = null;
-			LUA nLUA = (LUA)WorkingEMZ.Files[LastSelectedTreeNode.Index];
+			LUA nLUA = (LUA)LastSelectedTreeNode.Tag;
 
 			try
 			{
@@ -3361,8 +3393,6 @@ namespace USF4_Stage_Tool
 				nLUA.Name = Encoding.ASCII.GetBytes(target_lua);
 
 				File.Delete(CodeStrings.outfile);
-
-
 			}
 			catch
 			{
@@ -3372,7 +3402,7 @@ namespace USF4_Stage_Tool
 			return nLUA;
 		}
 
-		private void addNewMaterialToolStripMenuItem_Click(object sender, EventArgs e)
+		private void cmEMMaddNewMaterialToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			AddMaterial();
 		}
@@ -3405,27 +3435,32 @@ namespace USF4_Stage_Tool
 			}
 		}
 
-		private void renameDDSToolStripMenuItem_Click(object sender, EventArgs e)
+		private void cmDDSrenameDDSToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			IB.StartPosition = FormStartPosition.CenterParent; IB.ShowDialog(this);
 			if (IB.EnteredValue.Trim() != string.Empty)
 			{
-				EMB emb = (EMB)WorkingTEXEMZ.Files[LastSelectedTreeNode.Parent.Index];
-				emb.FileNameList.RemoveAt(LastSelectedTreeNode.Index);
-				emb.FileNameList.Insert(LastSelectedTreeNode.Index, Encoding.ASCII.GetBytes(IB.EnteredValue));
-				emb.GenerateBytes();
-				WorkingTEXEMZ.Files.Remove(LastSelectedTreeNode.Parent.Index);
-				WorkingTEXEMZ.Files.Add(LastSelectedTreeNode.Parent.Index, emb);
-				RefreshTree(false);
+				DDS dds = (DDS)LastSelectedTreeNode.Tag;
+				dds.Name = Encoding.ASCII.GetBytes(IB.EnteredValue);
+				if (LastSelectedTreeNode.Parent != null)
+				{
+					EMB emb = (EMB)LastSelectedTreeNode.Parent.Tag;
+					emb.Files.RemoveAt(LastSelectedTreeNode.Index);
+					emb.Files.Insert(LastSelectedTreeNode.Index, dds);
+					emb.FileNamesList.RemoveAt(LastSelectedTreeNode.Index);
+					emb.FileNamesList.Insert(LastSelectedTreeNode.Index, Encoding.ASCII.GetBytes(IB.EnteredValue));
+					emb.GenerateBytes();
+				}
+				RefreshTree(tvTreeUSF4);
 			}
 		}
 
 		private void extractDDSToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			EMB emb = (EMB)WorkingTEXEMZ.Files[LastSelectedTreeNode.Parent.Index];
-			DDS dds = emb.DDSFiles[LastSelectedTreeNode.Index];
+			EMB emb = (EMB)LastSelectedTreeNode.Parent.Tag;
+			DDS dds = (DDS)LastSelectedTreeNode.Tag;
 			saveFileDialog1.Filter = DDSFileFilter;
-			saveFileDialog1.FileName = Encoding.ASCII.GetString(emb.FileNameList[LastSelectedTreeNode.Index]);
+			saveFileDialog1.FileName = Encoding.ASCII.GetString(emb.FileNamesList[LastSelectedTreeNode.Index]);
 			if (saveFileDialog1.ShowDialog() == DialogResult.OK)
 			{
 				string filepath = saveFileDialog1.FileName;
@@ -3450,10 +3485,10 @@ namespace USF4_Stage_Tool
 		void ExtractAllDDSFromEMB(EMB emb, string InputPath, bool alltex = false)
 		{
 			string FullFilePath;
-			for (int i = 0; i < emb.DDSFiles.Count; i++)
+			for (int i = 0; i < emb.Files.Count; i++)
 			{
-				DDS dds = emb.DDSFiles[i];
-				string DDSName = Encoding.ASCII.GetString(emb.FileNameList[i]);
+				DDS dds = (DDS)emb.Files[i];
+				string DDSName = Encoding.ASCII.GetString(emb.FileNamesList[i]);
 				if (!DDSName.ToLower().Contains(".dds")) { DDSName += ".dds"; }
 				if (DDSName.ToLower() == "dds.dds") DDSName = Path.GetFileName(InputPath) + ".dds";
 				FullFilePath = $"{InputPath}\\{DDSName}";
@@ -3486,7 +3521,7 @@ namespace USF4_Stage_Tool
 		{
 			if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
 			{
-				EMB emb = (EMB)WorkingTEXEMZ.Files[LastSelectedTreeNode.Index];
+				EMB emb = (EMB)LastSelectedTreeNode.Tag;
 				Console.WriteLine("Selected Path " + folderBrowserDialog1.SelectedPath);
 				ExtractAllDDSFromEMB(emb, folderBrowserDialog1.SelectedPath);
 			}
@@ -3508,10 +3543,10 @@ namespace USF4_Stage_Tool
 
 		private void rawDumpCSBToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			RawDumpCSB();
+			
 		}
 
-		private void injectCSBToolStripMenuItem_Click(object sender, EventArgs e)
+		private void cmCSBinjectCSBToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			InjectCSB();
 		}
@@ -3522,17 +3557,17 @@ namespace USF4_Stage_Tool
 			extractSubmodelAsOBJToolStripMenuItem.Visible = true;
 			rawDumpEMGToolStripMenuItem.Visible = true;
 
-			if ((string)LastSelectedTreeNode.Tag == "EMG")
+			if (LastSelectedTreeNode.Tag.GetType() == typeof(EMG))
 			{
 				extractModelAsOBJToolStripMenuItem.Visible = false;
 				extractSubmodelAsOBJToolStripMenuItem.Visible = false;
 			}
-			else if ((string)LastSelectedTreeNode.Tag == "Model")
+			else if (LastSelectedTreeNode.Tag.GetType() == typeof(Model))
 			{
 				extractSubmodelAsOBJToolStripMenuItem.Visible = false;
 				rawDumpEMGToolStripMenuItem.Visible = false;
 			}
-			else if ((string)LastSelectedTreeNode.Tag == "SubModel")
+			else if (LastSelectedTreeNode.Tag.GetType() == typeof(SubModel))
 			{
 				rawDumpEMGToolStripMenuItem.Visible = false;
 			}
@@ -3547,7 +3582,7 @@ namespace USF4_Stage_Tool
 		{
 			bool emaclick = false;
 
-			if ((string)LastSelectedTreeNode.Tag == "EMA")
+			if (LastSelectedTreeNode.Tag.GetType() == typeof(EMA))
 			{
 				emaclick = true;
 			}
@@ -3555,10 +3590,10 @@ namespace USF4_Stage_Tool
 			DeleteAnimaiontoolStripMenuItem3.Visible = !emaclick;
 		}
 
-		private void DeleteAnimaiontoolStripMenuItem3_Click(object sender, EventArgs e)
+		private void cmEMAdeleteAnimationtoolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			EMA ema = (EMA)WorkingEMZ.Files[LastSelectedTreeNode.Parent.Index];
-			Animation anim = (Animation)ema.Animations[LastSelectedTreeNode.Index];
+			EMA ema = (EMA)LastSelectedTreeNode.Parent.Tag;
+			Animation anim = (Animation)LastSelectedTreeNode.Tag;
 
 			DeleteAnimation(ema, LastSelectedTreeNode.Index);
 		}
@@ -3568,16 +3603,13 @@ namespace USF4_Stage_Tool
 			ema.AnimationPointersList.RemoveAt(0);
 			ema.Animations.RemoveAt(AnimIndex);
 			ema.AnimationCount = ema.Animations.Count;
-
 			ema.GenerateBytes();
 
-			WorkingEMZ.Files.Remove(LastSelectedTreeNode.Parent.Index);
-			WorkingEMZ.Files.Add(LastSelectedTreeNode.Parent.Index, ema);
 			AddStatus("Animation deleted.");
-			RefreshTree(false);
+			RefreshTree(tvTreeUSF4);
 		}
 
-		private void injectLUAScriptToolStripMenuItem_Click(object sender, EventArgs e)
+		private void cmLUAinjectLUAbytecodeToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			InjectLua();
 		}
@@ -3586,7 +3618,7 @@ namespace USF4_Stage_Tool
 		{
 			try
 			{
-				LUA lua = (LUA)WorkingEMZ.Files[LastSelectedTreeNode.Index];
+				LUA lua = (LUA)LastSelectedTreeNode.Tag;
 
 				diagOpenOBJ.RestoreDirectory = true;
 				diagOpenOBJ.FileName = string.Empty;
@@ -3600,9 +3632,7 @@ namespace USF4_Stage_Tool
 					using (BinaryReader br = new BinaryReader(fsSource, Encoding.ASCII)) { bytes = br.ReadBytes((int)fsSource.Length); }
 					lua.HEXBytes = bytes;
 
-					WorkingEMZ.Files.Remove(LastSelectedTreeNode.Index);
-					WorkingEMZ.Files.Add(LastSelectedTreeNode.Index, lua);
-					RefreshTree(false);
+					RefreshTree(tvTreeUSF4);
 					AddStatus("Lua bytecode injected.");
 				}
 			}
@@ -3637,9 +3667,7 @@ namespace USF4_Stage_Tool
 
 					EMO nEMO = EMOFromSMD(nSMD);
 
-					WorkingEMZ.Files.Remove(LastSelectedTreeNode.Index);
-					WorkingEMZ.Files.Add(LastSelectedTreeNode.Index, nEMO);
-					RefreshTree(false);
+					RefreshTree(tvTreeUSF4);
 				}
 			}
 		}
@@ -3659,24 +3687,6 @@ namespace USF4_Stage_Tool
 
 			InjectAnimation();
 			//DuplicateAnimationDown();
-		}
-
-		private void DuplicateAnimationDown()
-		{
-			EMA ema = (EMA)WorkingEMZ.Files[LastSelectedTreeNode.Parent.Index];
-
-			Animation anim = ema.Animations[LastSelectedTreeNode.Index];
-
-			Animation anim2 = ema.Animations[LastSelectedTreeNode.Index + 1];
-
-			anim2.Name = anim.Name;
-
-			ema.Animations.RemoveAt(LastSelectedTreeNode.Index);
-			ema.Animations.Insert(LastSelectedTreeNode.Index, anim2);
-			ema.GenerateBytes();
-			WorkingEMZ.Files.Remove(LastSelectedTreeNode.Parent.Index);
-			WorkingEMZ.Files.Add(LastSelectedTreeNode.Parent.Index, ema);
-			RefreshTree(false);
 		}
 
 		private void InjectAnimation()
@@ -3811,28 +3821,26 @@ namespace USF4_Stage_Tool
 				ema.Animations.RemoveAt(LastSelectedTreeNode.Index);
 				ema.Animations.Insert(LastSelectedTreeNode.Index, WorkingAnimation);
 				ema.GenerateBytes();
-				WorkingEMZ.Files.Remove(LastSelectedTreeNode.Parent.Index);
-				WorkingEMZ.Files.Add(LastSelectedTreeNode.Parent.Index, ema);
 			}
 		}
 
 		private void dumpRefPoseToSMDToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			EMA ema = (EMA)WorkingEMZ.Files[LastSelectedTreeNode.Parent.Index];
+			EMA ema = (EMA)LastSelectedTreeNode.Tag;
 
 			InitialPoseFromEMA(ema);
 		}
 
 		private void rawDumpEMOAsSMDToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			EMO emo = (EMO)WorkingEMZ.Files[LastSelectedTreeNode.Index];
+			EMO emo = (EMO)LastSelectedTreeNode.Tag;
 
 			EMOtoRefSMD(emo);
 		}
 
 		private void rawDumpLUAToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			LUA lua = (LUA)WorkingEMZ.Files[LastSelectedTreeNode.Index];
+			LUA lua = (LUA)LastSelectedTreeNode.Tag;
 			saveFileDialog1.Filter = LUAFileFilter;
 			saveFileDialog1.FileName = Encoding.ASCII.GetString(lua.Name);
 			if (saveFileDialog1.ShowDialog() == DialogResult.OK)
@@ -3842,17 +3850,24 @@ namespace USF4_Stage_Tool
 			}
 		}
 
-		private void expandAllToolStripMenuItem_Click(object sender, EventArgs e)
+		private void cmEMOexpandAllToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			tvTree.SelectedNode.ExpandAll();
+			tvTreeUSF4.SelectedNode.ExpandAll();
+			foreach (TreeNode n in tvTreeUSF4.SelectedNode.Nodes)
+            {
+				if (n.Tag.GetType() == typeof(Skeleton))
+                {
+					n.Collapse();
+                }
+            }
 		}
 
-		private void collapseAllToolStripMenuItem_Click(object sender, EventArgs e)
+		private void cmEMOcollapseAllToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			tvTree.SelectedNode.Collapse(false);
+			tvTreeUSF4.SelectedNode.Collapse(false);
 		}
 
-		private void insertOBJAsNewEMGToolStripMenuItem1_Click(object sender, EventArgs e)
+		private void cmEMOinsertOBJAsNewEMGToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			AddOBJAsNewEMG();
 		}
@@ -3880,20 +3895,18 @@ namespace USF4_Stage_Tool
 					emo.EMGs.RemoveAt(SelectedEMGNumberInTree);
 					emo.EMGs.Insert(SelectedEMGNumberInTree, newEMG);
 					emo.GenerateBytes();
-					WorkingEMZ.Files.Remove(SelectedEMONumberInTree);
-					WorkingEMZ.Files.Add(SelectedEMONumberInTree, emo);
 
-					RefreshTree(false);
+					RefreshTree(tvTreeUSF4);
 					OpenEMONode(true);
 				}
 			}
 		}
 
-		private void injectLUAScriptToolStripMenuItem1_Click(object sender, EventArgs e)
+		private void cmLUAinjectLUAScriptToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			CultureInfo.CurrentCulture = new CultureInfo("en-GB", false);
 
-			LUA lua = (LUA)WorkingEMZ.Files[LastSelectedTreeNode.Index];
+			LUA lua = (LUA)LastSelectedTreeNode.Tag;
 
 			try
 			{
@@ -3906,10 +3919,8 @@ namespace USF4_Stage_Tool
 
 					lua = LUAScriptToBytecode(diagOpenOBJ.SafeFileName);
 
-					WorkingEMZ.Files.Remove(LastSelectedTreeNode.Index);
-					WorkingEMZ.Files.Add(LastSelectedTreeNode.Index, lua);
-					RefreshTree(false);
-					AddStatus($"Bytecode injected into {Encoding.ASCII.GetString(WorkingEMZ.FileNamesList[LastSelectedTreeNode.Index])}.");
+					RefreshTree(tvTreeUSF4);
+					AddStatus($"Bytecode injected into {Encoding.ASCII.GetString(((LUA)LastSelectedTreeNode.Tag).Name)}.");
 				}
 			}
 			catch
@@ -3924,28 +3935,10 @@ namespace USF4_Stage_Tool
 
 		}
 
-		private void emzContext_Opening(object sender, System.ComponentModel.CancelEventArgs e)
-		{
-			bool emzclick = false;
-
-			if ((string)LastSelectedTreeNode.Tag == "EMZ")
-			{
-				emzclick = true;
-			}
-
-			addEMOToolStripMenuItem.Visible = emzclick;
-			addEMMToolStripMenuItem.Visible = emzclick;
-			addEMAToolStripMenuItem.Visible = emzclick;
-			addCSBToolStripMenuItem.Visible = emzclick;
-			addLuaScriptToolStripMenuItem.Visible = emzclick;
-
-			addEMBToolStripMenuItem.Visible = !emzclick;
-			extractTEXEMZTexturesToolStripMenuItem.Visible = !emzclick;
-		}
-
 		private void addLUAScriptToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			LUA lua = new LUA();
+			EMB emb = (EMB)LastSelectedTreeNode.Tag;
 
 			try
 			{
@@ -3959,17 +3952,15 @@ namespace USF4_Stage_Tool
 					lua = LUAScriptToBytecode(diagOpenOBJ.SafeFileName);
 					lua.Name = Encoding.ASCII.GetBytes(diagOpenOBJ.SafeFileName);
 
-					WorkingEMZ.Files.Add(WorkingEMZ.Files.Count, lua);
-
-					WorkingEMZ.NumberOfFiles++;
-					WorkingEMZ.FileNamePointersList.Add(0x00);
-					WorkingEMZ.FileLengthsList.Add(0x00);
-					WorkingEMZ.FilePointersList.Add(0x00);
-					WorkingEMZ.FileNamesList.Add(lua.Name);
+					emb.NumberOfFiles++;
+					emb.FileNamePointersList.Add(0x00);
+					emb.FileLengthsList.Add(0x00);
+					emb.FilePointersList.Add(0x00);
+					emb.FileNamesList.Add(lua.Name);
 
 					AddStatus($"Bytecode added as {diagOpenOBJ.SafeFileName}");
 
-					RefreshTree(false);
+					RefreshTree(tvTreeUSF4);
 				}
 			}
 			catch
@@ -3985,7 +3976,7 @@ namespace USF4_Stage_Tool
 
 		private void rawDumpEMOToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			EMO targetEMO = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
+			EMO targetEMO = (EMO)LastSelectedTreeNode.Tag;
 
 			EMO nEMO = targetEMO;
 
@@ -4002,7 +3993,7 @@ namespace USF4_Stage_Tool
 
 		private void rawDumpEMAToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			EMA targetEMA = (EMA)WorkingEMZ.Files[LastSelectedTreeNode.Index];
+			EMA targetEMA = (EMA)LastSelectedTreeNode.Tag;
 
 			EMA nEMA = targetEMA;
 
@@ -4043,9 +4034,9 @@ namespace USF4_Stage_Tool
 
 			targetEMO.GenerateBytes();
 
-			WorkingEMZ.Files.Remove(LastSelectedTreeNode.Parent.Index);
-			WorkingEMZ.Files.Add(LastSelectedTreeNode.Parent.Index, targetEMO);
-			RefreshTree(false);
+			//WorkingEMZ.Files.Remove(LastSelectedTreeNode.Parent.Index);
+			//WorkingEMZ.Files.Add(LastSelectedTreeNode.Parent.Index, targetEMO);
+			RefreshTree(tvTreeUSF4);
 		}
 
 		private void duplicateModelToolStripMenuItem_Click(object sender, EventArgs e)
@@ -4125,9 +4116,9 @@ namespace USF4_Stage_Tool
 
 			targetEMO.GenerateBytes();
 
-			WorkingEMZ.Files.Remove(LastSelectedTreeNode.Parent.Index);
-			WorkingEMZ.Files.Add(LastSelectedTreeNode.Parent.Index, targetEMO);
-			RefreshTree(false);
+			//WorkingEMZ.Files.Remove(LastSelectedTreeNode.Parent.Index);
+			//WorkingEMZ.Files.Add(LastSelectedTreeNode.Parent.Index, targetEMO);
+			RefreshTree(tvTreeUSF4);
 
 		}
 
@@ -4154,11 +4145,11 @@ namespace USF4_Stage_Tool
 			ema.GenerateBytes();
 			emo.GenerateBytes();
 
-			WorkingEMZ.Files.Remove(8);
-			WorkingEMZ.Files.Add(8, ema);
-			WorkingEMZ.Files.Remove(10);
-			WorkingEMZ.Files.Add(10, emo);
-			RefreshTree(false);
+			//WorkingEMZ.Files.Remove(8);
+			//WorkingEMZ.Files.Add(8, ema);
+			//WorkingEMZ.Files.Remove(10);
+			//WorkingEMZ.Files.Add(10, emo);
+			RefreshTree(tvTreeUSF4);
 
 		}
 
@@ -4167,9 +4158,9 @@ namespace USF4_Stage_Tool
 			DuplicateUSA_MAN01_B();
 		}
 
-		private void extractLUAScriptToolStripMenuItem_Click(object sender, EventArgs e)
+		private void cmLUAextractLUAScriptToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			LUA nlua = (LUA)WorkingEMZ.Files[LastSelectedTreeNode.Index];
+			LUA nlua = (LUA)LastSelectedTreeNode.Tag;
 
 			string intermediatefile = "plain_" + Encoding.ASCII.GetString(nlua.Name).Replace("\0", "");
 
@@ -4208,14 +4199,14 @@ namespace USF4_Stage_Tool
 			ema.AnimationPointersList.Add(0);
 			ema.GenerateBytes();
 
-			WorkingEMZ.Files.Remove(LastSelectedTreeNode.Index);
-			WorkingEMZ.Files.Add(LastSelectedTreeNode.Index, ema);
-			RefreshTree(false);
+			//WorkingEMZ.Files.Remove(LastSelectedTreeNode.Index);
+			//WorkingEMZ.Files.Add(LastSelectedTreeNode.Index, ema);
+			RefreshTree(tvTreeUSF4);
 		}
 
-		private void extractEMOAsOBJToolStripMenuItem_Click(object sender, EventArgs e)
+		private void cmEMOexportEMOAsOBJToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			EMO emo = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
+			EMO emo = (EMO)LastSelectedTreeNode.Tag;
 
 			saveFileDialog1.InitialDirectory = string.Empty;
 			saveFileDialog1.FileName = string.Empty;
@@ -4236,10 +4227,10 @@ namespace USF4_Stage_Tool
 			}
 		}
 
-		private void extractEMGAsOBJToolStripMenuItem_Click(object sender, EventArgs e)
+		private void cmEMGexportEMGAsOBJToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			EMO emo = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
-			EMG emg = emo.EMGs[SelectedEMGNumberInTree];
+			
+			EMG emg = (EMG)LastSelectedTreeNode.Tag;
 
 			saveFileDialog1.InitialDirectory = string.Empty;
 			saveFileDialog1.FileName = string.Empty;
@@ -4247,16 +4238,24 @@ namespace USF4_Stage_Tool
 
 			if (saveFileDialog1.ShowDialog() == DialogResult.OK)
 			{
-				List<string> lines = GeometryIO.EMGtoOBJ(emg, Encoding.ASCII.GetString(emo.Name).Split('\0')[0] + $"_EMG_{SelectedEMGNumberInTree}");
-
+				List<string> lines;
+				if(LastSelectedTreeNode.Parent != null)
+                {
+					EMO emo = (EMO)LastSelectedTreeNode.Parent.Tag;
+					lines = GeometryIO.EMGtoOBJ(emg, Encoding.ASCII.GetString(emo.Name).Split('\0')[0] + $"_EMG_{SelectedEMGNumberInTree}");
+				}
+				else
+                {
+					lines = GeometryIO.EMGtoOBJ(emg, "EMG");
+				}
 				File.WriteAllLines(saveFileDialog1.FileName, lines);
 			}
 		}
 
-		private void extractModelAsOBJToolStripMenuItem_Click(object sender, EventArgs e)
+		private void cmMODexportModelAsOBJToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			EMO emo = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
-			EMG emg = emo.EMGs[SelectedEMGNumberInTree];
+			EMO emo = (EMO)LastSelectedTreeNode.Parent.Parent.Tag;
+			EMG emg = (EMG)LastSelectedTreeNode.Parent.Tag;
 
 			saveFileDialog1.InitialDirectory = string.Empty;
 			saveFileDialog1.FileName = string.Empty;
@@ -4270,10 +4269,10 @@ namespace USF4_Stage_Tool
 			}
 		}
 
-		private void extractSubmodelAsOBJToolStripMenuItem_Click(object sender, EventArgs e)
+		private void cmSUBMexportSubmodelAsOBJToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			EMO emo = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
-			EMG emg = emo.EMGs[SelectedEMGNumberInTree];
+			EMO emo = (EMO)LastSelectedTreeNode.Parent.Parent.Parent.Tag;
+			EMG emg = (EMG)LastSelectedTreeNode.Parent.Parent.Tag;
 
 			saveFileDialog1.InitialDirectory = string.Empty;
 			saveFileDialog1.FileName = string.Empty;
@@ -4300,7 +4299,7 @@ namespace USF4_Stage_Tool
 				string extension = diagOpenOBJ.FileName.Split('.').Last();
 				string name = diagOpenOBJ.SafeFileName;
 
-				EMZ targetEMZ;
+				EMB targetEMZ;
 
 				if (LastSelectedTreeNode.Tag.ToString() == "EMZ") targetEMZ = WorkingEMZ;
 				else targetEMZ = WorkingTEXEMZ;
@@ -4341,14 +4340,14 @@ namespace USF4_Stage_Tool
 					}
 					else AddStatus($"File {name} added to .EMZ");
 
-					targetEMZ.Files.Add(targetEMZ.Files.Count, file);
+					targetEMZ.Files.Insert(targetEMZ.Files.Count, file);
 					targetEMZ.NumberOfFiles++;
 					targetEMZ.FileNamePointersList.Add(0x00);
 					targetEMZ.FileLengthsList.Add(0x00);
 					targetEMZ.FilePointersList.Add(0x00);
 					targetEMZ.FileNamesList.Add(Encoding.ASCII.GetBytes(name));
 
-					RefreshTree(false);
+					RefreshTree(tvTreeUSF4);
 				}
 			}
 		}
@@ -4385,16 +4384,16 @@ namespace USF4_Stage_Tool
 
 		private void DeleteFileEMZ(int index)
 		{
-			WorkingEMZ.Files.Remove(index);
+			WorkingEMZ.Files.RemoveAt(index);
 
-			Dictionary<int, USF4File> temp = new Dictionary<int, USF4File>();
+			List<USF4File> temp = new List<USF4File>();
 			for (int i = 0; i < index; i++)
 			{
-				temp.Add(i, WorkingEMZ.Files[i]);
+				temp.Insert(i, WorkingEMZ.Files[i]);
 			}
 			for (int i = index; i < WorkingEMZ.Files.Count; i++)
 			{
-				temp.Add(i, WorkingEMZ.Files[i + 1]);
+				temp.Insert(i, WorkingEMZ.Files[i + 1]);
 			}
 
 			WorkingEMZ.Files = temp;
@@ -4408,16 +4407,16 @@ namespace USF4_Stage_Tool
 
 		private void DeleteFileTEXEMZ(int index)
 		{
-			WorkingTEXEMZ.Files.Remove(index);
+			WorkingTEXEMZ.Files.RemoveAt(index);
 
-			Dictionary<int, USF4File> temp = new Dictionary<int, USF4File>();
+			List<USF4File> temp = new List<USF4File>();
 			for (int i = 0; i < index; i++)
 			{
-				temp.Add(i, WorkingTEXEMZ.Files[i]);
+				temp.Insert(i, WorkingTEXEMZ.Files[i]);
 			}
 			for (int i = index; i < WorkingTEXEMZ.Files.Count; i++)
 			{
-				temp.Add(i, WorkingTEXEMZ.Files[i + 1]);
+				temp.Insert(i, WorkingTEXEMZ.Files[i + 1]);
 			}
 
 			WorkingTEXEMZ.Files = temp;
@@ -4436,7 +4435,7 @@ namespace USF4_Stage_Tool
 			{
 				AddStatus($"{Encoding.ASCII.GetString(WorkingEMZ.FileNamesList[LastSelectedTreeNode.Index]).Split('\0')[0]} deleted from .EMZ");
 				DeleteFileEMZ(LastSelectedTreeNode.Index);
-				RefreshTree(false);
+				RefreshTree(tvTreeUSF4);
 			}
 		}
 
@@ -4445,9 +4444,7 @@ namespace USF4_Stage_Tool
 			DialogResult = MessageBox.Show("Delete EMM?", TStrings.STR_Information, MessageBoxButtons.OKCancel);
 			if (DialogResult == DialogResult.OK)
 			{
-				AddStatus($"{Encoding.ASCII.GetString(WorkingEMZ.FileNamesList[LastSelectedTreeNode.Index]).Split('\0')[0]} deleted from .EMZ");
-				DeleteFileEMZ(LastSelectedTreeNode.Index);
-				RefreshTree(false);
+				cmUNIVdeleteFileToolStripMenuItem_Click(sender, e);
 			}
 		}
 
@@ -4458,7 +4455,7 @@ namespace USF4_Stage_Tool
 			{
 				AddStatus($"{Encoding.ASCII.GetString(WorkingEMZ.FileNamesList[LastSelectedTreeNode.Index]).Split('\0')[0]} deleted from .EMZ");
 				DeleteFileEMZ(LastSelectedTreeNode.Index);
-				RefreshTree(false);
+				RefreshTree(tvTreeUSF4);
 			}
 		}
 
@@ -4469,7 +4466,7 @@ namespace USF4_Stage_Tool
 			{
 				AddStatus($"{Encoding.ASCII.GetString(WorkingTEXEMZ.FileNamesList[LastSelectedTreeNode.Index]).Split('\0')[0]} deleted from .TEX.EMZ");
 				DeleteFileTEXEMZ(LastSelectedTreeNode.Index);
-				RefreshTree(false);
+				RefreshTree(tvTreeUSF4);
 			}
 		}
 
@@ -4480,7 +4477,7 @@ namespace USF4_Stage_Tool
 			{
 				AddStatus($"{Encoding.ASCII.GetString(WorkingEMZ.FileNamesList[LastSelectedTreeNode.Index]).Split('\0')[0]} deleted from .EMZ");
 				DeleteFileEMZ(LastSelectedTreeNode.Index);
-				RefreshTree(false);
+				RefreshTree(tvTreeUSF4);
 			}
 		}
 
@@ -4491,7 +4488,7 @@ namespace USF4_Stage_Tool
 			{
 				AddStatus($"{Encoding.ASCII.GetString(WorkingEMZ.FileNamesList[LastSelectedTreeNode.Index]).Split('\0')[0]} deleted from .EMZ");
 				DeleteFileEMZ(LastSelectedTreeNode.Index);
-				RefreshTree(false);
+				RefreshTree(tvTreeUSF4);
 			}
 		}
 
@@ -4512,7 +4509,7 @@ namespace USF4_Stage_Tool
 
 		private void rawDumpEMBToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			EMB emb = (EMB)WorkingTEXEMZ.Files[LastSelectedTreeNode.Index];
+			EMB emb = (EMB)LastSelectedTreeNode.Tag;
 
 			emb.GenerateBytes();
 
@@ -4527,7 +4524,7 @@ namespace USF4_Stage_Tool
 
 		private void injectColladaAsEMGExperimentalToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			EMO emo = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
+			EMO emo = (EMO)LastSelectedTreeNode.Parent.Tag;
 
 			Skeleton skel = emo.Skeleton;
 
@@ -4557,22 +4554,21 @@ namespace USF4_Stage_Tool
 			emo.EMGs.RemoveAt(SelectedEMGNumberInTree);
 			emo.EMGs.Insert(SelectedEMGNumberInTree, emg);
 			emo.GenerateBytes();
-			WorkingEMZ.Files.Remove(SelectedEMONumberInTree);
-			WorkingEMZ.Files.Add(SelectedEMONumberInTree, emo);
-			RefreshTree(false);
+
+			RefreshTree(tvTreeUSF4);
 		}
 
 		private void modelTextureGrid_CellValueChanged(object sender, DataGridViewCellEventArgs e)
 		{
 			if (e.RowIndex >= 0 && e.ColumnIndex >= 0)
 			{
-				if (matchingemb.FileNameList != null)
+				if (matchingemb.FileNamesList != null)
 				{
 					for (int i = 0; i < modelTextureGrid.Rows.Count - 1; i++)
 					{
 						try
 						{
-							modelTextureGrid.Rows[i].Cells[2].ToolTipText = Encoding.ASCII.GetString(matchingemb.FileNameList[int.Parse((string)modelTextureGrid.Rows[i].Cells[2].Value)]).Replace('\0', ' ').Trim();
+							modelTextureGrid.Rows[i].Cells[2].ToolTipText = Encoding.ASCII.GetString(matchingemb.FileNamesList[int.Parse((string)modelTextureGrid.Rows[i].Cells[2].Value)]).Replace('\0', ' ').Trim();
 						}
 						catch
 						{
@@ -4583,10 +4579,10 @@ namespace USF4_Stage_Tool
 			}
 		}
 
-		private void renameMaterialToolStripMenuItem_Click(object sender, EventArgs e)
+		private void cmMATrenameMaterialToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			EMM emm = (EMM)WorkingEMZ.Files[LastSelectedTreeNode.Parent.Index];
-			Material mat = emm.Materials[LastSelectedTreeNode.Index];
+			EMM emm = (EMM)LastSelectedTreeNode.Parent.Tag;
+			Material mat = (Material)LastSelectedTreeNode.Tag;
 
 			IB.StartPosition = FormStartPosition.CenterParent; IB.ShowDialog(this);
 
@@ -4609,10 +4605,8 @@ namespace USF4_Stage_Tool
 				emm.Materials.RemoveAt(LastSelectedTreeNode.Index);
 				emm.Materials.Insert(LastSelectedTreeNode.Index, mat);
 				emm.GenerateBytes();
-				WorkingEMZ.Files.Remove(LastSelectedTreeNode.Parent.Index);
-				WorkingEMZ.Files.Add(LastSelectedTreeNode.Parent.Index, emm);
 
-				RefreshTree(false);
+				RefreshTree(tvTreeUSF4);
 				AddStatus($"Material '{oldname}' renamed to '{newMatName}' in {Encoding.ASCII.GetString(emm.Name).Replace("\0", "")}");
 			}
 			else
@@ -4623,9 +4617,9 @@ namespace USF4_Stage_Tool
 
 		private void rawDumpEMGToolStripMenuItem_Click_1(object sender, EventArgs e)
 		{
-			EMO emo = (EMO)WorkingEMZ.Files[LastSelectedTreeNode.Parent.Index];
+			EMO emo = (EMO)LastSelectedTreeNode.Parent.Tag;
 
-			EMG emg = emo.EMGs[LastSelectedTreeNode.Index];
+			EMG emg = (EMG)LastSelectedTreeNode.Tag;
 
 			emg.GenerateBytes();
 
@@ -4638,9 +4632,9 @@ namespace USF4_Stage_Tool
 			}
 		}
 
-		private void addEMGToolStripMenuItem_Click(object sender, EventArgs e)
+		private void cmEMOaddEMGToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			EMO emo = (EMO)WorkingEMZ.Files[LastSelectedTreeNode.Index];
+			EMO emo = (EMO)LastSelectedTreeNode.Tag;
 
 			diagOpenOBJ.RestoreDirectory = true;
 			diagOpenOBJ.FileName = string.Empty;
@@ -4660,11 +4654,7 @@ namespace USF4_Stage_Tool
 					emo.EMGCount = emo.EMGs.Count;
 					emo.EMGPointersList.Add(0x00);
 					emo.GenerateBytes();
-
-					WorkingEMZ.Files.Remove(LastSelectedTreeNode.Index);
-					WorkingEMZ.Files.Add(LastSelectedTreeNode.Index, emo);
-
-					RefreshTree(false);
+					RefreshTree(tvTreeUSF4);
 				}
 			}
 
@@ -4672,6 +4662,7 @@ namespace USF4_Stage_Tool
 
 		private void AddEMGtoPreview(EMO emo, EMG emg)
 		{
+
 			Node n = emo.Skeleton.Nodes[emg.RootBone];
 			Matrix4x4 m = n.NodeMatrix;
 
@@ -4679,27 +4670,13 @@ namespace USF4_Stage_Tool
 			{
 				m = m * emo.Skeleton.Nodes[n.Parent].NodeMatrix;
 				n = emo.Skeleton.Nodes[n.Parent];
-			}
+			}			
 
+			//Try to find the EMB matching the current model...
 			matchingemb = new EMB();
 
-			if (WorkingTEXEMZ != null && WorkingTEXEMZ.Files != null)
-			{
-				for (int i = 0; i < WorkingTEXEMZ.Files.Count; i++)
-				{
-					USF4File file = WorkingTEXEMZ.Files[i];
-					if (file.GetType() == typeof(EMB))
-					{
-						byte[] targetemo = Utils.ChopByteArray(WorkingEMZ.FileNamesList[SelectedEMONumberInTree], 0x00, WorkingEMZ.FileNamesList[SelectedEMONumberInTree].Length - 1);
-						byte[] targetemb = Utils.ChopByteArray(WorkingTEXEMZ.FileNamesList[i], 0x00, WorkingTEXEMZ.FileNamesList[i].Length - 1);
-
-						if (Encoding.ASCII.GetString(targetemo) == Encoding.ASCII.GetString(targetemb))
-						{
-							matchingemb = (EMB)WorkingTEXEMZ.Files[i];
-						}
-					}
-				}
-			}
+			USF4File result = FindMatch(master_USF4FileList, typeof(EMB), emo.Name);
+			if (result.GetType() == typeof(EMB)) matchingemb = (EMB)result;
 
 			//Gather mesh and texture data for each model
 			for (int i = 0; i < emg.Models.Count; i++)
@@ -4748,11 +4725,11 @@ namespace USF4_Stage_Tool
 					//Try to convert the matched DDS file into BMP
 					try
 					{
-						if (matchingemb.DDSFiles != null && ddsindices.Max() < matchingemb.DDSFiles.Count)
+						if (matchingemb.Files != null && ddsindices.Max() < matchingemb.Files.Count)
 						{
 							for (int k = 0; k < ddsindices.Count; k++)
 							{
-								dds = matchingemb.DDSFiles[ddsindices[k]];
+								dds = (DDS)matchingemb.Files[ddsindices[k]];
 
 								using (ImageEngineImage IE = new ImageEngineImage(dds.HEXBytes)) //Use IEI to convert dds bytes to System.Drawing.Image
 								{
@@ -4847,56 +4824,202 @@ namespace USF4_Stage_Tool
 			}
 		}
 
-		private void previewToolStripMenuItem_Click(object sender, EventArgs e)
+		private void AddOrphanEMGtoPreview(EMG emg)
+		{
+			matchingemb = new EMB();
+
+			//Gather mesh and texture data for each model
+			for (int i = 0; i < emg.Models.Count; i++)
+			{
+				Point3DCollection pos = new Point3DCollection();
+				Vector3DCollection norm = new Vector3DCollection();
+				PointCollection tex = new PointCollection();
+
+				for (int j = 0; j < emg.Models[i].VertexData.Count; j++)
+				{
+					Vertex v = emg.Models[i].VertexData[j];
+					pos.Add(new Point3D(v.X, v.Y, v.Z));
+					if ((emg.Models[i].BitFlag & 0x02) == 0x02) norm.Add(new Vector3D(v.nX, v.nY, v.nZ));
+					tex.Add(new System.Windows.Point(v.U, v.V));
+				}
+
+				for (int j = 0; j < emg.Models[i].SubModels.Count; j++)
+				{
+					BitmapSource bitmapSource;
+					int textureindex;
+					DDS dds;
+					List<int[]> tempfaceindices;
+					Int32Collection faces = new Int32Collection();
+					MaterialGroup mg = new MaterialGroup();
+					List<int> ddsindices = new List<int>();
+
+					bool readmode = (emg.Models[i].ReadMode == 1) ? false : true;
+
+					tempfaceindices = GeometryIO.FaceIndicesFromDaisyChain(emg.Models[i].SubModels[j].DaisyChain, readmode);
+					textureindex = emg.Models[i].SubModels[j].MaterialIndex;
+					if (emg.Models[i].Textures != null && emg.Models[i].Textures.Count != 0)
+					{
+						for (int k = 0; k < emg.Models[i].Textures[textureindex].TextureIndicesList.Count; k++)
+						{
+							ddsindices.Add(emg.Models[i].Textures[textureindex].TextureIndicesList[k]);
+						}
+					}
+
+					for (int k = 0; k < tempfaceindices.Count; k++)
+					{
+						faces.Add(tempfaceindices[k][2]);
+						faces.Add(tempfaceindices[k][1]);
+						faces.Add(tempfaceindices[k][0]);
+					}
+
+					//Try to convert the matched DDS file into BMP
+					try
+					{
+						if (matchingemb.Files != null && ddsindices.Max() < matchingemb.Files.Count)
+						{
+							for (int k = 0; k < ddsindices.Count; k++)
+							{
+								dds = (DDS)matchingemb.Files[ddsindices[k]];
+
+								using (ImageEngineImage IE = new ImageEngineImage(dds.HEXBytes)) //Use IEI to convert dds bytes to System.Drawing.Image
+								{
+									Bitmap image = Utils.BitmapFromBytes(IE.Save(new ImageEngineFormatDetails(ImageEngineFormat.PNG), new MipHandling()));
+
+									using (System.Drawing.Bitmap bmp = new System.Drawing.Bitmap(image)) //Use Interop to convert to a BitmapSource to use as a WPF brush
+									{
+										IntPtr hBitmap = bmp.GetHbitmap();
+										try
+										{
+											bitmapSource = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(hBitmap, IntPtr.Zero, System.Windows.Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
+										}
+										finally
+										{
+											DeleteObject(hBitmap);
+										}
+									}
+								}
+
+								double opacity = 1;
+
+								if (k == 1) opacity = 0.5;
+
+								mg.Children.Add(new DiffuseMaterial()
+								{
+									Brush = new System.Windows.Media.ImageBrush()
+									{
+										ImageSource = bitmapSource,
+										TileMode = TileMode.Tile,
+										Transform = new ScaleTransform(
+											1d / emg.Models[i].Textures[textureindex].Scales_UList[k],
+											1d / emg.Models[i].Textures[textureindex].Scales_VList[k]),
+										ViewportUnits = BrushMappingMode.Absolute,
+										Opacity = opacity
+									}
+								});
+							}
+						}
+						else //Default to solid color Red if there's no matching dds
+						{
+							mg.Children.Add(new DiffuseMaterial()
+							{
+								Brush = new SolidColorBrush()
+								{
+									Color = System.Windows.Media.Color.FromRgb(255, 0, 0),
+									Opacity = 1
+								}
+							});
+						}
+					}
+					catch //Default to purple if an exception is thrown (eg bad DDS data)
+					{
+						mg.Children.Add(new DiffuseMaterial()
+						{
+							Brush = new SolidColorBrush()
+							{
+								Color = System.Windows.Media.Color.FromRgb(255, 0, 255),
+								Opacity = 1
+							}
+						});
+					}
+
+					//Add the completed model before moving on to the next
+					uc.AddModel(new GeometryModel3D()
+					{
+						//Needs un x-flipping AGAIN but at least Transform makes it easy this time...
+						Geometry = new MeshGeometry3D()
+						{
+							Positions = pos,
+							Normals = norm,
+							TextureCoordinates = tex,
+							TriangleIndices = faces
+						},
+						Material = mg,
+					});
+				}
+			}
+		}
+
+		private void cEMGpreviewToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			EH3D.Visible = true;
 			EH3D.BringToFront();
-			//btn_ClosePreview.BringToFront();
 
 			uc.ClearModels();
 
 			TreeNode node = LastSelectedTreeNode;
 			//Get the EMO node
-			while (!((string)node.Tag == "EMO"))
+			while (node.Tag.GetType() != typeof(EMG))
 			{
+				if (node.Parent == null) break;
 				node = node.Parent;
 			}
+			if( node.Tag.GetType() == typeof(EMG))
+            {
+				EMG emg = (EMG)node.Tag;
 
-			EMO emo = (EMO)WorkingEMZ.Files[node.Index];
-			EMG emg = emo.EMGs[SelectedEMGNumberInTree];
-
-			AddEMGtoPreview(emo, emg);
+				if(node.Parent != null)
+                {
+					EMO emo = (EMO)node.Parent.Tag;
+					AddEMGtoPreview(emo, emg);
+				}
+				else
+                {
+					AddOrphanEMGtoPreview(emg);
+                }
+            }
 		}
 
 		private void closePreviewWindowToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			uc.ClearModels();
-			//btn_ClosePreview.SendToBack();
 			EH3D.Visible = false;
 		}
 
 		private void btnEO_CompressSM_Click(object sender, EventArgs e)
 		{
-			EMO emo = (EMO)WorkingEMZ.Files[SelectedEMONumberInTree];
-			EMG emg = emo.EMGs[SelectedEMGNumberInTree];
-			Model model = emg.Models[SelectedModelNumberInTree];
-			SubModel sm = model.SubModels[SelectedSubModelNumberInTree];
+			EMG emg = (EMG)LastSelectedTreeNode.Parent.Parent.Tag;
+			Model model = (Model)LastSelectedTreeNode.Parent.Tag;
+			SubModel sm = (SubModel)LastSelectedTreeNode.Tag;
 
 			using (CompressDaisyChain Compress = new CompressDaisyChain(sm))
 			{
 				if (Compress.ShowDialog(this) == DialogResult.OK)
 				{
-					model.SubModels.RemoveAt(SelectedSubModelNumberInTree);
-					model.SubModels.Insert(SelectedSubModelNumberInTree, Compress.sm);
-					emg.Models.RemoveAt(SelectedModelNumberInTree);
-					emg.Models.Insert(SelectedModelNumberInTree, model);
+					model.SubModels.RemoveAt(LastSelectedTreeNode.Index);
+					model.SubModels.Insert(LastSelectedTreeNode.Index, Compress.sm);
+					emg.Models.RemoveAt(LastSelectedTreeNode.Parent.Index);
+					emg.Models.Insert(LastSelectedTreeNode.Parent.Index, model);
 					emg.GenerateBytes();
-					emo.EMGs.RemoveAt(SelectedEMGNumberInTree);
-					emo.EMGs.Insert(SelectedEMGNumberInTree, emg);
-					emo.GenerateBytes();
-					WorkingEMZ.Files.Remove(SelectedEMONumberInTree);
-					WorkingEMZ.Files.Add(SelectedEMONumberInTree, emo);
+					if(LastSelectedTreeNode.Parent.Parent.Parent != null)
+                    {
+						EMO emo = (EMO)LastSelectedTreeNode.Parent.Parent.Parent.Tag;
+						emo.EMGs.RemoveAt(LastSelectedTreeNode.Parent.Parent.Index);
+						emo.EMGs.Insert(LastSelectedTreeNode.Parent.Parent.Index, emg);
+						emo.GenerateBytes();
+                    }
+
 					TreeDisplaySubModelData(Compress.sm);
+					RefreshTree(tvTreeUSF4);
 					AddStatus("Daisychain updated.");
 				}
 				else AddStatus("Compression cancelled.");
@@ -4910,14 +5033,13 @@ namespace USF4_Stage_Tool
 			//btn_ClosePreview.SendToBack();
 		}
 
-		private void previewEMOToolStripMenuItem_Click(object sender, EventArgs e)
+		private void cmEMOpreviewEMOToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			EH3D.Visible = true;
 			EH3D.BringToFront();
-			//btn_ClosePreview.BringToFront();
 			uc.ClearModels();
 
-			EMO emo = (EMO)WorkingEMZ.Files[LastSelectedTreeNode.Index];
+			EMO emo = (EMO)LastSelectedTreeNode.Tag;
 			foreach (EMG emg in emo.EMGs)
 			{
 				AddEMGtoPreview(emo, emg);
@@ -5005,8 +5127,6 @@ namespace USF4_Stage_Tool
 			emo.EMGs.RemoveAt(LastSelectedTreeNode.Index);
 			emo.EMGs.Insert(LastSelectedTreeNode.Index, emg);
 			emo.GenerateBytes();
-			WorkingEMZ.Files.Remove(LastSelectedTreeNode.Parent.Index);
-			WorkingEMZ.Files.Add(LastSelectedTreeNode.Parent.Index, emo);
 		}
 
 		#region keyhandling
@@ -5064,7 +5184,136 @@ namespace USF4_Stage_Tool
 			EH3D.Width = pSelectedTreeNodeData.Width;
 			EH3D.Height = pSelectedTreeNodeData.Height;
 		}
-	}
+
+        private void cmUNIVcloseFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			CloseFile(LastSelectedTreeNode);
+        }
+
+        private void cmUNIVdeleteFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			if (LastSelectedTreeNode.Parent != null)
+			{
+				((USF4File)LastSelectedTreeNode.Parent.Tag).DeleteSubfile(LastSelectedTreeNode.Index);
+				RefreshTree(tvTreeUSF4);
+			}
+        }
+
+        private void cmUNIVsaveFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			string filepath;
+
+			saveFileDialog1.InitialDirectory = string.Empty;
+
+			USF4File file = (USF4File)LastSelectedTreeNode.Tag;
+
+			saveFileDialog1.Filter = string.Empty;
+			saveFileDialog1.FileName = Encoding.ASCII.GetString(file.Name);
+
+			if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+			{
+				filepath = saveFileDialog1.FileName;
+				File.Delete(filepath); //Not very good but works
+				file.SaveFile(filepath);
+				AddStatus($"Saved {filepath}");
+			}
+		}
+
+        private void cmUNIVrawDumpFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			string filepath;
+
+			saveFileDialog1.InitialDirectory = string.Empty;
+
+			USF4File file = (USF4File)LastSelectedTreeNode.Tag;
+
+			saveFileDialog1.Filter = string.Empty;
+			saveFileDialog1.FileName = Encoding.ASCII.GetString(file.Name);
+
+			if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+			{
+				filepath = saveFileDialog1.FileName;
+				File.Delete(filepath); //Not very good but works
+				file.SaveFile(filepath);
+				AddStatus($"Raw dumped {filepath}");
+			}
+		}
+
+        private void cmUNIVopenFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			diagOpenOBJ.RestoreDirectory = true;
+			diagOpenOBJ.FileName = string.Empty;
+			diagOpenOBJ.InitialDirectory = LastOpenFolder;
+			diagOpenOBJ.Filter = string.Empty;
+			if (diagOpenOBJ.ShowDialog() == DialogResult.OK)
+			{
+				string filepath = diagOpenOBJ.FileName;
+				if (filepath.Trim() != string.Empty)
+				{
+					OpenFile(filepath);
+				}
+			}
+		}
+
+		private void OpenFile(string filepath)
+        {
+			FileStream fsSource = new FileStream(filepath, FileMode.Open, FileAccess.Read);
+			byte[] bytes;
+			using (BinaryReader br = new BinaryReader(fsSource, Encoding.ASCII)) { bytes = br.ReadBytes((int)fsSource.Length); }
+
+			if (Encoding.ASCII.GetString(Utils.ChopByteArray(bytes, 0x00, 0x04)) == "#EMZ")
+			{
+				Console.WriteLine("File looks compressed, attempting inflation...");
+
+				bytes = Utils.ChopByteArray(bytes, 0x10, bytes.Length - 0x10);
+
+				List<byte> zipbytes = bytes.ToList();
+
+				bytes = ZlibDecoder.Inflate(zipbytes).ToArray();
+			}
+
+			int FileType = Utils.ReadInt(true, 0, bytes);
+
+			USF4File file;
+
+			if (FileType == USF4Methods.EMO) file = new EMO();
+			else if (FileType == USF4Methods.EMM) file = new EMM();
+			else if (FileType == USF4Methods.EMB) file = new EMB();
+			else if (FileType == USF4Methods.LUA) file = new LUA();
+			else if (FileType == USF4Methods.EMA) file = new EMA();
+			else if (FileType == USF4Methods.CSB) file = new CSB();
+			else if (FileType == USF4Methods.DDS) file = new DDS();
+			else if (FileType == USF4Methods.EMG) file = new EMG();
+			else file = new OtherFile();
+
+			file.ReadFile(bytes);
+			file.Name = Encoding.ASCII.GetBytes(diagOpenOBJ.SafeFileName);
+			master_USF4FileList.Add(file);
+
+			RefreshTree(tvTreeUSF4);
+		}
+
+		private void CloseFile(TreeNode n)
+        {
+			while (n.Parent != null) n = n.Parent;
+			master_USF4FileList.RemoveAt(n.Index);
+			RefreshTree(tvTreeUSF4);
+		}
+
+        private void btnEO_SaveEMOEdits_Click(object sender, EventArgs e)
+        {
+			if (tbEMOmatcount.Text.Trim() != string.Empty)
+			{
+				int newMatCount = int.Parse(tbEMOmatcount.Text.Trim());
+				EMO emo = (EMO)LastSelectedTreeNode.Tag;
+				emo.NumberEMMMaterials = newMatCount;
+				emo.GenerateBytes();
+
+				AddStatus("EMO changes saved.");
+				TreeDisplayEMOData(emo);
+			}
+		}
+    }
 }
 
 
