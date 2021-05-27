@@ -29,29 +29,25 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.diagOpenOBJ = new System.Windows.Forms.OpenFileDialog();
             this.pnlOBJECTS = new System.Windows.Forms.Panel();
-            this.pOBJProperties = new System.Windows.Forms.Panel();
-            this.lbOBJNameProperty = new System.Windows.Forms.Label();
-            this.label8 = new System.Windows.Forms.Label();
-            this.tbTextureIndex = new System.Windows.Forms.TextBox();
-            this.label7 = new System.Windows.Forms.Label();
-            this.chkTextureFlipX = new System.Windows.Forms.CheckBox();
-            this.chkGeometryFlipX = new System.Windows.Forms.CheckBox();
-            this.chkTextureFlipY = new System.Windows.Forms.CheckBox();
-            this.label5 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.tbScaleV = new System.Windows.Forms.TextBox();
-            this.tbScaleU = new System.Windows.Forms.TextBox();
-            this.tvTreeUSF4 = new System.Windows.Forms.TreeView();
+            this.tvTreeModel = new System.Windows.Forms.TreeView();
             this.cmEmpty = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.tvTreeUSF4 = new System.Windows.Forms.TreeView();
             this.lbLoadSteps = new System.Windows.Forms.Label();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.pSelectedTreeNodeData = new System.Windows.Forms.Panel();
+            this.pnlEO_SUBMOD = new System.Windows.Forms.Panel();
+            this.btnEO_CompressSM = new System.Windows.Forms.Button();
+            this.label4 = new System.Windows.Forms.Label();
+            this.tbEO_SubModMaterial = new System.Windows.Forms.TextBox();
+            this.bntEO_SubModSave = new System.Windows.Forms.Button();
+            this.tbEO_SubModName = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.label12 = new System.Windows.Forms.Label();
             this.pnlEO_EMG = new System.Windows.Forms.Panel();
             this.bntEO_EMGSave = new System.Windows.Forms.Button();
             this.tbEMGRootBone = new System.Windows.Forms.TextBox();
@@ -81,19 +77,24 @@
             this.lbSelNODE_ListData = new System.Windows.Forms.ListBox();
             this.lbSelNODE_Title = new System.Windows.Forms.Label();
             this.pbPreviewDDS = new System.Windows.Forms.PictureBox();
-            this.pnlEO_SUBMOD = new System.Windows.Forms.Panel();
-            this.btnEO_CompressSM = new System.Windows.Forms.Button();
-            this.label4 = new System.Windows.Forms.Label();
-            this.tbEO_SubModMaterial = new System.Windows.Forms.TextBox();
-            this.bntEO_SubModSave = new System.Windows.Forms.Button();
-            this.tbEO_SubModName = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label12 = new System.Windows.Forms.Label();
             this.pnlEO_EMO = new System.Windows.Forms.Panel();
             this.btnEO_SaveEMOEdits = new System.Windows.Forms.Button();
             this.tbEMOmatcount = new System.Windows.Forms.TextBox();
             this.label11 = new System.Windows.Forms.Label();
             this.label16 = new System.Windows.Forms.Label();
+            this.pOBJProperties = new System.Windows.Forms.Panel();
+            this.lbOBJNameProperty = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
+            this.tbTextureIndex = new System.Windows.Forms.TextBox();
+            this.label7 = new System.Windows.Forms.Label();
+            this.chkTextureFlipX = new System.Windows.Forms.CheckBox();
+            this.chkGeometryFlipX = new System.Windows.Forms.CheckBox();
+            this.chkTextureFlipY = new System.Windows.Forms.CheckBox();
+            this.label5 = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.tbScaleV = new System.Windows.Forms.TextBox();
+            this.tbScaleU = new System.Windows.Forms.TextBox();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.panel1 = new System.Windows.Forms.Panel();
             this.lvStatus = new System.Windows.Forms.ListBox();
@@ -117,9 +118,9 @@
             this.emgContext = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.emgContextInjectOBJ = new System.Windows.Forms.ToolStripMenuItem();
             this.insertOBJAsNewEMGToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.rawDumpEMGToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.extractEMGAsOBJToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.extractModelAsOBJToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.rawDumpEMGToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.extractSubmodelAsOBJToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteEMGToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.injectSMDAsEMGExperimentalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -197,17 +198,20 @@
             this.saveFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.rawDumpFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.tvTreeModel = new System.Windows.Forms.TreeView();
+            this.cmModelContext = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.generateEMOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.openFileToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.closeFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pnlOBJECTS.SuspendLayout();
-            this.pOBJProperties.SuspendLayout();
             this.pSelectedTreeNodeData.SuspendLayout();
+            this.pnlEO_SUBMOD.SuspendLayout();
             this.pnlEO_EMG.SuspendLayout();
             this.pnlEO_MOD.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.modelTextureGrid)).BeginInit();
             this.pnlEO_MaterialEdit.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbPreviewDDS)).BeginInit();
-            this.pnlEO_SUBMOD.SuspendLayout();
             this.pnlEO_EMO.SuspendLayout();
+            this.pOBJProperties.SuspendLayout();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -223,6 +227,7 @@
             this.emaContext.SuspendLayout();
             this.emoContext.SuspendLayout();
             this.UniversalContext.SuspendLayout();
+            this.cmModelContext.SuspendLayout();
             this.SuspendLayout();
             // 
             // diagOpenOBJ
@@ -246,159 +251,23 @@
             this.pnlOBJECTS.Size = new System.Drawing.Size(1060, 479);
             this.pnlOBJECTS.TabIndex = 13;
             // 
-            // pOBJProperties
+            // tvTreeModel
             // 
-            this.pOBJProperties.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.pOBJProperties.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pOBJProperties.Controls.Add(this.lbOBJNameProperty);
-            this.pOBJProperties.Controls.Add(this.label8);
-            this.pOBJProperties.Controls.Add(this.tbTextureIndex);
-            this.pOBJProperties.Controls.Add(this.label7);
-            this.pOBJProperties.Controls.Add(this.chkTextureFlipX);
-            this.pOBJProperties.Controls.Add(this.chkGeometryFlipX);
-            this.pOBJProperties.Controls.Add(this.chkTextureFlipY);
-            this.pOBJProperties.Controls.Add(this.label5);
-            this.pOBJProperties.Controls.Add(this.label3);
-            this.pOBJProperties.Controls.Add(this.label2);
-            this.pOBJProperties.Controls.Add(this.tbScaleV);
-            this.pOBJProperties.Controls.Add(this.tbScaleU);
-            this.pOBJProperties.Location = new System.Drawing.Point(808, 19);
-            this.pOBJProperties.Name = "pOBJProperties";
-            this.pOBJProperties.Size = new System.Drawing.Size(234, 407);
-            this.pOBJProperties.TabIndex = 23;
-            this.pOBJProperties.Visible = false;
+            this.tvTreeModel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
+            this.tvTreeModel.ContextMenuStrip = this.cmEmpty;
+            this.tvTreeModel.Location = new System.Drawing.Point(759, 19);
+            this.tvTreeModel.Name = "tvTreeModel";
+            this.tvTreeModel.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.tvTreeModel.Size = new System.Drawing.Size(290, 407);
+            this.tvTreeModel.TabIndex = 25;
+            this.tvTreeModel.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.TvTree_AfterSelect);
+            this.tvTreeModel.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.TvTree_NodeMouseClick);
             // 
-            // lbOBJNameProperty
+            // cmEmpty
             // 
-            this.lbOBJNameProperty.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.lbOBJNameProperty.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lbOBJNameProperty.Location = new System.Drawing.Point(3, 42);
-            this.lbOBJNameProperty.Name = "lbOBJNameProperty";
-            this.lbOBJNameProperty.Size = new System.Drawing.Size(226, 16);
-            this.lbOBJNameProperty.TabIndex = 49;
-            this.lbOBJNameProperty.Text = "No OBJ Loaded";
-            this.lbOBJNameProperty.TextAlign = System.Drawing.ContentAlignment.TopCenter;
-            // 
-            // label8
-            // 
-            this.label8.AutoSize = true;
-            this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label8.Location = new System.Drawing.Point(11, 135);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(198, 16);
-            this.label8.TabIndex = 48;
-            this.label8.Text = "Override EMG Texture Data";
-            // 
-            // tbTextureIndex
-            // 
-            this.tbTextureIndex.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbTextureIndex.Location = new System.Drawing.Point(90, 158);
-            this.tbTextureIndex.Name = "tbTextureIndex";
-            this.tbTextureIndex.Size = new System.Drawing.Size(43, 20);
-            this.tbTextureIndex.TabIndex = 47;
-            this.tbTextureIndex.TabStop = false;
-            this.tbTextureIndex.WordWrap = false;
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(10, 161);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(75, 13);
-            this.label7.TabIndex = 46;
-            this.label7.Text = "Texture Index:";
-            // 
-            // chkTextureFlipX
-            // 
-            this.chkTextureFlipX.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.chkTextureFlipX.AutoSize = true;
-            this.chkTextureFlipX.BackColor = System.Drawing.Color.Transparent;
-            this.chkTextureFlipX.Location = new System.Drawing.Point(14, 105);
-            this.chkTextureFlipX.Name = "chkTextureFlipX";
-            this.chkTextureFlipX.Size = new System.Drawing.Size(70, 17);
-            this.chkTextureFlipX.TabIndex = 43;
-            this.chkTextureFlipX.Text = "X Flip UV";
-            this.chkTextureFlipX.UseVisualStyleBackColor = false;
-            // 
-            // chkGeometryFlipX
-            // 
-            this.chkGeometryFlipX.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.chkGeometryFlipX.AutoSize = true;
-            this.chkGeometryFlipX.BackColor = System.Drawing.Color.Transparent;
-            this.chkGeometryFlipX.Checked = true;
-            this.chkGeometryFlipX.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkGeometryFlipX.Location = new System.Drawing.Point(14, 76);
-            this.chkGeometryFlipX.Name = "chkGeometryFlipX";
-            this.chkGeometryFlipX.Size = new System.Drawing.Size(100, 17);
-            this.chkGeometryFlipX.TabIndex = 19;
-            this.chkGeometryFlipX.Text = "X Flip Geometry";
-            this.chkGeometryFlipX.UseVisualStyleBackColor = false;
-            // 
-            // chkTextureFlipY
-            // 
-            this.chkTextureFlipY.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.chkTextureFlipY.AutoSize = true;
-            this.chkTextureFlipY.BackColor = System.Drawing.Color.Transparent;
-            this.chkTextureFlipY.Checked = true;
-            this.chkTextureFlipY.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkTextureFlipY.Location = new System.Drawing.Point(93, 105);
-            this.chkTextureFlipY.Name = "chkTextureFlipY";
-            this.chkTextureFlipY.Size = new System.Drawing.Size(70, 17);
-            this.chkTextureFlipY.TabIndex = 42;
-            this.chkTextureFlipY.Text = "Y Flip UV";
-            this.chkTextureFlipY.UseVisualStyleBackColor = false;
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label5.Location = new System.Drawing.Point(25, 3);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(180, 20);
-            this.label5.TabIndex = 41;
-            this.label5.Text = "OBJ Inject Properties";
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(11, 216);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(47, 13);
-            this.label3.TabIndex = 40;
-            this.label3.Text = "Scale V:";
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(11, 190);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(48, 13);
-            this.label2.TabIndex = 39;
-            this.label2.Text = "Scale U:";
-            // 
-            // tbScaleV
-            // 
-            this.tbScaleV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbScaleV.Location = new System.Drawing.Point(90, 213);
-            this.tbScaleV.Name = "tbScaleV";
-            this.tbScaleV.Size = new System.Drawing.Size(43, 20);
-            this.tbScaleV.TabIndex = 38;
-            this.tbScaleV.TabStop = false;
-            this.tbScaleV.Text = "1";
-            this.tbScaleV.WordWrap = false;
-            // 
-            // tbScaleU
-            // 
-            this.tbScaleU.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbScaleU.Location = new System.Drawing.Point(90, 187);
-            this.tbScaleU.Name = "tbScaleU";
-            this.tbScaleU.Size = new System.Drawing.Size(43, 20);
-            this.tbScaleU.TabIndex = 37;
-            this.tbScaleU.TabStop = false;
-            this.tbScaleU.Text = "1";
-            this.tbScaleU.WordWrap = false;
+            this.cmEmpty.Name = "cmEmpty";
+            this.cmEmpty.Size = new System.Drawing.Size(61, 4);
             // 
             // tvTreeUSF4
             // 
@@ -411,11 +280,6 @@
             this.tvTreeUSF4.TabIndex = 22;
             this.tvTreeUSF4.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.TvTree_AfterSelect);
             this.tvTreeUSF4.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.TvTree_NodeMouseClick);
-            // 
-            // cmEmpty
-            // 
-            this.cmEmpty.Name = "cmEmpty";
-            this.cmEmpty.Size = new System.Drawing.Size(61, 4);
             // 
             // lbLoadSteps
             // 
@@ -456,6 +320,96 @@
             this.pSelectedTreeNodeData.Name = "pSelectedTreeNodeData";
             this.pSelectedTreeNodeData.Size = new System.Drawing.Size(449, 407);
             this.pSelectedTreeNodeData.TabIndex = 24;
+            // 
+            // pnlEO_SUBMOD
+            // 
+            this.pnlEO_SUBMOD.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.pnlEO_SUBMOD.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pnlEO_SUBMOD.Controls.Add(this.btnEO_CompressSM);
+            this.pnlEO_SUBMOD.Controls.Add(this.label4);
+            this.pnlEO_SUBMOD.Controls.Add(this.tbEO_SubModMaterial);
+            this.pnlEO_SUBMOD.Controls.Add(this.bntEO_SubModSave);
+            this.pnlEO_SUBMOD.Controls.Add(this.tbEO_SubModName);
+            this.pnlEO_SUBMOD.Controls.Add(this.label1);
+            this.pnlEO_SUBMOD.Controls.Add(this.label12);
+            this.pnlEO_SUBMOD.Location = new System.Drawing.Point(235, 31);
+            this.pnlEO_SUBMOD.Name = "pnlEO_SUBMOD";
+            this.pnlEO_SUBMOD.Size = new System.Drawing.Size(209, 371);
+            this.pnlEO_SUBMOD.TabIndex = 54;
+            this.pnlEO_SUBMOD.Visible = false;
+            // 
+            // btnEO_CompressSM
+            // 
+            this.btnEO_CompressSM.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnEO_CompressSM.Location = new System.Drawing.Point(8, 279);
+            this.btnEO_CompressSM.Name = "btnEO_CompressSM";
+            this.btnEO_CompressSM.Size = new System.Drawing.Size(191, 38);
+            this.btnEO_CompressSM.TabIndex = 55;
+            this.btnEO_CompressSM.Text = "Compress Submodel...";
+            this.btnEO_CompressSM.UseVisualStyleBackColor = true;
+            this.btnEO_CompressSM.Click += new System.EventHandler(this.btnEO_CompressSM_Click);
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(10, 82);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(73, 13);
+            this.label4.TabIndex = 54;
+            this.label4.Text = "Material Index";
+            // 
+            // tbEO_SubModMaterial
+            // 
+            this.tbEO_SubModMaterial.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbEO_SubModMaterial.Location = new System.Drawing.Point(13, 98);
+            this.tbEO_SubModMaterial.Name = "tbEO_SubModMaterial";
+            this.tbEO_SubModMaterial.Size = new System.Drawing.Size(70, 20);
+            this.tbEO_SubModMaterial.TabIndex = 53;
+            this.tbEO_SubModMaterial.TabStop = false;
+            this.tbEO_SubModMaterial.WordWrap = false;
+            // 
+            // bntEO_SubModSave
+            // 
+            this.bntEO_SubModSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.bntEO_SubModSave.Location = new System.Drawing.Point(8, 325);
+            this.bntEO_SubModSave.Name = "bntEO_SubModSave";
+            this.bntEO_SubModSave.Size = new System.Drawing.Size(191, 38);
+            this.bntEO_SubModSave.TabIndex = 52;
+            this.bntEO_SubModSave.Text = "Save Sub Model Edits";
+            this.bntEO_SubModSave.UseVisualStyleBackColor = true;
+            this.bntEO_SubModSave.Click += new System.EventHandler(this.BtnEO_SubModSave_Click);
+            // 
+            // tbEO_SubModName
+            // 
+            this.tbEO_SubModName.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbEO_SubModName.Location = new System.Drawing.Point(13, 52);
+            this.tbEO_SubModName.Name = "tbEO_SubModName";
+            this.tbEO_SubModName.Size = new System.Drawing.Size(186, 20);
+            this.tbEO_SubModName.TabIndex = 51;
+            this.tbEO_SubModName.TabStop = false;
+            this.tbEO_SubModName.WordWrap = false;
+            // 
+            // label1
+            // 
+            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label1.Location = new System.Drawing.Point(3, 5);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(202, 16);
+            this.label1.TabIndex = 50;
+            this.label1.Text = "Edit Options";
+            this.label1.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(10, 36);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(79, 13);
+            this.label12.TabIndex = 0;
+            this.label12.Text = "Rename Model";
             // 
             // pnlEO_EMG
             // 
@@ -556,14 +510,14 @@
             this.modelTextureGrid.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
             this.modelTextureGrid.BackgroundColor = System.Drawing.SystemColors.ButtonHighlight;
-            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle5.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.modelTextureGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.modelTextureGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.modelTextureGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.modelTextureGrid.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.id,
@@ -572,14 +526,14 @@
             this.scaleU,
             this.scaleV});
             this.modelTextureGrid.Cursor = System.Windows.Forms.Cursors.IBeam;
-            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle6.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle6.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.modelTextureGrid.DefaultCellStyle = dataGridViewCellStyle6;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.modelTextureGrid.DefaultCellStyle = dataGridViewCellStyle2;
             this.modelTextureGrid.Location = new System.Drawing.Point(8, 33);
             this.modelTextureGrid.Name = "modelTextureGrid";
             this.modelTextureGrid.RowHeadersVisible = false;
@@ -797,96 +751,6 @@
             this.pbPreviewDDS.TabStop = false;
             this.pbPreviewDDS.Visible = false;
             // 
-            // pnlEO_SUBMOD
-            // 
-            this.pnlEO_SUBMOD.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.pnlEO_SUBMOD.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pnlEO_SUBMOD.Controls.Add(this.btnEO_CompressSM);
-            this.pnlEO_SUBMOD.Controls.Add(this.label4);
-            this.pnlEO_SUBMOD.Controls.Add(this.tbEO_SubModMaterial);
-            this.pnlEO_SUBMOD.Controls.Add(this.bntEO_SubModSave);
-            this.pnlEO_SUBMOD.Controls.Add(this.tbEO_SubModName);
-            this.pnlEO_SUBMOD.Controls.Add(this.label1);
-            this.pnlEO_SUBMOD.Controls.Add(this.label12);
-            this.pnlEO_SUBMOD.Location = new System.Drawing.Point(235, 31);
-            this.pnlEO_SUBMOD.Name = "pnlEO_SUBMOD";
-            this.pnlEO_SUBMOD.Size = new System.Drawing.Size(209, 371);
-            this.pnlEO_SUBMOD.TabIndex = 54;
-            this.pnlEO_SUBMOD.Visible = false;
-            // 
-            // btnEO_CompressSM
-            // 
-            this.btnEO_CompressSM.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnEO_CompressSM.Location = new System.Drawing.Point(8, 279);
-            this.btnEO_CompressSM.Name = "btnEO_CompressSM";
-            this.btnEO_CompressSM.Size = new System.Drawing.Size(191, 38);
-            this.btnEO_CompressSM.TabIndex = 55;
-            this.btnEO_CompressSM.Text = "Compress Submodel...";
-            this.btnEO_CompressSM.UseVisualStyleBackColor = true;
-            this.btnEO_CompressSM.Click += new System.EventHandler(this.btnEO_CompressSM_Click);
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(10, 82);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(73, 13);
-            this.label4.TabIndex = 54;
-            this.label4.Text = "Material Index";
-            // 
-            // tbEO_SubModMaterial
-            // 
-            this.tbEO_SubModMaterial.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbEO_SubModMaterial.Location = new System.Drawing.Point(13, 98);
-            this.tbEO_SubModMaterial.Name = "tbEO_SubModMaterial";
-            this.tbEO_SubModMaterial.Size = new System.Drawing.Size(70, 20);
-            this.tbEO_SubModMaterial.TabIndex = 53;
-            this.tbEO_SubModMaterial.TabStop = false;
-            this.tbEO_SubModMaterial.WordWrap = false;
-            // 
-            // bntEO_SubModSave
-            // 
-            this.bntEO_SubModSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.bntEO_SubModSave.Location = new System.Drawing.Point(8, 325);
-            this.bntEO_SubModSave.Name = "bntEO_SubModSave";
-            this.bntEO_SubModSave.Size = new System.Drawing.Size(191, 38);
-            this.bntEO_SubModSave.TabIndex = 52;
-            this.bntEO_SubModSave.Text = "Save Sub Model Edits";
-            this.bntEO_SubModSave.UseVisualStyleBackColor = true;
-            this.bntEO_SubModSave.Click += new System.EventHandler(this.BtnEO_SubModSave_Click);
-            // 
-            // tbEO_SubModName
-            // 
-            this.tbEO_SubModName.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbEO_SubModName.Location = new System.Drawing.Point(13, 52);
-            this.tbEO_SubModName.Name = "tbEO_SubModName";
-            this.tbEO_SubModName.Size = new System.Drawing.Size(186, 20);
-            this.tbEO_SubModName.TabIndex = 51;
-            this.tbEO_SubModName.TabStop = false;
-            this.tbEO_SubModName.WordWrap = false;
-            // 
-            // label1
-            // 
-            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label1.Location = new System.Drawing.Point(3, 5);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(202, 16);
-            this.label1.TabIndex = 50;
-            this.label1.Text = "Edit Options";
-            this.label1.TextAlign = System.Drawing.ContentAlignment.TopCenter;
-            // 
-            // label12
-            // 
-            this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(10, 36);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(79, 13);
-            this.label12.TabIndex = 0;
-            this.label12.Text = "Rename Model";
-            // 
             // pnlEO_EMO
             // 
             this.pnlEO_EMO.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -942,6 +806,160 @@
             this.label16.Size = new System.Drawing.Size(75, 13);
             this.label16.TabIndex = 0;
             this.label16.Text = "Material Count";
+            // 
+            // pOBJProperties
+            // 
+            this.pOBJProperties.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.pOBJProperties.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pOBJProperties.Controls.Add(this.lbOBJNameProperty);
+            this.pOBJProperties.Controls.Add(this.label8);
+            this.pOBJProperties.Controls.Add(this.tbTextureIndex);
+            this.pOBJProperties.Controls.Add(this.label7);
+            this.pOBJProperties.Controls.Add(this.chkTextureFlipX);
+            this.pOBJProperties.Controls.Add(this.chkGeometryFlipX);
+            this.pOBJProperties.Controls.Add(this.chkTextureFlipY);
+            this.pOBJProperties.Controls.Add(this.label5);
+            this.pOBJProperties.Controls.Add(this.label3);
+            this.pOBJProperties.Controls.Add(this.label2);
+            this.pOBJProperties.Controls.Add(this.tbScaleV);
+            this.pOBJProperties.Controls.Add(this.tbScaleU);
+            this.pOBJProperties.Location = new System.Drawing.Point(808, 19);
+            this.pOBJProperties.Name = "pOBJProperties";
+            this.pOBJProperties.Size = new System.Drawing.Size(234, 407);
+            this.pOBJProperties.TabIndex = 23;
+            this.pOBJProperties.Visible = false;
+            // 
+            // lbOBJNameProperty
+            // 
+            this.lbOBJNameProperty.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lbOBJNameProperty.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.lbOBJNameProperty.Location = new System.Drawing.Point(3, 42);
+            this.lbOBJNameProperty.Name = "lbOBJNameProperty";
+            this.lbOBJNameProperty.Size = new System.Drawing.Size(226, 16);
+            this.lbOBJNameProperty.TabIndex = 49;
+            this.lbOBJNameProperty.Text = "No OBJ Loaded";
+            this.lbOBJNameProperty.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label8.Location = new System.Drawing.Point(11, 135);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(198, 16);
+            this.label8.TabIndex = 48;
+            this.label8.Text = "Override EMG Texture Data";
+            // 
+            // tbTextureIndex
+            // 
+            this.tbTextureIndex.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbTextureIndex.Location = new System.Drawing.Point(90, 158);
+            this.tbTextureIndex.Name = "tbTextureIndex";
+            this.tbTextureIndex.Size = new System.Drawing.Size(43, 20);
+            this.tbTextureIndex.TabIndex = 47;
+            this.tbTextureIndex.TabStop = false;
+            this.tbTextureIndex.WordWrap = false;
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(10, 161);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(75, 13);
+            this.label7.TabIndex = 46;
+            this.label7.Text = "Texture Index:";
+            // 
+            // chkTextureFlipX
+            // 
+            this.chkTextureFlipX.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.chkTextureFlipX.AutoSize = true;
+            this.chkTextureFlipX.BackColor = System.Drawing.Color.Transparent;
+            this.chkTextureFlipX.Location = new System.Drawing.Point(14, 105);
+            this.chkTextureFlipX.Name = "chkTextureFlipX";
+            this.chkTextureFlipX.Size = new System.Drawing.Size(70, 17);
+            this.chkTextureFlipX.TabIndex = 43;
+            this.chkTextureFlipX.Text = "X Flip UV";
+            this.chkTextureFlipX.UseVisualStyleBackColor = false;
+            // 
+            // chkGeometryFlipX
+            // 
+            this.chkGeometryFlipX.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.chkGeometryFlipX.AutoSize = true;
+            this.chkGeometryFlipX.BackColor = System.Drawing.Color.Transparent;
+            this.chkGeometryFlipX.Checked = true;
+            this.chkGeometryFlipX.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkGeometryFlipX.Location = new System.Drawing.Point(14, 76);
+            this.chkGeometryFlipX.Name = "chkGeometryFlipX";
+            this.chkGeometryFlipX.Size = new System.Drawing.Size(100, 17);
+            this.chkGeometryFlipX.TabIndex = 19;
+            this.chkGeometryFlipX.Text = "X Flip Geometry";
+            this.chkGeometryFlipX.UseVisualStyleBackColor = false;
+            // 
+            // chkTextureFlipY
+            // 
+            this.chkTextureFlipY.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.chkTextureFlipY.AutoSize = true;
+            this.chkTextureFlipY.BackColor = System.Drawing.Color.Transparent;
+            this.chkTextureFlipY.Checked = true;
+            this.chkTextureFlipY.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkTextureFlipY.Location = new System.Drawing.Point(93, 105);
+            this.chkTextureFlipY.Name = "chkTextureFlipY";
+            this.chkTextureFlipY.Size = new System.Drawing.Size(70, 17);
+            this.chkTextureFlipY.TabIndex = 42;
+            this.chkTextureFlipY.Text = "Y Flip UV";
+            this.chkTextureFlipY.UseVisualStyleBackColor = false;
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label5.Location = new System.Drawing.Point(25, 3);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(180, 20);
+            this.label5.TabIndex = 41;
+            this.label5.Text = "OBJ Inject Properties";
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(11, 216);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(47, 13);
+            this.label3.TabIndex = 40;
+            this.label3.Text = "Scale V:";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(11, 190);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(48, 13);
+            this.label2.TabIndex = 39;
+            this.label2.Text = "Scale U:";
+            // 
+            // tbScaleV
+            // 
+            this.tbScaleV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbScaleV.Location = new System.Drawing.Point(90, 213);
+            this.tbScaleV.Name = "tbScaleV";
+            this.tbScaleV.Size = new System.Drawing.Size(43, 20);
+            this.tbScaleV.TabIndex = 38;
+            this.tbScaleV.TabStop = false;
+            this.tbScaleV.Text = "1";
+            this.tbScaleV.WordWrap = false;
+            // 
+            // tbScaleU
+            // 
+            this.tbScaleU.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbScaleU.Location = new System.Drawing.Point(90, 187);
+            this.tbScaleU.Name = "tbScaleU";
+            this.tbScaleU.Size = new System.Drawing.Size(43, 20);
+            this.tbScaleU.TabIndex = 37;
+            this.tbScaleU.TabStop = false;
+            this.tbScaleU.Text = "1";
+            this.tbScaleU.WordWrap = false;
             // 
             // panel1
             // 
@@ -1169,9 +1187,9 @@
             this.emgContext.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.emgContextInjectOBJ,
             this.insertOBJAsNewEMGToolStripMenuItem,
-            this.rawDumpEMGToolStripMenuItem,
             this.extractEMGAsOBJToolStripMenuItem,
             this.extractModelAsOBJToolStripMenuItem,
+            this.rawDumpEMGToolStripMenuItem,
             this.extractSubmodelAsOBJToolStripMenuItem,
             this.deleteEMGToolStripMenuItem,
             this.injectSMDAsEMGExperimentalToolStripMenuItem,
@@ -1199,18 +1217,11 @@
             this.insertOBJAsNewEMGToolStripMenuItem.Text = "Insert Encoded OBJ (as new EMG)";
             this.insertOBJAsNewEMGToolStripMenuItem.Click += new System.EventHandler(this.cmEMGaddOBJAsNewEMGToolStripMenuItem_Click);
             // 
-            // rawDumpEMGToolStripMenuItem
-            // 
-            this.rawDumpEMGToolStripMenuItem.Name = "rawDumpEMGToolStripMenuItem";
-            this.rawDumpEMGToolStripMenuItem.Size = new System.Drawing.Size(268, 22);
-            this.rawDumpEMGToolStripMenuItem.Text = "Raw Dump EMG";
-            this.rawDumpEMGToolStripMenuItem.Click += new System.EventHandler(this.rawDumpEMGToolStripMenuItem_Click_1);
-            // 
             // extractEMGAsOBJToolStripMenuItem
             // 
             this.extractEMGAsOBJToolStripMenuItem.Name = "extractEMGAsOBJToolStripMenuItem";
             this.extractEMGAsOBJToolStripMenuItem.Size = new System.Drawing.Size(268, 22);
-            this.extractEMGAsOBJToolStripMenuItem.Text = "Extract EMG as OBJ";
+            this.extractEMGAsOBJToolStripMenuItem.Text = "Raw Dump EMG";
             this.extractEMGAsOBJToolStripMenuItem.Click += new System.EventHandler(this.cmEMGexportEMGAsOBJToolStripMenuItem_Click);
             // 
             // extractModelAsOBJToolStripMenuItem
@@ -1219,6 +1230,13 @@
             this.extractModelAsOBJToolStripMenuItem.Size = new System.Drawing.Size(268, 22);
             this.extractModelAsOBJToolStripMenuItem.Text = "Extract Model as OBJ";
             this.extractModelAsOBJToolStripMenuItem.Click += new System.EventHandler(this.cmMODexportModelAsOBJToolStripMenuItem_Click);
+            // 
+            // rawDumpEMGToolStripMenuItem
+            // 
+            this.rawDumpEMGToolStripMenuItem.Name = "rawDumpEMGToolStripMenuItem";
+            this.rawDumpEMGToolStripMenuItem.Size = new System.Drawing.Size(268, 22);
+            this.rawDumpEMGToolStripMenuItem.Text = "Raw Dump EMG";
+            this.rawDumpEMGToolStripMenuItem.Click += new System.EventHandler(this.rawDumpEMGToolStripMenuItem_Click_1);
             // 
             // extractSubmodelAsOBJToolStripMenuItem
             // 
@@ -1320,7 +1338,7 @@
             this.AddFileToolStripMenuItem.Name = "AddFileToolStripMenuItem";
             this.AddFileToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
             this.AddFileToolStripMenuItem.Text = "Add File";
-            this.AddFileToolStripMenuItem.Click += new System.EventHandler(this.injectFileExperimentalToolStripMenuItem_Click);
+            this.AddFileToolStripMenuItem.Click += new System.EventHandler(this.cmEMBaddFileToolStripMenuItem_Click);
             // 
             // addEMOToolStripMenuItem
             // 
@@ -1805,16 +1823,35 @@
             this.openFileToolStripMenuItem.Text = "Open File";
             this.openFileToolStripMenuItem.Click += new System.EventHandler(this.cmUNIVopenFileToolStripMenuItem_Click);
             // 
-            // tvTreeModel
+            // cmModelContext
             // 
-            this.tvTreeModel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
-            this.tvTreeModel.ContextMenuStrip = this.cmEmpty;
-            this.tvTreeModel.Location = new System.Drawing.Point(759, 19);
-            this.tvTreeModel.Name = "tvTreeModel";
-            this.tvTreeModel.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.tvTreeModel.Size = new System.Drawing.Size(290, 407);
-            this.tvTreeModel.TabIndex = 25;
+            this.cmModelContext.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.generateEMOToolStripMenuItem,
+            this.openFileToolStripMenuItem1,
+            this.closeFileToolStripMenuItem});
+            this.cmModelContext.Name = "cmEmpty";
+            this.cmModelContext.Size = new System.Drawing.Size(151, 70);
+            // 
+            // generateEMOToolStripMenuItem
+            // 
+            this.generateEMOToolStripMenuItem.Name = "generateEMOToolStripMenuItem";
+            this.generateEMOToolStripMenuItem.Size = new System.Drawing.Size(150, 22);
+            this.generateEMOToolStripMenuItem.Text = "Generate EMO";
+            this.generateEMOToolStripMenuItem.Click += new System.EventHandler(this.cmMODgenerateEMOToolStripMenuItem_Click);
+            // 
+            // openFileToolStripMenuItem1
+            // 
+            this.openFileToolStripMenuItem1.Name = "openFileToolStripMenuItem1";
+            this.openFileToolStripMenuItem1.Size = new System.Drawing.Size(150, 22);
+            this.openFileToolStripMenuItem1.Text = "Open File";
+            this.openFileToolStripMenuItem1.Click += new System.EventHandler(this.cmMODopenFileToolStripMenuItem_Click);
+            // 
+            // closeFileToolStripMenuItem
+            // 
+            this.closeFileToolStripMenuItem.Name = "closeFileToolStripMenuItem";
+            this.closeFileToolStripMenuItem.Size = new System.Drawing.Size(150, 22);
+            this.closeFileToolStripMenuItem.Text = "Close File";
+            this.closeFileToolStripMenuItem.Click += new System.EventHandler(this.cmMODcloseFileToolStripMenuItem_Click);
             // 
             // Form1
             // 
@@ -1834,9 +1871,9 @@
             this.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.Form1_PreviewKeyDown);
             this.Resize += new System.EventHandler(this.Form1_Resize);
             this.pnlOBJECTS.ResumeLayout(false);
-            this.pOBJProperties.ResumeLayout(false);
-            this.pOBJProperties.PerformLayout();
             this.pSelectedTreeNodeData.ResumeLayout(false);
+            this.pnlEO_SUBMOD.ResumeLayout(false);
+            this.pnlEO_SUBMOD.PerformLayout();
             this.pnlEO_EMG.ResumeLayout(false);
             this.pnlEO_EMG.PerformLayout();
             this.pnlEO_MOD.ResumeLayout(false);
@@ -1844,10 +1881,10 @@
             this.pnlEO_MaterialEdit.ResumeLayout(false);
             this.pnlEO_MaterialEdit.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbPreviewDDS)).EndInit();
-            this.pnlEO_SUBMOD.ResumeLayout(false);
-            this.pnlEO_SUBMOD.PerformLayout();
             this.pnlEO_EMO.ResumeLayout(false);
             this.pnlEO_EMO.PerformLayout();
+            this.pOBJProperties.ResumeLayout(false);
+            this.pOBJProperties.PerformLayout();
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
@@ -1865,6 +1902,7 @@
             this.emaContext.ResumeLayout(false);
             this.emoContext.ResumeLayout(false);
             this.UniversalContext.ResumeLayout(false);
+            this.cmModelContext.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -2037,6 +2075,10 @@
         private System.Windows.Forms.Label label16;
         private System.Windows.Forms.Panel pnlEO_EMO;
         private System.Windows.Forms.TreeView tvTreeModel;
+        private System.Windows.Forms.ContextMenuStrip cmModelContext;
+        private System.Windows.Forms.ToolStripMenuItem openFileToolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem generateEMOToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem closeFileToolStripMenuItem;
     }
 }
 

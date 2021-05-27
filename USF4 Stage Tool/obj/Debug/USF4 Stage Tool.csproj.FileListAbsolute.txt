@@ -345,3 +345,28 @@ E:\GIT\USF4 Character Tool\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4 Stage To
 E:\GIT\USF4 Character Tool\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.CopyComplete
 E:\GIT\USF4 Character Tool\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.exe
 E:\GIT\USF4 Character Tool\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.pdb
+D:\GITS\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\bin\Debug\USF4 Stage Tool.exe.config
+D:\GITS\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\bin\Debug\USF4 Stage Tool.exe
+D:\GITS\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\bin\Debug\USF4 Stage Tool.pdb
+D:\GITS\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\bin\Debug\CSharpImageLibrary.xml
+D:\GITS\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\bin\Debug\Microsoft.IO.RecyclableMemoryStream.xml
+D:\GITS\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\bin\Debug\Newtonsoft.Json.xml
+D:\GITS\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\bin\Debug\System.Buffers.xml
+D:\GITS\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\bin\Debug\System.Diagnostics.DiagnosticSource.xml
+D:\GITS\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\bin\Debug\System.Memory.xml
+D:\GITS\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\bin\Debug\System.Numerics.Vectors.xml
+D:\GITS\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\bin\Debug\System.Runtime.CompilerServices.Unsafe.xml
+D:\GITS\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\bin\Debug\System.Threading.Tasks.Dataflow.xml
+D:\GITS\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\bin\Debug\UsefulThings.xml
+D:\GITS\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csprojAssemblyReference.cache
+D:\GITS\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.CompressDaisyChain.resources
+D:\GITS\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.DebugOutput.resources
+D:\GITS\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.Form1.resources
+D:\GITS\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.InputBox.resources
+D:\GITS\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.Properties.Resources.resources
+D:\GITS\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.GenerateResource.cache
+D:\GITS\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.CoreCompileInputs.cache
+D:\GITS\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.Fody.CopyLocal.cache
+D:\GITS\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.CopyComplete
+D:\GITS\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.exe
+D:\GITS\USF4 Stage Tool\USF4StageTool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.pdb

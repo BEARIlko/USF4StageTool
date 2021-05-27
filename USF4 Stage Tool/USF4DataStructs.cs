@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using System.Windows.Forms;
 
 namespace USF4_Stage_Tool
 {
@@ -11,7 +13,7 @@ namespace USF4_Stage_Tool
 	public class USF4File
 	{
 		public byte[] HEXBytes;
-		public byte[] Name;
+		public string Name;
 		public virtual void ReadFile(byte[] Data)
 		{
 			HEXBytes = Data;
@@ -39,7 +41,7 @@ namespace USF4_Stage_Tool
 		public List<USF4File> Files;
 		public List<int> FileLengthsList;
 		public List<int> FileNamePointersList;       //Each entry in this list points to an entry in the EMZ file name list
-		public List<byte[]> FileNamesList;
+		public List<string> FileNamesList;
 
 		public EMB()
 		{
@@ -53,7 +55,7 @@ namespace USF4_Stage_Tool
 			FileLengthsList = new List<int>();
 			FilePointersList = new List<int>();
 			Files = new List<USF4File>();
-			FileNamesList = new List<byte[]>();
+			FileNamesList = new List<string>();
 			FileNamePointersList = new List<int>();
 
 			for (int i = 0; i < NumberOfFiles; i++)
@@ -61,7 +63,7 @@ namespace USF4_Stage_Tool
 				FilePointersList.Add(Utils.ReadInt(true, FileListPointer + (i * 8), Data));
 				FileLengthsList.Add(Utils.ReadInt(true, FileListPointer + (i * 8) + 4, Data));
 				FileNamePointersList.Add(Utils.ReadInt(true, FileNamesPointer + (i * 4), Data));
-				FileNamesList.Add(Utils.ReadZeroTermStringToArray(FileNamePointersList[i], Data, Data.Length));
+				FileNamesList.Add(Encoding.ASCII.GetString(Utils.ReadZeroTermStringToArray(FileNamePointersList[i], Data, Data.Length)));
 				int FileType = Utils.ReadInt(true, FilePointersList[i] + FileListPointer + (i * 8), Data);
 
 				USF4File file;
@@ -89,7 +91,7 @@ namespace USF4_Stage_Tool
 			FileLengthsList = new List<int>();
 			FilePointersList = new List<int>();
 			Files = new List<USF4File>();
-			FileNamesList = new List<byte[]>();
+			FileNamesList = new List<string>();
 			FileNamePointersList = new List<int>();
 
 
@@ -101,12 +103,12 @@ namespace USF4_Stage_Tool
 				if (FileNamesPointer == 0x00) //if there wasn't a file index, add a dummy one
 				{
 					FileNamePointersList.Add(0x00);
-					FileNamesList.Add(new byte[] { 0x44, 0x44, 0x53 });
+					FileNamesList.Add("Unnamed_DDS");
 				}
 				else
 				{
 					FileNamePointersList.Add(Utils.ReadInt(true, FileNamesPointer + (i * 4), Data));
-					FileNamesList.Add(Utils.ReadZeroTermStringToArray(FileNamePointersList[i], Data, Data.Length));
+					FileNamesList.Add(Encoding.ASCII.GetString(Utils.ReadZeroTermStringToArray(FileNamePointersList[i], Data, Data.Length)));
 				}
 
 				int FileType = Utils.ReadInt(true, FilePointersList[i] + FileListPointer + (i * 8), Data);
@@ -178,7 +180,7 @@ namespace USF4_Stage_Tool
 				Utils.UpdateIntAtPosition(Data, FileNamePointerPositions[i], Data.Count);
 				FileNamePointersList[i] = Data.Count;
 
-				Utils.AddCopiedBytes(Data, 0x00, FileNamesList[i].Length, FileNamesList[i]);
+				Data.AddRange(Encoding.ASCII.GetBytes(FileNamesList[i]));
 				Utils.AddCopiedBytes(Data, 0x00, 0x01, new byte[] { 0x00 });
 			}
 
@@ -196,6 +198,16 @@ namespace USF4_Stage_Tool
 			FileNamePointersList.RemoveAt(index);
 			GenerateBytes();
 		}
+		public void AddSubfile(USF4File uf)
+        {
+			NumberOfFiles++;
+			FileLengthsList.Add(0);
+			FilePointersList.Add(0);
+			Files.Add(uf);
+			FileNamesList.Add(uf.Name);
+			FileNamePointersList.Add(0);
+			GenerateBytes();
+        }
 	}
 
 	public class OtherFile : USF4File
@@ -231,7 +243,7 @@ namespace USF4_Stage_Tool
 
 		}
 
-		public EMM(byte[] Data, byte[] name)
+		public EMM(byte[] Data, string name)
 		{
 			Name = name;
 			HEXBytes = Data;
@@ -329,7 +341,7 @@ namespace USF4_Stage_Tool
 		{
 
 		}
-		public EMA(byte[] Data, byte[] name)
+		public EMA(byte[] Data, string name)
 		{
 			Name = name;
 			HEXBytes = Data;
@@ -830,7 +842,7 @@ namespace USF4_Stage_Tool
 		public List<EMG> EMGs;
 		public int temp_bitdepth;
 		public List<int> NamingPointersList;
-		public List<byte[]> NamesList;
+		public List<string> NamesList;
 
 		public Skeleton Skeleton;
 
@@ -839,7 +851,7 @@ namespace USF4_Stage_Tool
 
 		}
 
-		public EMO(byte[] Data, byte[] name)
+		public EMO(byte[] Data, string name)
 		{
 			temp_bitdepth = 0;
 			Name = name;
@@ -850,7 +862,7 @@ namespace USF4_Stage_Tool
 			NamingListPointer = Utils.ReadInt(true, 0x24, Data);
 			EMGPointersList = new List<int>();
 			NamingPointersList = new List<int>();
-			NamesList = new List<byte[]>();
+			NamesList = new List<string>();
 			EMGs = new List<EMG>();
 
 
@@ -873,7 +885,7 @@ namespace USF4_Stage_Tool
 			for (int i = 0; i < NameListCount; i++)
 			{
 				NamingPointersList.Add(Utils.ReadInt(true, NamingListPointer + 0x20 + i * 4, HEXBytes));
-				NamesList.Add(Utils.ReadZeroTermStringToArray(NamingPointersList[i] + 0x20, HEXBytes, HEXBytes.Length));
+				NamesList.Add(Encoding.ASCII.GetString(Utils.ReadZeroTermStringToArray(NamingPointersList[i] + 0x20, HEXBytes, HEXBytes.Length)));
 			}
 		}
 		public override void ReadFile(byte[] Data)
@@ -886,7 +898,7 @@ namespace USF4_Stage_Tool
 			NamingListPointer = Utils.ReadInt(true, 0x24, Data);
 			EMGPointersList = new List<int>();
 			NamingPointersList = new List<int>();
-			NamesList = new List<byte[]>();
+			NamesList = new List<string>();
 			EMGs = new List<EMG>();
 
 
@@ -909,7 +921,7 @@ namespace USF4_Stage_Tool
 			for (int i = 0; i < NameListCount; i++)
 			{
 				NamingPointersList.Add(Utils.ReadInt(true, NamingListPointer + 0x20 + i * 4, HEXBytes));
-				NamesList.Add(Utils.ReadZeroTermStringToArray(NamingPointersList[i] + 0x20, HEXBytes, HEXBytes.Length));
+				NamesList.Add(Encoding.ASCII.GetString(Utils.ReadZeroTermStringToArray(NamingPointersList[i] + 0x20, HEXBytes, HEXBytes.Length)));
 			}
 		}
 		public override byte[] GenerateBytes()
@@ -964,7 +976,7 @@ namespace USF4_Stage_Tool
 			{
 				Utils.UpdateIntAtPosition(Data, NamesIndexPositions[i], Data.Count - 0x20);
 				NamingPointersList[i] = Data.Count - 0x20;
-				Utils.AddCopiedBytes(Data, 0x00, NamesList[i].Length, NamesList[i]);
+				Data.AddRange(Encoding.ASCII.GetBytes(NamesList[i]));
 				Data.Add(0x00);
 			}
 
@@ -1010,7 +1022,7 @@ namespace USF4_Stage_Tool
 		public List<Node> Nodes;
 		public List<byte[]> FFList;
 		public List<int> NodeNamePointersList;
-		public List<byte[]> NodeNames;
+		public List<string> NodeNames;
 		public List<IKNode> IKNodes;
 		public List<int> IKNamePointersList;
 		public List<byte[]> IKNodeNames;
@@ -1022,7 +1034,7 @@ namespace USF4_Stage_Tool
 
 			Nodes = new List<Node>();
 			NodeNamePointersList = new List<int>();
-			NodeNames = new List<byte[]>();
+			NodeNames = new List<string>();
 			FFList = new List<byte[]>();
 			IKNodes = new List<IKNode>();
 			IKNamePointersList = new List<int>();
@@ -1050,7 +1062,7 @@ namespace USF4_Stage_Tool
 			for (int i = 0; i < NodeCount; i++)
 			{
 				NodeNamePointersList.Add(Utils.ReadInt(true, NameIndexPointer + i * 4, Data));
-				NodeNames.Add(Utils.ReadZeroTermStringToArray(NodeNamePointersList[i], Data, Data.Length));
+				NodeNames.Add(Encoding.ASCII.GetString(Utils.ReadZeroTermStringToArray(NodeNamePointersList[i], Data, Data.Length)));
 				FFList.Add(Utils.ReadStringToArray(RegisterPointer + i * 8, 0x08, Data, Data.Length));
 
 				Node WorkingNode = new Node
@@ -1253,7 +1265,7 @@ namespace USF4_Stage_Tool
 			for (int i = 0; i < NodeNames.Count; i++)
 			{
 				Utils.UpdateIntAtPosition(Data, NodeNameIndexPointerPositions[i], Data.Count);
-				Utils.AddCopiedBytes(Data, 0x00, NodeNames[i].Length, NodeNames[i]);
+				Data.AddRange(Encoding.ASCII.GetBytes(NodeNames[i]));
 				Data.Add(0x00);
 			}
 			Utils.AddZeroToLineEnd(Data);
@@ -1738,7 +1750,7 @@ namespace USF4_Stage_Tool
 				//UV Colour.
 				if ((BitFlag & 0x40) == 0x40)
 				{
-					v.colour = Utils.ReadFloat(VertexListPointer + i * BitDepth + ReadPosition + 0x00, Data);
+					v.Colour = Utils.ReadFloat(VertexListPointer + i * BitDepth + ReadPosition + 0x00, Data);
 
 					ReadPosition += 0x04;
 				}
@@ -1808,19 +1820,451 @@ namespace USF4_Stage_Tool
 			HEXBytes = Data.Slice(0x00, 0x36 + (DaisyChainLength + BoneIntegersCount) * 2);
 		}
 	}
-
-	public struct ObjFile   //Top level file structure for OBJ
+	
+	public class ModelFile //Generic parent class - each supported I/O file format should inherit from ModelFile
+    {
+		public string Name;
+		public virtual ModelFile ReadFile(string filepath, string filename)
+        {
+			Name = filename;
+			return this;
+        }
+    }
+    #region Obj Files
+    public class ObjFile : ModelFile //Top level file structure for OBJ
 	{
 		public List<ObjObject> ObjObjects;
 		public List<Vertex> Verts;
 		public List<UVMap> Textures;
 		public List<Normal> Normals;
-	}
+
+		public override ModelFile ReadFile(string filepath, string filename)
+		{
+			string[] lines = File.ReadAllLines(filepath);
+
+			Name = filename;
+
+			Verts = new List<Vertex>();
+			Textures = new List<UVMap>();
+			Normals = new List<Normal>();
+
+			//Setup dummy file structure. If the obj doesn't inlcude one of these groupings we use the dummy
+			//Otherwise we'll delete them later and replace them with the real structs
+			ObjObjects = new List<ObjObject>()
+			{
+				new ObjObject()
+				{
+					Name = "unnamed_ObjObject",
+					ObjGroups = new List<ObjGroup>()
+					{
+						new ObjGroup()
+						{
+							Name = "unnamed_ObjGroup",
+							UniqueVerts = new List<Vertex>(),
+							ObjMaterials = new List<ObjMaterial>()
+							{
+								new ObjMaterial()
+								{
+									Name = "unnamed_ObjMaterial",
+									DaisyChain = new List<int>(),
+									FaceIndices = new List<int[]>(),
+									lines = new List<string>()
+								}
+							}
+						}
+					}
+				}
+			};
+
+			for (int i = 0; i < lines.Length; i++)
+			{
+				if (lines[i].StartsWith("o "))
+                {
+					//If our current object is empty, delete it
+					if (ObjObjects.Last().ObjGroups.Last().ObjMaterials.Last().lines.Count == 0)
+                    {
+						ObjObjects.Clear();
+					}
+					//And start a new one
+					ObjObjects.Add(new ObjObject()
+					{
+						Name = lines[i].Split(' ')[1],
+						ObjGroups = new List<ObjGroup>()
+						{
+							new ObjGroup()
+							{
+								Name = "unnamed_ObjGroup",
+								UniqueVerts = new List<Vertex>(),
+								ObjMaterials = new List<ObjMaterial>()
+								{
+									new ObjMaterial()
+									{
+										Name = "unnamed_ObjMaterial",
+										DaisyChain = new List<int>(),
+										FaceIndices = new List<int[]>(),
+										lines = new List<string>(),
+										lastV = Verts.Count,
+										lastT = Textures.Count,
+										lastN = Normals.Count
+									}
+								}
+							}
+						}
+					});
+                }
+				else if (lines[i].StartsWith("g "))
+				{
+					//If our current group is empty, delete it and start a new one...
+					if (ObjObjects.Last().ObjGroups.Last().ObjMaterials.Last().lines.Count == 0)
+					{
+						ObjObjects.Last().ObjGroups.Clear();
+					}
+					ObjObjects.Last().ObjGroups.Add(new ObjGroup()
+					{
+						Name = lines[i].Split(' ')[1],
+						UniqueVerts = new List<Vertex>(),
+						ObjMaterials = new List<ObjMaterial>()
+						{
+							new ObjMaterial()
+							{
+								Name = "unnamed_ObjMaterial",
+								DaisyChain = new List<int>(),
+								FaceIndices = new List<int[]>(),
+								lines = new List<string>(),
+								lastV = Verts.Count,
+								lastT = Textures.Count,
+								lastN = Normals.Count
+							}
+						}
+					});
+				}
+				else if (lines[i].StartsWith("usemtl "))
+                {
+					if (ObjObjects.Last().ObjGroups.Last().ObjMaterials.Last().lines.Count == 0)
+					{
+						ObjObjects.Last().ObjGroups.Last().ObjMaterials.Clear();
+					}
+					ObjObjects.Last().ObjGroups.Last().ObjMaterials.Add(
+					new ObjMaterial()
+					{
+						Name = lines[i].Split(' ')[1],
+						DaisyChain = new List<int>(),
+						FaceIndices = new List<int[]>(),
+						lines = new List<string>(),
+						lastV = Verts.Count,
+						lastT = Textures.Count,
+						lastN = Normals.Count
+					});
+				}
+				else  if (lines[i].StartsWith("f "))
+                {
+					ObjObjects.Last().ObjGroups.Last().ObjMaterials.Last().lines.Add(lines[i]);
+                }
+				else if (lines[i].StartsWith("v "))
+				{
+					string vertCoords = lines[i].Replace("v ", "").Trim();
+					string[] vertProps = vertCoords.Trim().Split(' ');
+
+					Verts.Add(new Vertex()
+					{
+						X = -1 * float.Parse(Utils.FixFloatingPoint(vertProps[0])),
+						Y = float.Parse(Utils.FixFloatingPoint(vertProps[1])),
+						Z = float.Parse(Utils.FixFloatingPoint(vertProps[2]))
+					});
+				}
+				else if (lines[i].StartsWith("vt "))
+				{
+					string vertTextures = lines[i].Replace("vt ", "").Trim();
+					vertTextures = Utils.FixFloatingPoint(vertTextures);
+					string[] vertTex = vertTextures.Trim().Split(' ');
+
+					Textures.Add(new UVMap()
+					{
+						U = float.Parse(vertTex[0]),
+						V = 1 - float.Parse(vertTex[1])
+					});
+				}
+				else if (lines[i].StartsWith("vn "))
+				{
+					string normCoords = lines[i].Replace("vn ", "").Trim();
+					string[] normProps = normCoords.Trim().Split(' ');
+
+					Normals.Add(new Normal()
+					{
+						nX = -1 * float.Parse(Utils.FixFloatingPoint(normProps[0])),
+						nY = float.Parse(Utils.FixFloatingPoint(normProps[1])),
+						nZ = float.Parse(Utils.FixFloatingPoint(normProps[2]))
+					});
+				}
+			}
+
+			//Parse the face data for each usemtl group
+			foreach (ObjObject o in ObjObjects)
+            {
+				foreach (ObjGroup g in o.ObjGroups)
+                {
+					Dictionary<UInt64, int> VertUVDictionary = new Dictionary<UInt64, int>();
+					Dictionary<UInt64, int> UniqueChunkDictionary = new Dictionary<UInt64, int>(); //For use if we implement vert normal splitting
+
+					foreach (ObjMaterial m in g.ObjMaterials)
+                    {
+						foreach (string s in m.lines)
+                        {
+							int[] tempFaceArray = new int[3];
+
+							if (!s.Contains("/"))
+							{
+								MessageBox.Show("Invalid Face data format", "Error");
+								return this;
+							}
+							string vertFaces = s.Replace("f ", "").Trim(); //Remove leading f
+							string[] arFaces = vertFaces.Trim().Split(' '); //Split into chunks
+
+							string[] chunk1string;
+							string[] chunk2string;
+							string[] chunk3string;
+							
+							//FACE FLIP HAPPENS HERE NOW
+							chunk1string = arFaces[2].Trim().Split('/');   //Split chunks into index components
+							chunk2string = arFaces[1].Trim().Split('/');
+							chunk3string = arFaces[0].Trim().Split('/');
+
+							//Parse components to int MINUS ONE BECAUSE OF ZERO INDEXING
+							int[] chunk1 = new int[] { int.Parse(chunk1string[0]) - 1, int.Parse(chunk1string[1]) - 1, int.Parse(chunk1string[2]) - 1 };
+							int[] chunk2 = new int[] { int.Parse(chunk2string[0]) - 1, int.Parse(chunk2string[1]) - 1, int.Parse(chunk2string[2]) - 1 };
+							int[] chunk3 = new int[] { int.Parse(chunk3string[0]) - 1, int.Parse(chunk3string[1]) - 1, int.Parse(chunk3string[2]) - 1 };
+
+							//If we're dealing with an obj with negative indexing, adjust face indices
+							if (chunk1[0] < 0) chunk1[0] += m.lastV + 1;
+							if (chunk1[1] < 0) chunk1[1] += m.lastT + 1;
+							if (chunk1[2] < 0) chunk1[2] += m.lastN + 1;
+							if (chunk2[0] < 0) chunk2[0] += m.lastV + 1;
+							if (chunk2[1] < 0) chunk2[1] += m.lastT + 1;
+							if (chunk2[2] < 0) chunk2[2] += m.lastN + 1;
+							if (chunk3[0] < 0) chunk3[0] += m.lastV + 1;
+							if (chunk3[1] < 0) chunk3[1] += m.lastT + 1;
+							if (chunk3[2] < 0) chunk3[2] += m.lastN + 1;
+
+							/*Full UVN hashing system
+							 * Converts the face position/mapping/normal indices into a unique hash
+							 * Uses a dictionary to generate one vertex per unique combination
+							 * => verts are split along mapping/normal seams
+							*/
+							//CHUNK 1
+							UInt64 tempHashUV = Utils.HashInts(chunk1[0], chunk1[1]);
+
+							if (!VertUVDictionary.TryGetValue(tempHashUV, out _))
+							{
+								VertUVDictionary.Add(tempHashUV, VertUVDictionary.Count);
+							}
+
+							UInt64 tempHashUVN = Utils.HashInts(VertUVDictionary[tempHashUV], chunk1[2]);
+
+							if (!UniqueChunkDictionary.TryGetValue(tempHashUVN, out _))
+							{
+								UniqueChunkDictionary.Add(tempHashUVN, UniqueChunkDictionary.Count);
+
+								Vertex WorkingVert = new Vertex();
+								WorkingVert.Colour = Utils.ReadFloat(0, new byte[] { 0xFE, 0xFE, 0xFE, 0xFF });
+								WorkingVert.BoneCount = 4;
+								WorkingVert.BoneIDs = new List<int>() { 0, 0, 0, 0 };
+								WorkingVert.BoneWeights = new List<float>() { 1, 0, 0, 0 };
+								WorkingVert.ntangentX = 1;
+								WorkingVert.ntangentY = 0;
+								WorkingVert.ntangentZ = 0;
+								WorkingVert.UpdatePosition(Verts[chunk1[0]]);
+								WorkingVert.UpdateUV(Textures[chunk1[1]]);
+								WorkingVert.UpdateNormals(Normals[chunk1[2]]);
+
+								g.UniqueVerts.Add(WorkingVert);
+							}
+
+							tempFaceArray[0] = UniqueChunkDictionary[tempHashUVN];
+
+							//CHUNK 2
+							tempHashUV = Utils.HashInts(chunk2[0], chunk2[1]);
+
+							if (!VertUVDictionary.TryGetValue(tempHashUV, out _))
+							{
+								VertUVDictionary.Add(tempHashUV, VertUVDictionary.Count);
+							}
+
+							tempHashUVN = Utils.HashInts(VertUVDictionary[tempHashUV], chunk2[2]);
+							
+							if (!UniqueChunkDictionary.TryGetValue(tempHashUVN, out _))
+							{
+								UniqueChunkDictionary.Add(tempHashUVN, UniqueChunkDictionary.Count);
+
+								Vertex WorkingVert = new Vertex();
+								WorkingVert.Colour = Utils.ReadFloat(0, new byte[] { 0xFE, 0xFE, 0xFE, 0xFF });
+								WorkingVert.BoneCount = 4;
+								WorkingVert.BoneIDs = new List<int>() { 0, 0, 0, 0 };
+								WorkingVert.BoneWeights = new List<float>() { 1, 0, 0, 0 };
+								WorkingVert.ntangentX = 1;
+								WorkingVert.ntangentY = 0;
+								WorkingVert.ntangentZ = 0;
+								WorkingVert.UpdatePosition(Verts[chunk2[0]]);
+								WorkingVert.UpdateUV(Textures[chunk2[1]]);
+								WorkingVert.UpdateNormals(Normals[chunk2[2]]);
+
+								g.UniqueVerts.Add(WorkingVert);
+							}
+
+							tempFaceArray[1] = UniqueChunkDictionary[tempHashUVN];
+
+							//CHUNK 3
+							tempHashUV = Utils.HashInts(chunk3[0], chunk3[1]);
+
+							if (!VertUVDictionary.TryGetValue(tempHashUV, out _))
+							{
+								VertUVDictionary.Add(tempHashUV, VertUVDictionary.Count);
+
+							}
+
+							tempHashUVN = Utils.HashInts(VertUVDictionary[tempHashUV], chunk3[2]);
+							
+							if (!UniqueChunkDictionary.TryGetValue(tempHashUVN, out _))
+							{
+								UniqueChunkDictionary.Add(tempHashUVN, UniqueChunkDictionary.Count);
+
+								Vertex WorkingVert = new Vertex(); 
+								WorkingVert.Colour = Utils.ReadFloat(0, new byte[] { 0xFE, 0xFE, 0xFE, 0xFF });
+								WorkingVert.BoneCount = 4;
+								WorkingVert.BoneIDs = new List<int>() { 0, 0, 0, 0 };
+								WorkingVert.BoneWeights = new List<float>() { 1, 0, 0, 0 };
+								WorkingVert.ntangentX = 1;
+								WorkingVert.ntangentY = 0;
+								WorkingVert.ntangentZ = 0;
+								WorkingVert.UpdatePosition(Verts[chunk3[0]]);
+								WorkingVert.UpdateUV(Textures[chunk3[1]]);
+								WorkingVert.UpdateNormals(Normals[chunk3[2]]);
+
+								g.UniqueVerts.Add(WorkingVert);
+							}
+
+							tempFaceArray[2] = UniqueChunkDictionary[tempHashUVN];
+
+							//ADD TEMP FACE TO THE LIST
+							m.FaceIndices.Add(tempFaceArray);
+						}
+                    }
+                }
+            }
+			return this;
+		}
+
+		public EMO GenerateEMO(int bitdepth)
+        {
+			EMO nEMO = new EMO()
+			{
+				EMGCount = ObjObjects.Count,
+				EMGPointersList = new int[ObjObjects.Count].ToList(),
+				EMGs = new List<EMG>(),
+				Name = Name,
+				NamesList = new List<string>(),
+				NamingPointersList = new List<int>(),
+				Skeleton = GenerateSkeleton(),
+			};
+
+			foreach (ObjObject o in ObjObjects)
+            {
+				nEMO.EMGs.Add(o.GenerateEMG(bitdepth, nEMO.EMGs.Count + 2));
+            }
+
+			nEMO.GenerateBytes();
+
+			return nEMO;
+        }
+
+		private Skeleton GenerateSkeleton()
+        {
+			Skeleton skel = new Skeleton()
+			{
+				FFList = new List<byte[]>(),
+				NodeCount = ObjObjects.Count + 2,
+				NodeNamePointersList = new int[ObjObjects.Count + 2].ToList(),
+				NodeNames = new List<string>(),
+				Nodes = new List<Node>(),
+			};
+			//Add the two "precursor" nodes before adding real nodes
+			skel.Nodes.Add(new Node()
+			{
+				Child1 = 1,
+				Sibling = -1,
+				Child3 = -1,
+				Child4 = -1,
+				Name = "SCENE_ROOT",
+				NodeMatrix = new Matrix4x4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1),
+				Parent = -1,
+			});
+			skel.FFList.Add(new byte[] { 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00 });
+			skel.NodeNames.Add("SCENE_ROOT");
+
+			skel.Nodes.Add(new Node()
+			{
+				Child1 = 2,
+				Sibling = -1,
+				Child3 = -1,
+				Child4 = -1,
+				Name = "TRS",
+				NodeMatrix = new Matrix4x4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1),
+				Parent = 0,
+			});
+			skel.FFList.Add(new byte[] { 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00 });
+			skel.NodeNames.Add("TRS");
+
+
+			for (int i = 0; i < ObjObjects.Count; i++)
+            {
+				//Sibling is the next node, unless this is the last node
+				int sibling = i + 1;
+				if (i == ObjObjects.Count - 1) sibling = -1;
+
+				skel.Nodes.Add(new Node()
+				{
+					Child1 = -1,
+					Sibling = sibling,
+					Child3 = -1,
+					Child4 = -1,
+					Name = ObjObjects[i].Name,
+					NodeMatrix = new Matrix4x4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1),
+					Parent = 1,
+				});
+				skel.FFList.Add(new byte[] { 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00 });
+				skel.NodeNames.Add(ObjObjects[i].Name);
+            }
+
+			skel.GenerateBytes();
+
+			return skel;
+        }
+    }
 
 	public struct ObjObject   //"o " grouping => .emg
 	{
 		public List<ObjGroup> ObjGroups;
 		public string Name;
+
+		public EMG GenerateEMG(int bitdepth, int rootbone)
+        {
+            EMG nEMG = new EMG()
+            {
+				Name = "unnamed_EMG",
+				RootBone = rootbone,
+				ModelCount = ObjGroups.Count,
+				ModelPointersList = new int[ObjGroups.Count].ToList(),
+				Models = new List<Model>()
+			};
+
+			foreach (ObjGroup g in ObjGroups)
+            {
+				nEMG.Models.Add(g.GenerateModel(bitdepth, rootbone));
+            }
+
+			nEMG.GenerateBytes();
+
+			return nEMG;
+        }
 	}
 
 	public struct ObjGroup   //"g " grouping => model
@@ -1828,6 +2272,85 @@ namespace USF4_Stage_Tool
 		public List<ObjMaterial> ObjMaterials;
 		public List<Vertex> UniqueVerts;
 		public string Name;
+
+		public Model GenerateModel(int bitdepth, int rootbone)
+        {
+			int bitflag = 0;
+			switch (bitdepth)
+            {
+				case 0x14: //20
+					bitflag = 0x0005;
+					break;
+				case 0x18: //24
+					bitflag = 0x0045;
+					break;
+				case 0x20: //32
+					bitflag = 0x0007;
+					break;
+				case 0x24: //36
+					bitflag = 0x0047;
+					break;
+				case 0x28: //40
+					bitflag = 0x0203;
+					break;
+				case 0x34: //52
+					bitflag = 0x0247;
+					break;
+				case 0x40: //64
+					bitflag = 0x02C7;
+					break;
+			}
+			Model nMod = new Model()
+			{
+				BitDepth = bitdepth,
+				BitFlag = bitflag,
+				CullData = new byte[] { 0x00, 0x0A, 0x1B, 0x3C, 0xC3, 0xA4, 0x9E, 0x40,
+										0x80, 0x89, 0x27, 0x3E, 0xF6, 0x79, 0x3E, 0x41,
+										0x50, 0x94, 0xA1, 0xC0, 0xFD, 0x14, 0x9D, 0xBF,
+										0xEE, 0x94, 0x0A, 0xC1, 0x43, 0xB9, 0x0D, 0x43,
+										0x5A, 0x2F, 0xA2, 0x40, 0x63, 0x47, 0x32, 0x41,
+										0x3A, 0xD1, 0x0F, 0x41, 0xF6, 0x79, 0xBE, 0x41 },
+				ReadMode = 1,
+				SubModelPointersList = new int[ObjMaterials.Count].ToList(),
+				SubModels = new List<SubModel>(),
+				SubModelsCount = ObjMaterials.Count,
+				TextureCount = ObjMaterials.Count,
+				TexturePointersList = new int[ObjMaterials.Count].ToList(),
+				Textures = new List<EMGTexture>(),
+				VertexData = new List<Vertex>(),
+			};
+
+			foreach (ObjMaterial m in ObjMaterials)
+            {
+				nMod.SubModels.Add(m.GenerateSubModel(bitdepth, rootbone));
+				nMod.Textures.Add(new EMGTexture()
+				{
+					TextureLayers = 1,
+					TextureIndicesList = new List<int>() { 0 },
+					Scales_UList = new List<float>() { 1 },
+					Scales_VList = new List<float>() { 1 }
+				});
+            }
+
+			//If the model needs bone weights, make some fake ones to pin the model to the root bone
+			//if (bitdepth == 0x28 || bitdepth == 0x34 || bitdepth == 0x40)
+			//{
+			//	for (int i = 0; i < UniqueVerts.Count; i++)
+   //             {
+			//		Vertex v = UniqueVerts[i];
+			//		v.BoneCount = 4;
+			//		v.BoneIDs = new List<int>() { 0, 0, 0, 0 };
+			//		v.BoneWeights = new List<float>() { 1, 0, 0, 0 };
+
+			//		nMod.VertexData.Add(v);
+   //             }
+			//}
+			//else 
+			nMod.VertexData = UniqueVerts;
+			nMod.VertexCount = nMod.VertexData.Count;
+
+			return nMod;
+        }
 	}
 
 	public struct ObjMaterial   //"usemtl " grouping => submodel
@@ -1839,43 +2362,439 @@ namespace USF4_Stage_Tool
 		public List<string> lines;
 		public List<int[]> FaceIndices;
 		public List<int> DaisyChain;
-	}
 
-	public struct ObjModel   //The representation of the Wavefront .OBJ file.
-	{
-		public List<Vertex> Verts;
-		public List<UVMap> Textures;
-		public List<Normal> Normals;
-		public List<Vertex> UniqueVerts;
-		public List<int[]> FaceIndices;
-		public List<ObjMatGroup> MaterialGroups;
-	}
+		public SubModel GenerateSubModel(int bitdepth, int rootbone)
+        {
 
-	public struct ObjMatGroup
-	{
-		public int endvert;
-		public List<string> lines;
-		public List<int[]> FaceIndices;
-		public List<int> DaisyChain;
-	}
+			SubModel nSM = new SubModel()
+			{
+				BoneIntegersCount = 0,
+				BoneIntegersList = new List<int>(),
+				DaisyChain = GeometryIO.DaisyChainFromIndices(new List<int[]> (FaceIndices)).ToArray(),
+				MaterialIndex = 0,
+				MysteryFloats = new byte[0x10],
+				SubModelName = Utils.MakeModelName(Name),
+			};
+			nSM.DaisyChainLength = nSM.DaisyChain.Length;
+			//If the model needs bone weights, make some fake ones to pin the model to the root bone
+			if (bitdepth == 0x28 || bitdepth == 0x34 || bitdepth == 0x40)
+            {
+				nSM.BoneIntegersCount = 1;
+				nSM.BoneIntegersList.Add(rootbone);
+            }
 
-	public struct SMDModel
+			return nSM;
+        }
+	}
+    #endregion
+    #region SMD Files
+    public class SMDFile : ModelFile
 	{
 		public byte[] HEXBytes;
-		public byte[] Name;
+		public SMDSkeleton Skeleton;
 		public List<Vertex> Verts;
-		public List<SMDNode> Nodes;
 		public List<SMDFrame> Frames;
 		public List<int[]> FaceIndices;
-		public List<byte[]> MaterialNames;
+		public List<string> MaterialNames;
 		public bool bRefPose;
 		public Dictionary<string, int> MaterialDictionary;
-	}
+
+        public override ModelFile ReadFile(string filepath, string filename)
+        {
+			string[] lines = File.ReadAllLines(filepath);
+
+			Name = filename;
+
+			Verts = new List<Vertex>();
+			Frames = new List<SMDFrame>();
+			FaceIndices = new List<int[]>();
+			MaterialNames = new List<string>();
+			MaterialDictionary = new Dictionary<string, int>();
+			Skeleton = new SMDSkeleton()
+			{
+				Nodes = new List<SMDNode>()
+			};
+
+			char[] delim = { '#', ';' };
+			for (int i = 0; i < lines.Length; i++)
+			{
+				//Strip in-line comments and fix any tab/double-spacing issues
+				lines[i] = Utils.NormalizeWhiteSpace(lines[i]).Trim().Split(delim)[0];
+			}
+
+			for (int i = 0; i < lines.Length; i++)
+			{
+				string line = lines[i];
+
+				if (line.StartsWith("nodes")) //Node block starts here
+				{
+					while (!lines[i + 1].StartsWith("end")) //Read lines until the next line is the end-of-block marker
+					{
+						i++;
+						string[] node = lines[i].Trim().Split(' ');
+
+						Skeleton.Nodes.Add(new SMDNode()
+						{
+							ID = int.Parse(node[0]),
+							Name = node[1].Replace("\"", ""),
+							Parent = int.Parse(node[2])
+						});
+					}
+				}
+
+				if (line.StartsWith("skeleton")) //Skeleton block starts here
+				{
+					SMDFrame WorkingFrame = new SMDFrame();
+
+					while (lines[i + 1] != "end") //Read lines until the next line is the end-of-block marker
+					{
+						string[] time;
+
+						i++;
+						if (lines[i].StartsWith("time"))
+						{
+							//Start a new frame/re-initialise lists
+							WorkingFrame = new SMDFrame();
+							WorkingFrame.NodeIDs = new List<int>();
+							WorkingFrame.traX = new List<float>();
+							WorkingFrame.traY = new List<float>();
+							WorkingFrame.traZ = new List<float>();
+							WorkingFrame.rotX = new List<float>();
+							WorkingFrame.rotY = new List<float>();
+							WorkingFrame.rotZ = new List<float>();
+
+							time = lines[i].Trim().Split(' ');
+							WorkingFrame.Time = int.Parse(time[1]);
+						}
+						else
+						{
+							string[] nodeline = lines[i].Trim().Split(' ');
+							WorkingFrame.NodeIDs.Add(int.Parse(nodeline[0]));
+							WorkingFrame.traX.Add(float.Parse(nodeline[1]));
+							WorkingFrame.traY.Add(float.Parse(nodeline[2]));
+							WorkingFrame.traZ.Add(float.Parse(nodeline[3]));
+							WorkingFrame.rotX.Add(float.Parse(nodeline[4]));
+							WorkingFrame.rotY.Add(float.Parse(nodeline[5]));
+							WorkingFrame.rotZ.Add(float.Parse(nodeline[6]));
+
+							//If the next line is the start of a new frame or the end of the skeleton block, push the current frame to the list
+							if (lines[i + 1].StartsWith("time") || lines[i + 1].StartsWith("end"))
+							{
+								Frames.Add(WorkingFrame);
+							}
+						}
+					}
+
+					if (Frames.Count == 1)
+					{
+						bRefPose = true;
+					}
+				}
+
+				if (line.StartsWith("triangles")) //Face/vertex block starts here
+				{
+					while (lines[i + 1] != "end") //Read lines until the next line is the end-of-block marker
+					{
+						Console.WriteLine($"i = {i}");
+
+						string[] vert;
+
+						i++;
+
+						//Read in material name and store it in the main list, so Face i uses Material i. TODO wire up a way to link MaterialName to DDS/EMM contents?
+						MaterialNames.Add(lines[i]);
+
+						if (!MaterialDictionary.TryGetValue(lines[i], out _))
+						{
+							MaterialDictionary.Add(lines[i], MaterialDictionary.Count);
+						}
+
+						int[] tempFaceArray = new int[3];
+
+						//Start reading faces, looping over the number of verts in the face
+						for (int j = 0; j < 3; j++)
+						{
+							i++;
+							vert = lines[i].Trim().Split(' ');
+							//Initialise the new vertex (plus dummy values for info not provided by SMD)
+							Vertex WorkingVert = new Vertex()
+							{
+								BoneIDs = new List<int>(),
+								BoneWeights = new List<float>(),
+								ParentBone = int.Parse(vert[0]),
+								X = float.Parse(vert[1]),
+								Y = float.Parse(vert[2]),
+								Z = float.Parse(vert[3]),
+								nX = float.Parse(vert[4]),
+								nY = float.Parse(vert[5]),
+								nZ = float.Parse(vert[6]),
+								U = float.Parse(vert[7]),
+								V = float.Parse(vert[8]),
+								Colour = Utils.ReadFloat(0, new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }),
+								ntangentX = 1,
+								ntangentY = 0,
+								ntangentZ = 0
+							};
+							//If it's longer, we've got bone weight data.
+							//Bone weight is in the format Num. Influencing Bones + <BoneID> + <BoneWeight>
+							//Where ID and Weight are repeated for however many bones. If the Weights don't add up to 1, remainder is applied to Parent
+							if (vert.Length > 9)
+							{
+								WorkingVert.BoneCount = int.Parse(vert[9]);
+
+								//Loop to get all the <BoneID> + <BoneWeight> values...
+								for (int k = 0; k < WorkingVert.BoneCount; k++)
+								{
+									WorkingVert.BoneIDs.Add(int.Parse(vert[10 + 2 * k]));
+									WorkingVert.BoneWeights.Add(float.Parse(vert[11 + 2 * k]));
+								}
+							}
+							
+							tempFaceArray[j] = Verts.Count;
+							Verts.Add(WorkingVert);
+							
+						}
+						//Finished face, add it to the model and move the loop forward
+						FaceIndices.Add(tempFaceArray);
+					}
+				}
+			}
+			return this;
+        }
+
+		public EMO GenerateEMO(int bitdepth)
+        {
+			EMO nEMO = new EMO()
+			{
+				EMGCount = MaterialDictionary.Count,
+				EMGPointersList = new int[MaterialDictionary.Count].ToList(),
+				EMGs = new List<EMG>(),
+				Name = Name,
+				NamesList = MaterialDictionary.Keys.ToList(),
+				NamingPointersList = new int[MaterialDictionary.Count].ToList(),
+				NumberEMMMaterials = MaterialDictionary.Count,
+				Skeleton = GenerateSkeleton(),
+			};
+
+			for (int i = 0; i < MaterialDictionary.Count; i++)
+            {
+				nEMO.EMGs.Add(GenerateEMG(bitdepth, 0, i));
+            }
+
+			nEMO.GenerateBytes();
+
+			return nEMO;
+        }
+
+		public EMG GenerateEMG(int bitdepth, int rootbone, int index)
+        {
+			EMG nEMG = new EMG()
+			{
+				Name = "unnamed_EMG",
+				RootBone = rootbone,
+				ModelCount = 1,
+				ModelPointersList = new List<int>() { 1 },
+				Models = new List<Model>() { GenerateModel(bitdepth, index) }
+			};
+
+			nEMG.GenerateBytes();
+
+			return nEMG;
+        }
+
+		private Model GenerateModel(int bitdepth, int index)
+        {
+			int bitflag = 0;
+			switch (bitdepth)
+			{
+				case 0x14: //20
+					bitflag = 0x0005;
+					break;
+				case 0x18: //24
+					bitflag = 0x0045;
+					break;
+				case 0x20: //32
+					bitflag = 0x0007;
+					break;
+				case 0x24: //36
+					bitflag = 0x0047;
+					break;
+				case 0x28: //40
+					bitflag = 0x0203;
+					break;
+				case 0x34: //52
+					bitflag = 0x0247;
+					break;
+				case 0x40: //64
+					bitflag = 0x02C7;
+					break;
+			}
+
+			//Gather face information for the selected material index
+			List<int[]> temp_faces = new List<int[]>();
+			string material = MaterialDictionary.Keys.ElementAt(index);
+			for (int i = 0; i < MaterialNames.Count; i++)
+			{
+				string s = MaterialNames[i];
+				if (s == material)
+				{
+					temp_faces.Add(FaceIndices[i]);
+				}
+			}
+			//Build the local vertex list using the new face indices list
+			//Also translate the face indices into the local index
+			List<Vertex> local_verts = new List<Vertex>();
+			List<int[]> local_faces = new List<int[]>();
+			for (int i = 0; i < temp_faces.Count; i++)
+			{
+				int[] temp_face = new int[3];
+				for (int j = 0; j < temp_faces[i].Length; j++)
+				{
+					temp_face[2-j] = local_verts.Count();
+					local_verts.Add(Verts[temp_faces[i][j]]);
+				}
+				local_faces.Add(temp_face);
+			}
+
+			Model nMod = new Model()
+			{
+				BitDepth = bitdepth,
+				BitFlag = bitflag,
+				CullData = new byte[] { 0x00, 0x0A, 0x1B, 0x3C, 0xC3, 0xA4, 0x9E, 0x40,
+										0x80, 0x89, 0x27, 0x3E, 0xF6, 0x79, 0x3E, 0x41,
+										0x50, 0x94, 0xA1, 0xC0, 0xFD, 0x14, 0x9D, 0xBF,
+										0xEE, 0x94, 0x0A, 0xC1, 0x43, 0xB9, 0x0D, 0x43,
+										0x5A, 0x2F, 0xA2, 0x40, 0x63, 0x47, 0x32, 0x41,
+										0x3A, 0xD1, 0x0F, 0x41, 0xF6, 0x79, 0xBE, 0x41 },
+				ReadMode = 1,
+				SubModelPointersList = new List<int>() { 0 },
+				SubModels = new List<SubModel>(),
+				SubModelsCount = 1,
+				TextureCount = 1,
+				TexturePointersList = new List<int>() { 0 },
+				Textures = new List<EMGTexture>()
+				{
+					new EMGTexture()
+					{
+						TextureLayers = 1,
+						TextureIndicesList = new List<int>(){ 0 },
+						Scales_UList = new List<float>() { 1 },
+						Scales_VList = new List<float>() { 1 },
+					}
+				},
+				VertexData = local_verts,
+				VertexCount = local_verts.Count,
+			};
+
+			SubModel nSM = new SubModel()
+			{
+				DaisyChain = GeometryIO.DaisyChainFromIndices(new List<int[]>(local_faces)).ToArray(),
+				MaterialIndex = 0,
+				SubModelName = Utils.MakeModelName(MaterialDictionary.Keys.ElementAt(index)),
+				MysteryFloats = new byte[0x10]
+			};
+
+			nSM.DaisyChainLength = nSM.DaisyChain.Length;
+
+			nMod.SubModels.Add(nSM);
+
+			return nMod;
+		}
+
+		private Skeleton GenerateSkeleton()
+        {
+			Skeleton skel = new Skeleton
+			{
+				FFList = new List<byte[]>(),
+				Nodes = new List<Node>(),
+				NodeNamePointersList = new List<int>(),
+				NodeNames = new List<string>(),
+				//Declare generic skeleton values
+				NodeCount = Skeleton.Nodes.Count,
+				IKObjectCount = 0,
+				IKDataCount = 0,
+				NodeListPointer = 0,
+				NameIndexPointer = 0,
+				IKBoneListPointer = 0,
+				IKObjectNameIndexPointer = 0,
+				RegisterPointer = 0,
+				IKDataPointer = 0,
+				MysteryShort = 2,           //1 REALLY no idea what these are
+				MysteryFloat1 = 0x26a1dd0a, //2
+				MysteryFloat2 = 0x4d28129d  //3
+			};
+
+			//Populate nodes and register
+			for (int i = 0; i < Skeleton.Nodes.Count; i++)
+			{
+				skel.FFList.Add(new byte[] { 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00 });
+
+				Node WorkingNode = new Node
+				{
+					Parent = Skeleton.Nodes[i].Parent,
+					Child1 = -1,
+					Sibling = -1,
+					Child3 = -1,
+					Child4 = -1,
+					PreMatrixFloat = 0f
+				};
+
+				//Look forwards for a child, break loop when found
+				for (int j = i + 1; j < Skeleton.Nodes.Count; j++)
+				{
+					if (Skeleton.Nodes[j].Parent == i) { WorkingNode.Child1 = j; break; }
+				}
+				//Look forwards for a sibling, break loop when found
+				for (int j = i + 1; j < Skeleton.Nodes.Count; j++)
+				{
+					if (Skeleton.Nodes[j].Parent == WorkingNode.Parent) { WorkingNode.Sibling = j; break; }
+				}
+				//Construct node matrix
+				Matrix4x4 sMatrix = Matrix4x4.CreateScale(1f, 1f, 1f); //No scale data in an SMD, so initialise it all to 1.
+
+				Matrix4x4 ryMatrix = Matrix4x4.CreateRotationY(Frames[0].rotY[i]);
+				Matrix4x4 rxMatrix = Matrix4x4.CreateRotationX(Frames[0].rotX[i]);
+				Matrix4x4 rzMatrix = Matrix4x4.CreateRotationZ(Frames[0].rotZ[i]);
+				Matrix4x4 tMatrix = Matrix4x4.CreateTranslation(Frames[0].traX[i], Frames[0].traY[i], Frames[0].traZ[i]);
+
+				Matrix4x4 tempMatrix = Matrix4x4.Multiply(sMatrix, ryMatrix);    //S Ry
+				tempMatrix = Matrix4x4.Multiply(tempMatrix, rxMatrix); //S Ry Rx
+				tempMatrix = Matrix4x4.Multiply(tempMatrix, rzMatrix); //S Ry Rx Rz
+
+				WorkingNode.NodeMatrix = Matrix4x4.Multiply(tempMatrix, tMatrix);//S Ry Rx Rz T
+				//Construct SBP matrix
+				Matrix4x4 sbpMatrix = WorkingNode.NodeMatrix;
+				Node n = WorkingNode;
+				while (n.Parent != -1)
+                {
+					n = skel.Nodes[n.Parent];
+					sbpMatrix = Matrix4x4.Multiply(sbpMatrix, n.NodeMatrix);
+                }
+
+				Matrix4x4.Invert(sbpMatrix, out sbpMatrix);
+
+				WorkingNode.SkinBindPoseMatrix = sbpMatrix;
+
+				skel.Nodes.Add(WorkingNode);
+				skel.NodeNames.Add(Skeleton.Nodes[i].Name);
+				skel.NodeNamePointersList.Add(0);
+			}
+
+			skel.GenerateBytes();
+
+			return skel;
+        }
+    }
+
+	public struct SMDSkeleton
+    {
+		public List<SMDNode> Nodes;
+    }
 
 	public struct SMDNode
 	{
 		public int ID;
-		public byte[] Name;
+		public string Name;
 		public int Parent;
 	}
 
@@ -1890,8 +2809,8 @@ namespace USF4_Stage_Tool
 		public List<float> rotY;
 		public List<float> rotZ;
 	}
-
-	public struct Vertex   //Your classic everyday point in 3D space.
+    #endregion
+    public struct Vertex   //Your classic everyday point in 3D space.
 	{
 		public float X;
 		public float Y;
@@ -1908,7 +2827,7 @@ namespace USF4_Stage_Tool
 		public float nY;
 		public float nZ;
 
-		public float colour;
+		public float Colour;
 
 		public int ParentBone;
 		public int BoneCount;

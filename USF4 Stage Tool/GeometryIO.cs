@@ -131,10 +131,6 @@ namespace USF4_Stage_Tool
                 }
             }
 
-            //progressBar1.Value = progressBar1.Maximum;
-
-            //if (Chain.Count > 0xFFFF) AddStatus("Warning - Encoded object has too many faces. Consider splitting into smaller sub-models to ensure correct loading.");
-
             Console.WriteLine($"Compression {compression}/{compression_zero} = {100 * compression / compression_zero}%");
 
             return Chain;
@@ -577,7 +573,7 @@ namespace USF4_Stage_Tool
         {
             Grendgine_Collada_Library_Geometries library_geometries = new Grendgine_Collada_Library_Geometries();
 
-            string emo_name = Encoding.ASCII.GetString(emo.Name);
+            string emo_name = emo.Name;
 
             List<Grendgine_Collada_Geometry> temp_g = new List<Grendgine_Collada_Geometry>();
 
@@ -792,7 +788,7 @@ namespace USF4_Stage_Tool
 
         public static Grendgine_Collada_Library_Geometries EMOtoCollada_Library_Geometries(EMO emo)
         {
-            string emo_name = Encoding.ASCII.GetString(emo.Name);
+            string emo_name = emo.Name;
             List<Vertex> vertices = new List<Vertex>();
             string pos_string = string.Empty;
             string norm_string = string.Empty;
@@ -1018,7 +1014,7 @@ namespace USF4_Stage_Tool
                 if (n.Parent == -1) //Root nodes
                 {
                     Matrix4x4 m = n.NodeMatrix;
-                    string name = Encoding.ASCII.GetString(sk.NodeNames[i]);
+                    string name = sk.NodeNames[i];
 
                     Utils.DecomposeMatrixXYZ(m, out float tx, out float ty, out float tz,
                                                 out float rx, out float ry, out float rz,
@@ -1086,7 +1082,7 @@ namespace USF4_Stage_Tool
                     {
                         Node node = sk.Nodes[i];
                         Matrix4x4 m = node.NodeMatrix;
-                        string name = Encoding.ASCII.GetString(sk.NodeNames[i]);
+                        string name = sk.NodeNames[i];
 
                         Utils.DecomposeMatrixXYZ(m, out float tx, out float ty, out float tz, 
                                                     out float rx, out float ry, out float rz, 
@@ -1160,8 +1156,8 @@ namespace USF4_Stage_Tool
                             node_list[0],
                             new Grendgine_Collada_Node()
                             {
-                                ID = Encoding.ASCII.GetString(emo.Name),
-                                Name = Encoding.ASCII.GetString(emo.Name),
+                                ID = emo.Name,
+                                Name = emo.Name,
                                 Type = Grendgine_Collada_Node_Type.NODE,
                                 Matrix = new Grendgine_Collada_Matrix[]
                                 {
@@ -1175,12 +1171,12 @@ namespace USF4_Stage_Tool
                                 {
                                     new Grendgine_Collada_Instance_Controller()
                                     {
-                                        URL = $"#{Encoding.ASCII.GetString(emo.Name)}-skin",
+                                        URL = $"#{emo.Name}-skin",
                                         Skeleton = new Grendgine_Collada_Skeleton[]
                                         {
                                             new Grendgine_Collada_Skeleton()
                                             {
-                                                Value = $"#{Encoding.ASCII.GetString(emo.Skeleton.NodeNames[0])}"
+                                                Value = $"#{emo.Skeleton.NodeNames[0]}"
                                             }
                                         }
                                     }
@@ -1201,7 +1197,7 @@ namespace USF4_Stage_Tool
 
             string vcounts_string = string.Empty;
             string v_string = string.Empty;
-            string emo_name = Encoding.ASCII.GetString(emo.Name);
+            string emo_name = emo.Name;
             List<string> bone_names = new List<string>();
             List<Vertex> vertices = new List<Vertex>();
 
@@ -1280,7 +1276,7 @@ namespace USF4_Stage_Tool
 
             for (int i = 0; i < emo.Skeleton.NodeNames.Count; i++)
             {
-                bone_names.Add(Encoding.ASCII.GetString(emo.Skeleton.NodeNames[i]));
+                bone_names.Add(emo.Skeleton.NodeNames[i]);
             }
 
             foreach (Node n in emo.Skeleton.Nodes) //Column-major order
@@ -1486,7 +1482,7 @@ namespace USF4_Stage_Tool
                 foreach (CMDTrack c in a.CMDTracks)
                 {
 
-                    string bonename = Encoding.ASCII.GetString(ema.Skeleton.NodeNames[c.BoneID]);
+                    string bonename = ema.Skeleton.NodeNames[c.BoneID];
                     string type;
                     string TYPE;
                     string axis;
@@ -1505,7 +1501,7 @@ namespace USF4_Stage_Tool
 
                     if(ema.Skeleton.Nodes[c.BoneID].Sibling != -1)
                     {
-                        Console.WriteLine($"Sibling! This = {bonename}, sibling = {ema.Skeleton.Nodes[c.BoneID].Sibling}, {Encoding.ASCII.GetString(ema.Skeleton.NodeNames[ema.Skeleton.Nodes[c.BoneID].Sibling])}");
+                        Console.WriteLine($"Sibling! This = {bonename}, sibling = {ema.Skeleton.Nodes[c.BoneID].Sibling}, {ema.Skeleton.NodeNames[ema.Skeleton.Nodes[c.BoneID].Sibling]}");
                     }
 
                     if ((c.BitFlag & 0x03) == 0) axis = "X";
@@ -1531,7 +1527,7 @@ namespace USF4_Stage_Tool
                         target = $"{bonename}/scale.{axis}";
                     }
 
-                    string name = $"Armature_{Encoding.ASCII.GetString(ema.Skeleton.NodeNames[c.BoneID])}_{type}-{axis}";
+                    string name = $"Armature_{ema.Skeleton.NodeNames[c.BoneID]}_{type}-{axis}";
 
                     foreach (int t in c.StepsList)
                     {
@@ -2391,9 +2387,6 @@ namespace USF4_Stage_Tool
 
             //Working from the tri indices, construct an SF4-style vertex table
             //Currently no vertex merging
-
-            
-
             for (int i = 0; i < tri_indices.Count / 3; i++)
             {
                 float nx = normal_list[tri_indices[i * 3 + 1]].nX;
@@ -2425,7 +2418,7 @@ namespace USF4_Stage_Tool
                     nZ = -normal_list[tri_indices[i * 3 + 1]].nZ,
                     U = texture_list[tri_indices[i * 3 + 2]].U,
                     V = texture_list[tri_indices[i * 3 + 2]].V,
-                    colour = Utils.ReadFloat(0, new byte[] { 0xFE, 0xFE, 0xFE, 0xFF }),
+                    Colour = Utils.ReadFloat(0, new byte[] { 0xFE, 0xFE, 0xFE, 0xFF }),
                 });
             }
 
@@ -2449,7 +2442,7 @@ namespace USF4_Stage_Tool
             Dictionary<int, int> bone_translation_dict = new Dictionary<int, int>();
             for (int i = 0; i < skel.NodeNames.Count; i++)
             {
-                bone_translation_dict.Add(master_bone_dict[Encoding.ASCII.GetString(skel.NodeNames[i])],i);
+                bone_translation_dict.Add(master_bone_dict[skel.NodeNames[i]],i);
             }
 
             //Build a dictionary to translate absolute bone ref to submodel bone ref
