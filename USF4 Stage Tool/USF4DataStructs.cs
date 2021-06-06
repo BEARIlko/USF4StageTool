@@ -8,9 +8,9 @@ using System.Windows.Forms;
 
 namespace USF4_Stage_Tool
 {
-	#region USF4 Structs
+    #region USF4 Structs
 
-	public class USF4File
+    public class USF4File
 	{
 		public byte[] HEXBytes;
 		public string Name;
@@ -46,41 +46,10 @@ namespace USF4_Stage_Tool
 		public EMB()
 		{
 		}
-		public EMB(byte[] Data)
+		public EMB(byte[] Data, string name)
 		{
-			HEXBytes = Data;
-			NumberOfFiles = Utils.ReadInt(true, 0x0C, Data);
-			FileListPointer = Utils.ReadInt(true, 0x18, Data);
-			FileNamesPointer = Utils.ReadInt(true, 0x1C, Data);
-			FileLengthsList = new List<int>();
-			FilePointersList = new List<int>();
-			Files = new List<USF4File>();
-			FileNamesList = new List<string>();
-			FileNamePointersList = new List<int>();
-
-			for (int i = 0; i < NumberOfFiles; i++)
-			{
-				FilePointersList.Add(Utils.ReadInt(true, FileListPointer + (i * 8), Data));
-				FileLengthsList.Add(Utils.ReadInt(true, FileListPointer + (i * 8) + 4, Data));
-				FileNamePointersList.Add(Utils.ReadInt(true, FileNamesPointer + (i * 4), Data));
-				FileNamesList.Add(Encoding.ASCII.GetString(Utils.ReadZeroTermStringToArray(FileNamePointersList[i], Data, Data.Length)));
-				int FileType = Utils.ReadInt(true, FilePointersList[i] + FileListPointer + (i * 8), Data);
-
-				USF4File file;
-
-				if (FileType == USF4Methods.EMO) file = new EMO();
-				else if (FileType == USF4Methods.EMM) file = new EMM();
-				else if (FileType == USF4Methods.EMB) file = new EMB();
-				else if (FileType == USF4Methods.LUA) file = new LUA();
-				else if (FileType == USF4Methods.EMA) file = new EMA();
-				else if (FileType == USF4Methods.CSB) file = new CSB();
-				else if (FileType == USF4Methods.DDS) file = new DDS();
-				else file = new OtherFile();
-
-				file.ReadFile(Data.Slice(FilePointersList[i] + FileListPointer + (i * 8), FileLengthsList[i]));
-				file.Name = FileNamesList[i];
-				Files.Add(file);
-			}
+			Name = name;
+			ReadFile(Data);
 		}
 		public override void ReadFile(byte[] Data)
 		{
@@ -113,16 +82,7 @@ namespace USF4_Stage_Tool
 
 				int FileType = Utils.ReadInt(true, FilePointersList[i] + FileListPointer + (i * 8), Data);
 
-				USF4File file;
-
-				if (FileType == USF4Methods.EMO) file = new EMO();
-				else if (FileType == USF4Methods.EMM) file = new EMM();
-				else if (FileType == USF4Methods.EMB) file = new EMB();
-				else if (FileType == USF4Methods.LUA) file = new LUA();
-				else if (FileType == USF4Methods.EMA) file = new EMA();
-				else if (FileType == USF4Methods.CSB) file = new CSB();
-				else if (FileType == USF4Methods.DDS) file = new DDS();
-				else file = new OtherFile();
+				USF4File file = USF4Methods.CheckFile(FileType);
 
 				file.ReadFile(Data.Slice(FilePointersList[i] + FileListPointer + (i * 8), FileLengthsList[i]));
 				file.Name = FileNamesList[i];
@@ -246,16 +206,7 @@ namespace USF4_Stage_Tool
 		public EMM(byte[] Data, string name)
 		{
 			Name = name;
-			HEXBytes = Data;
-			MaterialCount = Utils.ReadInt(true, 0x10, Data);
-			MaterialPointersList = new List<int>();
-			Materials = new List<Material>();
-
-			for (int i = 0; i < MaterialCount; i++)
-			{
-				MaterialPointersList.Add(Utils.ReadInt(true, 0x14 + i * 4, Data));
-				Materials.Add(new Material(Data.Slice(MaterialPointersList[i] + 0x10, Data.Length - (MaterialPointersList[i] + 0x10))));
-			}
+			ReadFile(Data);
 		}
 
 		public override void ReadFile(byte[] Data)
@@ -310,6 +261,344 @@ namespace USF4_Stage_Tool
 		}
 	}
 
+	public class BSR : USF4File
+    {
+		public int PhysicsCount;
+		public int PhysicsIndexPointer;
+		public int NodeCount;
+		public int NodeNamesIndexPointer;
+		public int InfluencingNodeCount;
+		public int InfluencingNodeNameIndexPointer;
+		public List<int> PhysicsPointerList;
+		public List<Physic> Physics;
+		public List<int> NodeNamesPointerList;
+		public List<string> NodeNames;
+		public List<int> InfluencingNodeNamesPointerList;
+		public List<string> InfluencingNodeNames;
+
+		public BSR()
+        {
+
+        }
+
+		public BSR(byte[] Data, string name)
+		{
+			Name = name;
+			ReadFile(Data);
+		}
+
+		public override void ReadFile(byte[] Data)
+        {
+			HEXBytes = Data;
+            PhysicsCount = Utils.ReadInt(true, 0x0C, Data);
+            PhysicsIndexPointer = Utils.ReadInt(true, 0x10, Data);
+            NodeCount = Utils.ReadInt(true, 0x14, Data); //Number of bones with physics calculations
+            NodeNamesIndexPointer = Utils.ReadInt(true, 0x18, Data);
+            InfluencingNodeCount = Utils.ReadInt(true, 0x1C, Data); //List of bones which input motion into physics chains??
+            InfluencingNodeNameIndexPointer = Utils.ReadInt(true, 0x20, Data);
+
+			PhysicsPointerList = new List<int>();
+			Physics = new List<Physic>();
+			NodeNamesPointerList = new List<int>();
+			NodeNames = new List<string>();
+			InfluencingNodeNamesPointerList = new List<int>();
+			InfluencingNodeNames = new List<string>();
+
+			for (int i = 0; i < PhysicsCount; i++)
+            {
+				PhysicsPointerList.Add(Utils.ReadInt(true, PhysicsIndexPointer + i * 4, Data));
+				Physics.Add(new Physic(Utils.Slice(Data, PhysicsPointerList[i], 0)));
+			}
+
+			for (int i = 0; i < NodeCount; i++)
+            {
+				NodeNamesPointerList.Add(Utils.ReadInt(true, NodeNamesIndexPointer + i * 4, Data));
+				NodeNames.Add(Encoding.ASCII.GetString(Utils.ReadZeroTermStringToArray(NodeNamesPointerList[i], Data, Data.Length)));
+			}
+
+			for (int i = 0; i < InfluencingNodeCount; i++)
+			{
+				InfluencingNodeNamesPointerList.Add(Utils.ReadInt(true, InfluencingNodeNameIndexPointer + i * 4, Data));
+				InfluencingNodeNames.Add(Encoding.ASCII.GetString(Utils.ReadZeroTermStringToArray(InfluencingNodeNamesPointerList[i], Data, Data.Length)));
+			}
+		}
+
+        public override byte[] GenerateBytes()
+        {
+			List<byte> Data = new List<byte>();
+
+			Data.AddRange(new List<byte> { 0x23, 0x42, 0x53, 0x52, 0xFE, 0xFF, 0x24, 0x00, 0x01, 0x00, 0x02, 0x00 });
+			Utils.AddIntAsBytes(Data, PhysicsCount, true);
+			//0x10
+			int PhysicsIndexPointerPosition = Data.Count;
+			Utils.AddIntAsBytes(Data, PhysicsIndexPointer, true);
+			Utils.AddIntAsBytes(Data, NodeCount, true);
+			int NodeNamesIndexPointerPosition = Data.Count;
+			Utils.AddIntAsBytes(Data, NodeNamesIndexPointer, true);
+			Utils.AddIntAsBytes(Data, InfluencingNodeCount, true);
+			//0x20
+			int InfluencingNodeNameIndexPointerPosition = Data.Count;
+			Utils.AddIntAsBytes(Data, InfluencingNodeNameIndexPointer, true);
+			List<int> PhysicsPointerListPositions = new List<int>();
+			Utils.UpdateIntAtPosition(Data, PhysicsIndexPointerPosition, Data.Count);
+			for(int i = 0; i < Physics.Count; i++)
+            {
+				PhysicsPointerListPositions.Add(Data.Count);
+				Utils.AddIntAsBytes(Data, PhysicsPointerList[i], true);
+            }
+			for (int i = 0; i < Physics.Count; i++)
+            {
+				Utils.UpdateIntAtPosition(Data, PhysicsPointerListPositions[i], Data.Count);
+				Data.AddRange(Physics[i].GenerateBytes());
+            }
+			List<int> NodeNamesPointerListPositions = new List<int>();
+			Utils.UpdateIntAtPosition(Data, NodeNamesIndexPointerPosition, Data.Count);
+			for (int i = 0; i < NodeNames.Count; i++)
+            {
+				NodeNamesPointerListPositions.Add(Data.Count);
+				Utils.AddIntAsBytes(Data, NodeNamesPointerList[i], true);
+            }
+			for (int i = 0; i < NodeNames.Count; i++)
+            {
+				Utils.UpdateIntAtPosition(Data, NodeNamesPointerListPositions[i], Data.Count);
+				Data.AddRange(Encoding.ASCII.GetBytes(NodeNames[i]));
+				Data.Add(0x00);
+            }
+			Utils.AddZeroToLineEnd(Data);
+			List<int> InfluencingNodeNamesPointerListPositions = new List<int>();
+			Utils.UpdateIntAtPosition(Data, InfluencingNodeNameIndexPointerPosition, Data.Count);
+			for (int i = 0; i < InfluencingNodeNames.Count; i++)
+			{
+				InfluencingNodeNamesPointerListPositions.Add(Data.Count);
+				Utils.AddIntAsBytes(Data, InfluencingNodeNamesPointerList[i], true);
+			}
+			for (int i = 0; i < InfluencingNodeNames.Count; i++)
+			{
+				Utils.UpdateIntAtPosition(Data, InfluencingNodeNamesPointerListPositions[i], Data.Count);
+				Data.AddRange(Encoding.ASCII.GetBytes(InfluencingNodeNames[i]));
+				Data.Add(0x00);
+			}
+
+			HEXBytes = Data.ToArray();
+
+			return Data.ToArray();
+		}
+    }
+
+	public struct Physic
+    {
+		public byte[] HEXBytes;
+		float Gravity;
+		float AirResistance;
+		float MysteryFloat0x08;	//Often these two floats seem to be zero
+		float MysteryFloat0x0C; //non-zero if there's a mystery data block?
+
+		public int PreNodeCount;
+		public int PreNodePointer;
+		public int NodeDataCount;
+		public int NodeDataPointer;
+
+		public int LimitDataCount;
+		public int LimitDataPointer;
+		public int MysteryDataCount;
+		public int MysteryDataPointer;
+
+		public List<int> PreNodeInts;
+		public List<float[]> PreNodeFloats;
+		public List<PhysNode> NodeDataBlocks;
+		public List<LimitData> LimitDataBlocks;
+		public List<MysteryData> MysteryDataBlocks;
+
+		public Physic(byte[] Data)
+        {
+			HEXBytes = Data;
+			Gravity = Utils.ReadFloat(0x00, Data);
+			AirResistance = Utils.ReadFloat(0x04, Data);
+			MysteryFloat0x08 = Utils.ReadFloat(0x08, Data);
+			MysteryFloat0x0C = Utils.ReadFloat(0x0C, Data);
+			PreNodeCount = Utils.ReadInt(true, 0x10, Data);
+			PreNodePointer = Utils.ReadInt(true, 0x14, Data);
+			NodeDataCount = Utils.ReadInt(true, 0x18, Data);
+			NodeDataPointer = Utils.ReadInt(true, 0x1C, Data);
+			LimitDataCount = Utils.ReadInt(true, 0x20, Data);
+			LimitDataPointer = Utils.ReadInt(true, 0x24, Data);
+			MysteryDataCount = Utils.ReadInt(true, 0x28, Data);
+			MysteryDataPointer = Utils.ReadInt(true, 0x2C, Data);
+
+			PreNodeInts = new List<int>();
+			PreNodeFloats = new List<float[]>();
+			for (int i = 0; i < PreNodeCount; i++)
+            {
+				PreNodeInts.Add(Utils.ReadInt(true, PreNodePointer + i * 12, Data));
+				PreNodeFloats.Add(new float[] { Utils.ReadFloat(PreNodePointer + i * 12 + 4, Data),
+												Utils.ReadFloat(PreNodePointer + i * 12 + 8, Data)});
+				if (PreNodeFloats[i][1] != 0)
+                {
+					Console.WriteLine($"Prenodefloat {i} {PreNodeFloats[i][1]}");
+                }
+            }
+			NodeDataBlocks = new List<PhysNode>();
+			for (int i = 0; i < NodeDataCount; i++)
+			{
+				byte[] NodeData = Utils.Slice(Data, NodeDataPointer + i * 0x24, 0x24);
+				NodeDataBlocks.Add(new PhysNode()
+				{
+					ID = Utils.ReadInt(true, 0x00, NodeData),
+					LimitValues = new List<float>() { Utils.ReadFloat(0x04, NodeData), Utils.ReadFloat(0x08, NodeData), Utils.ReadFloat(0x0C, NodeData),
+													  Utils.ReadFloat(0x10, NodeData), Utils.ReadFloat(0x14, NodeData), Utils.ReadFloat(0x18, NodeData) }
+				}) ;
+            }
+			LimitDataBlocks = new List<LimitData>();
+			for (int i = 0; i < LimitDataCount; i++)
+            {
+				byte[] LimitData = Utils.Slice(Data, LimitDataPointer + i * 0x1C, 0x1C);
+				LimitDataBlocks.Add(new LimitData()
+				{
+					bitflag = Utils.ReadInt(false, 0x00, LimitData),
+					ID1 = LimitData[0x02],
+					ID2 = LimitData[0x03],
+					LimitValues = new List<float>()
+                    {
+						Utils.ReadFloat(0x04, LimitData), Utils.ReadFloat(0x08, LimitData), Utils.ReadFloat(0x0C, LimitData),
+						Utils.ReadFloat(0x10, LimitData), Utils.ReadFloat(0x14, LimitData), Utils.ReadFloat(0x18, LimitData) 
+					}
+				});
+            }
+			MysteryDataBlocks = new List<MysteryData>();
+			for (int i = 0; i < MysteryDataCount; i++)
+            {
+				byte[] MysteryData = Utils.Slice(Data, MysteryDataPointer + i * 0x28, 0x28);
+				MysteryDataBlocks.Add(new MysteryData()
+				{
+					bitflag = Utils.ReadInt(false, 0x00, MysteryData),
+					ID1 = MysteryData[0x02],
+					ID2 = MysteryData[0x03],
+					Floats = new List<float>()
+					{
+						Utils.ReadFloat(0x04, MysteryData), Utils.ReadFloat(0x08, MysteryData), Utils.ReadFloat(0x0C, MysteryData),
+						Utils.ReadFloat(0x10, MysteryData), Utils.ReadFloat(0x14, MysteryData), Utils.ReadFloat(0x18, MysteryData),
+						Utils.ReadFloat(0x1C, MysteryData), Utils.ReadFloat(0x20, MysteryData), Utils.ReadFloat(0x24, MysteryData)
+					}
+				});
+			}
+
+		}
+
+		public byte[] GenerateBytes()
+        {
+			List<byte> Data = new List<byte>();
+
+			Utils.AddFloatAsBytes(Data, Gravity);
+			Utils.AddFloatAsBytes(Data, AirResistance);
+			Utils.AddFloatAsBytes(Data, MysteryFloat0x08);
+			Utils.AddFloatAsBytes(Data, MysteryFloat0x0C);
+			//0x10
+			Utils.AddIntAsBytes(Data, PreNodeCount, true);
+			int PreNodePointerPosition = Data.Count;
+			Utils.AddIntAsBytes(Data, PreNodePointer, true);
+			Utils.AddIntAsBytes(Data, NodeDataCount, true);
+			int NodeDataPointerPosition = Data.Count;
+			Utils.AddIntAsBytes(Data, NodeDataPointer, true);
+			//0x20
+			Utils.AddIntAsBytes(Data, LimitDataCount, true);
+			int LimitDataPointerPosition = Data.Count;
+			Utils.AddIntAsBytes(Data, LimitDataPointer, true);
+			Utils.AddIntAsBytes(Data, MysteryDataCount, true);
+			int MysteryDataPointerPosition = Data.Count;
+			Utils.AddIntAsBytes(Data, MysteryDataPointer, true);
+			//0x30
+			Utils.UpdateIntAtPosition(Data, PreNodePointerPosition, Data.Count);
+			for (int i = 0; i < PreNodeCount; i++)
+            {
+				Utils.AddIntAsBytes(Data, PreNodeInts[i], true);
+				Utils.AddFloatAsBytes(Data, PreNodeFloats[i][0]);
+				Utils.AddFloatAsBytes(Data, PreNodeFloats[i][1]);
+			}
+			Utils.UpdateIntAtPosition(Data, NodeDataPointerPosition, Data.Count);
+			for (int i = 0; i < NodeDataCount; i++)
+            {
+				Utils.AddIntAsBytes(Data, NodeDataBlocks[i].ID, true);
+				Utils.AddFloatAsBytes(Data, NodeDataBlocks[i].LimitValues[0]);
+				Utils.AddFloatAsBytes(Data, NodeDataBlocks[i].LimitValues[1]);
+				Utils.AddFloatAsBytes(Data, NodeDataBlocks[i].LimitValues[2]);
+				Utils.AddFloatAsBytes(Data, NodeDataBlocks[i].LimitValues[3]);
+				Utils.AddFloatAsBytes(Data, NodeDataBlocks[i].LimitValues[4]);
+				Utils.AddFloatAsBytes(Data, NodeDataBlocks[i].LimitValues[5]);
+				Data.AddRange(new byte[] { 0x00, 0x6F, 0x64, 0x65, 0x5F, 0x6C, 0x69, 0x73 });
+			}
+			Utils.UpdateIntAtPosition(Data, LimitDataPointerPosition, Data.Count);
+			for (int i = 0; i < LimitDataBlocks.Count; i++)
+			{
+				Utils.AddIntAsBytes(Data, LimitDataBlocks[i].bitflag, false);
+				Data.Add((byte)LimitDataBlocks[i].ID1);
+				Data.Add((byte)LimitDataBlocks[i].ID2);
+
+				//if(LimitDataBlocks[i].bitflag == 0)
+    //            {
+				//	Utils.AddFloatAsBytes(Data, 10f);
+				//	Utils.AddFloatAsBytes(Data, 0f);
+				//	Utils.AddFloatAsBytes(Data, 0f);
+				//	Utils.AddFloatAsBytes(Data, LimitDataBlocks[i].LimitValues[3]);
+				//	Utils.AddFloatAsBytes(Data, LimitDataBlocks[i].LimitValues[4]);
+				//	Utils.AddFloatAsBytes(Data, LimitDataBlocks[i].LimitValues[5]);
+				//}
+				//else
+    //            {
+				//	Utils.AddFloatAsBytes(Data, 0f);
+				//	Utils.AddFloatAsBytes(Data, 0f);
+				//	Utils.AddFloatAsBytes(Data, 0f);
+				//	Utils.AddFloatAsBytes(Data, LimitDataBlocks[i].LimitValues[3]);
+				//	Utils.AddFloatAsBytes(Data, LimitDataBlocks[i].LimitValues[4]);
+				//	Utils.AddFloatAsBytes(Data, LimitDataBlocks[i].LimitValues[5]);
+				//}
+                Utils.AddFloatAsBytes(Data, LimitDataBlocks[i].LimitValues[0]);
+                Utils.AddFloatAsBytes(Data, LimitDataBlocks[i].LimitValues[1]);
+                Utils.AddFloatAsBytes(Data, LimitDataBlocks[i].LimitValues[2]);
+                Utils.AddFloatAsBytes(Data, LimitDataBlocks[i].LimitValues[3]);
+                Utils.AddFloatAsBytes(Data, LimitDataBlocks[i].LimitValues[4]);
+                Utils.AddFloatAsBytes(Data, LimitDataBlocks[i].LimitValues[5]);
+            }
+			Utils.UpdateIntAtPosition(Data, MysteryDataPointerPosition, Data.Count);
+			for (int i = 0; i < MysteryDataCount; i++)
+            {
+				Utils.AddIntAsBytes(Data, MysteryDataBlocks[i].bitflag, false);
+				Data.Add((byte)MysteryDataBlocks[i].ID1);
+				Data.Add((byte)MysteryDataBlocks[i].ID2);
+				Utils.AddFloatAsBytes(Data, MysteryDataBlocks[i].Floats[0]);
+				Utils.AddFloatAsBytes(Data, MysteryDataBlocks[i].Floats[1]);
+				Utils.AddFloatAsBytes(Data, MysteryDataBlocks[i].Floats[2]);
+				Utils.AddFloatAsBytes(Data, MysteryDataBlocks[i].Floats[3]);
+				Utils.AddFloatAsBytes(Data, MysteryDataBlocks[i].Floats[4]);
+				Utils.AddFloatAsBytes(Data, MysteryDataBlocks[i].Floats[5]);
+				Utils.AddFloatAsBytes(Data, MysteryDataBlocks[i].Floats[6]);
+				Utils.AddFloatAsBytes(Data, MysteryDataBlocks[i].Floats[7]);
+				Utils.AddFloatAsBytes(Data, MysteryDataBlocks[i].Floats[8]);
+			}
+			return Data.ToArray();
+        }
+    }
+
+	public struct PhysNode
+    {
+		public int ID;
+		public List<float> LimitValues; //????
+		//public static string ode_lis = "ode_lis";
+	}
+	public struct LimitData
+    {
+		public int bitflag;
+		public int ID1;
+		public int ID2;
+		public List<float> LimitValues; //x1, x2, y1, y2, z1, z2
+    }
+	public struct MysteryData
+    {
+		public int bitflag;
+		public int ID1;
+		public int ID2;
+		public List<float> Floats; //nine floats
+	}
+
 	public class EME : USF4File //TODO - Still being read as "Other File" at the moment
 	{
 		public int EffectCount;
@@ -344,110 +633,7 @@ namespace USF4_Stage_Tool
 		public EMA(byte[] Data, string name)
 		{
 			Name = name;
-			HEXBytes = Data;
-			//Populate EMA header data
-			AnimationPointersList = new List<int>();
-			Animations = new List<Animation>();
-
-			SkeletonPointer = Utils.ReadInt(true, 0x0C, Data);
-			AnimationCount = Utils.ReadInt(false, 0x10, Data);
-			MysteryIntOS12 = Utils.ReadInt(true, 0x12, Data);
-			if (MysteryIntOS12 != 0x03)
-			{
-				Console.WriteLine($"Mystery Int OS12: {MysteryIntOS12}");
-			}
-			//Populate animation index and animation list
-			for (int i = 0; i < AnimationCount; i++)
-			{
-
-				int indexOffset = 0x20 + (4 * i);
-				AnimationPointersList.Add(Utils.ReadInt(true, indexOffset, Data));
-
-				//Populate animation list
-				int curAnimOS = AnimationPointersList[i];
-				Animation WorkingAnimation = new Animation();
-
-				WorkingAnimation.Duration = Utils.ReadInt(false, curAnimOS, Data);
-				WorkingAnimation.CmdTrackCount = Utils.ReadInt(false, curAnimOS + 0x02, Data);
-				WorkingAnimation.ValueCount = Utils.ReadInt(false, curAnimOS + 0x04, Data);
-				WorkingAnimation.NamePointer = Utils.ReadInt(true, curAnimOS + 0x0C, Data);
-				int NameLength, NameOffset;
-				Utils.ReadToNextNonNullByte(WorkingAnimation.NamePointer + curAnimOS, Data, out NameOffset, out NameLength);
-				WorkingAnimation.Name = Utils.ReadStringToArray(NameOffset, NameLength, Data, Data.Length);
-				WorkingAnimation.ValuesListPointer = Utils.ReadInt(true, curAnimOS + 0x10, Data);
-
-				//Populate value list
-				WorkingAnimation.ValuesList = new List<float>();
-
-				for (int j = 0; j < WorkingAnimation.ValueCount; j++)
-				{
-					WorkingAnimation.ValuesList.Add(Utils.ReadFloat(curAnimOS + WorkingAnimation.ValuesListPointer + 4 * j, Data));
-				}
-
-				//Populate command index and command list
-				WorkingAnimation.CmdTrackPointersList = new List<int>();
-				WorkingAnimation.CMDTracks = new List<CMDTrack>();
-
-				for (int j = 0; j < WorkingAnimation.CmdTrackCount; j++)
-				{
-					WorkingAnimation.CmdTrackPointersList.Add(Utils.ReadInt(true, curAnimOS + 0x14 + 4 * j, Data));
-
-					int curCmdOS = curAnimOS + WorkingAnimation.CmdTrackPointersList[j];
-
-					CMDTrack WorkingCMD = new CMDTrack();
-					WorkingCMD.BoneID = Utils.ReadInt(false, curCmdOS, Data);
-					WorkingCMD.TransformType = Data[curCmdOS + 0x02];
-					WorkingCMD.BitFlag = Data[curCmdOS + 0x03];
-					WorkingCMD.StepCount = Utils.ReadInt(false, curCmdOS + 0x04, Data);
-					WorkingCMD.IndicesListPointer = Utils.ReadInt(false, curCmdOS + 0x06, Data);
-
-					//Populate keyframe list and indices list
-					WorkingCMD.IndicesList = new List<int>();
-					WorkingCMD.StepsList = new List<int>();
-
-					if ((WorkingCMD.BitFlag & 0x10) == 0x10)
-					{
-
-					}
-
-					for (int k = 0; k < WorkingCMD.StepCount; k++)
-					{
-						//populate keyframes
-						if ((WorkingCMD.BitFlag & 0x20) == 0x20)
-						{
-							WorkingCMD.StepsList.Add(Utils.ReadInt(false, curCmdOS + 0x08 + 2 * k, Data));
-						}
-						else
-						{
-							WorkingCMD.StepsList.Add(Data[curCmdOS + 0x08 + k]);
-						}
-
-						//Populate indices
-						if ((WorkingCMD.BitFlag & 0x40) == 0x40)
-						{
-							WorkingCMD.IndicesList.Add(Utils.ReadInt(true, curCmdOS + WorkingCMD.IndicesListPointer + 4 * k, Data));
-						}
-						else
-						{
-							WorkingCMD.IndicesList.Add(Utils.ReadInt(false, curCmdOS + WorkingCMD.IndicesListPointer + 2 * k, Data));
-						}
-
-					}
-
-					//cmdHeader finished, push to list and start the next one...
-					WorkingAnimation.CMDTracks.Add(WorkingCMD);
-				}
-
-				//Animation finished, push to list and start the next one...
-				Animations.Add(WorkingAnimation);
-			}
-
-			//All animations pushed to EMA Header, read skeleton...
-			if (SkeletonPointer != 0x00)
-			{
-				Skeleton = new Skeleton(Data.Slice(SkeletonPointer, Data.Length - SkeletonPointer));
-			}
-			else Skeleton = new Skeleton();
+			ReadFile(Data);
 		}
 
 		public override void ReadFile(byte[] Data)
@@ -853,40 +1039,8 @@ namespace USF4_Stage_Tool
 
 		public EMO(byte[] Data, string name)
 		{
-			temp_bitdepth = 0;
 			Name = name;
-			HEXBytes = Data;
-			SkeletonPointer = Utils.ReadInt(true, 0x10, Data);
-			EMGCount = Utils.ReadInt(false, 0x20, Data);
-			NumberEMMMaterials = Utils.ReadInt(false, 0x22, Data);
-			NamingListPointer = Utils.ReadInt(true, 0x24, Data);
-			EMGPointersList = new List<int>();
-			NamingPointersList = new List<int>();
-			NamesList = new List<string>();
-			EMGs = new List<EMG>();
-
-
-			Skeleton.HEXBytes = HEXBytes.Slice(SkeletonPointer, HEXBytes.Length - SkeletonPointer);
-			Skeleton = new Skeleton(Skeleton.HEXBytes);
-
-			for (int i = 0; i < EMGCount; i++)
-			{
-				EMGPointersList.Add(Utils.ReadInt(true, 0x28 + (i * 4), HEXBytes));
-				EMGs.Add(new EMG(HEXBytes.Slice(EMGPointersList[i] + 0x30, HEXBytes.Length - (EMGPointersList[i] + 0x30))));
-				//Console.WriteLine("Got EMG " + i);
-			}
-
-			/*Number of names in the index doesn't seem to be stored anywhere in the file.
-			 * We take the position of the first name, and subtract the start position of the name pointer list
-			 * That's the total length of the pointer list, divided by 4 = number of entries
-			 */
-			int NameListCount = (Utils.ReadInt(true, NamingListPointer + 0x20, HEXBytes) - NamingListPointer) / 4;
-
-			for (int i = 0; i < NameListCount; i++)
-			{
-				NamingPointersList.Add(Utils.ReadInt(true, NamingListPointer + 0x20 + i * 4, HEXBytes));
-				NamesList.Add(Encoding.ASCII.GetString(Utils.ReadZeroTermStringToArray(NamingPointersList[i] + 0x20, HEXBytes, HEXBytes.Length)));
-			}
+			ReadFile(Data);
 		}
 		public override void ReadFile(byte[] Data)
 		{
@@ -1252,6 +1406,7 @@ namespace USF4_Stage_Tool
 			Utils.UpdateIntAtPosition(Data, RegisterPointerPosition, Data.Count);
 			for (int i = 0; i < FFList.Count; i++)
 			{
+				//Data.AddRange(new byte[] { 0x00,0x00,0x00,0x00,0xFF,0xFF,0x00,0x00});
 				Utils.AddCopiedBytes(Data, 0x00, FFList[i].Length, FFList[i]);
 			}
 			//Node Name Index
@@ -1397,22 +1552,7 @@ namespace USF4_Stage_Tool
 		}
 		public EMG(byte[] Data)
 		{
-			HEXBytes = Data;
-			RootBone = Utils.ReadInt(false, 0x04, Data);
-			ModelCount = Math.Max(Utils.ReadInt(false, 0x06, Data), 1);     //If model count < 1, set to 1. TODO less hacky fix
-			ModelPointersList = new List<int>();
-			Models = new List<Model>();
-
-			for (int i = 0; i < ModelCount; i++)
-			{
-				ModelPointersList.Add(Utils.ReadInt(true, 0x08 + i * 4, HEXBytes));
-				Models.Add(new Model(HEXBytes.Slice(ModelPointersList[i], HEXBytes.Length - ModelPointersList[i])));
-			}
-
-			int length;
-			length = Models.Last().VertexListPointer + (Models.Last().VertexCount * Models.Last().BitDepth);
-			length = length + ModelPointersList.Last();
-			HEXBytes = HEXBytes.Slice(0, length);
+			ReadFile(Data);
 		}
 
         public override void ReadFile(byte[] Data)
@@ -2275,31 +2415,8 @@ namespace USF4_Stage_Tool
 
 		public Model GenerateModel(int bitdepth, int rootbone)
         {
-			int bitflag = 0;
-			switch (bitdepth)
-            {
-				case 0x14: //20
-					bitflag = 0x0005;
-					break;
-				case 0x18: //24
-					bitflag = 0x0045;
-					break;
-				case 0x20: //32
-					bitflag = 0x0007;
-					break;
-				case 0x24: //36
-					bitflag = 0x0047;
-					break;
-				case 0x28: //40
-					bitflag = 0x0203;
-					break;
-				case 0x34: //52
-					bitflag = 0x0247;
-					break;
-				case 0x40: //64
-					bitflag = 0x02C7;
-					break;
-			}
+			int bitflag = USF4Methods.GetModelFlag[bitdepth];
+
 			Model nMod = new Model()
 			{
 				BitDepth = bitdepth,
@@ -2604,31 +2721,7 @@ namespace USF4_Stage_Tool
 
 		private Model GenerateModel(int bitdepth, int index)
         {
-			int bitflag = 0;
-			switch (bitdepth)
-			{
-				case 0x14: //20
-					bitflag = 0x0005;
-					break;
-				case 0x18: //24
-					bitflag = 0x0045;
-					break;
-				case 0x20: //32
-					bitflag = 0x0007;
-					break;
-				case 0x24: //36
-					bitflag = 0x0047;
-					break;
-				case 0x28: //40
-					bitflag = 0x0203;
-					break;
-				case 0x34: //52
-					bitflag = 0x0247;
-					break;
-				case 0x40: //64
-					bitflag = 0x02C7;
-					break;
-			}
+			int bitflag = USF4Methods.GetModelFlag[bitdepth];
 
 			//Gather face information for the selected material index
 			List<int[]> temp_faces = new List<int[]>();

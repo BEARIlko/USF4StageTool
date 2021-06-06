@@ -7,11 +7,39 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Media.Animation;
 
 namespace USF4_Stage_Tool
 {
     public static class Anim
     {
+
+
+        public static SingleAnimationUsingKeyFrames GenerateKeyFrames(Animation anim, int boneID, int axis, int ttype)
+        {
+            SingleAnimationUsingKeyFrames a = new SingleAnimationUsingKeyFrames()
+            {
+                Duration = new TimeSpan(166667 * anim.Duration)
+            };
+
+            foreach (CMDTrack c in anim.CMDTracks)
+            {
+                if (c.BoneID == boneID && (c.BitFlag & axis) == axis && c.TransformType == ttype)
+                {
+                    for (int i = 0; i < c.StepsList.Count; i++)
+                    {
+                        a.KeyFrames.Add(new LinearSingleKeyFrame()
+                        {
+                            KeyTime = new TimeSpan(c.StepsList[i]*166667),
+                            Value = anim.ValuesList[(c.IndicesList[i] & 0b0011111111111111)]
+                        });
+                    }
+                }
+            }
+
+            return a;
+        }
+
         public static Skeleton DuplicateSkeleton(Skeleton skel, int first, int last)
         {
             //Skip the root node, copy everything else

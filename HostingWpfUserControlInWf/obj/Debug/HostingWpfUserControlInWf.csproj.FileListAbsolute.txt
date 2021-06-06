@@ -71,7 +71,6 @@ E:\GIT\USF4 Character Tool\USF4StageTool\HostingWpfUserControlInWf\obj\Debug\Hos
 E:\GIT\USF4 Character Tool\USF4StageTool\HostingWpfUserControlInWf\obj\Debug\HostingWpfUserControlInWf.pdb
 D:\GITS\USF4 Stage Tool\USF4StageTool\HostingWpfUserControlInWf\bin\Debug\HostingWpfUserControlInWf.dll
 D:\GITS\USF4 Stage Tool\USF4StageTool\HostingWpfUserControlInWf\bin\Debug\HostingWpfUserControlInWf.pdb
-D:\GITS\USF4 Stage Tool\USF4StageTool\HostingWpfUserControlInWf\obj\Debug\HostingWpfUserControlInWf.csprojAssemblyReference.cache
 D:\GITS\USF4 Stage Tool\USF4StageTool\HostingWpfUserControlInWf\obj\Debug\UserControl1.baml
 D:\GITS\USF4 Stage Tool\USF4StageTool\HostingWpfUserControlInWf\obj\Debug\UserControl1.g.cs
 D:\GITS\USF4 Stage Tool\USF4StageTool\HostingWpfUserControlInWf\obj\Debug\HostingWpfUserControlInWf_MarkupCompile.cache

@@ -15,6 +15,7 @@ using System.Windows.Shapes;
 using System.Xaml;
 using System.Windows.Media.Media3D;
 using System.Windows.Forms.Integration;
+using System.Windows.Media.Animation;
 
 namespace HostingWpfUserControlInWf
 {

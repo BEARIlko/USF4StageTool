@@ -672,19 +672,6 @@ namespace USF4_Stage_Tool
 			else return Array;
 		}
 
-		private static void SaveDDS(string filepath)
-		{
-			////Get the current IMG as Bytes;
-			//Image img;
-			////img = pictureBox1.BackgroundImage;
-			////byte[] bytes = ImageToByte(img);
-
-			//MipHandling MH = new MipHandling();
-			//ImageEngineFormatDetails IEFD = new ImageEngineFormatDetails(ImageEngineFormat.DDS_DXT5);
-			//ImageEngineImage e2 = new ImageEngineImage(bytes);
-			//e2.Save(filepath, IEFD, MH);
-		}
-
 		//Fixes the '.' in OBJ to the whatever your System Decimal Separator is. This helps when float.Parse()
 		public static string FixFloatingPoint(string FloatText) 
 		{ 
@@ -993,6 +980,20 @@ namespace USF4_Stage_Tool
 			return ReturnValue;
 		}
 
+		public static uint ReadInt(bool IsLong, uint Offset, byte[] Data)
+        {
+			uint ReturnValue;
+			if (IsLong)
+			{
+				ReturnValue = BitConverter.ToUInt32(new byte[] { Data[Offset], Data[Offset + 1], Data[Offset + 2], Data[Offset + 3] }, 0);
+			}
+			else
+			{
+				ReturnValue = BitConverter.ToUInt16(new byte[] { Data[Offset], Data[Offset + 1] }, 0);
+			}
+			//Console.WriteLine(ReturnValue);
+			return ReturnValue;
+		}
 		public static void ReadToNextNonNullByte(int Offset, byte[] Data, out int EndOffset, out int ByteValue)
         {
 			ByteValue = 0;
@@ -1022,7 +1023,12 @@ namespace USF4_Stage_Tool
 			float HexFloat;
 			HexFloat = BitConverter.ToSingle(Data, Offset);
 			ReturnValue = HexFloat;
-			//Console.WriteLine(ReturnValue);
+			return ReturnValue;
+		}
+		public static float ReadFloat(uint Offset, byte[] Data)
+        {
+			float ReturnValue;
+			ReturnValue = BitConverter.ToSingle(new byte[] { Data[Offset], Data[Offset + 1], Data[Offset + 2], Data[Offset + 3] }, 0);
 			return ReturnValue;
 		}
 		public static string ReadString(int Offset, int Length, byte[] Data) //TODO something ????!!!???
@@ -1068,10 +1074,30 @@ namespace USF4_Stage_Tool
 			}
 			return byteReturn;
 		}
+		public static byte[] ReadZeroTermStringToArray(uint offset, byte[] targetArray, uint targetArrayLength)
+		{
+
+			uint maxLen = targetArrayLength - offset;
+
+			uint length = 0;
+
+			for (uint i = 0; i < maxLen; i++)
+			{
+				if (targetArray[offset + i] == 0) { length = i; break; }
+			}
+
+			byte[] byteReturn = new byte[length];
+
+			for (uint i = 0; i < length; i++)
+			{
+				byteReturn[i] = targetArray[i + offset];
+			}
+			return byteReturn;
+		}
 
 		public static T[] Slice<T>(this T[] source, int start, int length)
 		{
-
+			if (length == 0) length = source.Length - start;
 			// Return new array.
 			T[] res = new T[length];
 			for (int i = 0; i < length; i++)

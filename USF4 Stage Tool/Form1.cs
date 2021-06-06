@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.Integration;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
 using System.Xml.Serialization;
@@ -527,6 +528,39 @@ namespace USF4_Stage_Tool
 					});
 				}
 			}
+			else if (uf.GetType() == typeof(BSR))
+			{
+				BSR bsr = (BSR)uf;
+
+				for (int i = 0; i < bsr.Physics.Count; i++)
+                {
+					TreeNode pn = new TreeNode()
+					{
+						Text = $"Physics Object {i}",
+						Tag = bsr.Physics[i]
+					};
+
+					for (int j = 0; j < bsr.Physics[i].NodeDataBlocks.Count; j++)
+                    {
+						pn.Nodes.Add(new TreeNode()
+						{
+							Text = $"{bsr.NodeNames[bsr.Physics[i].NodeDataBlocks[j].ID]}",
+							Tag = bsr.Physics[i].NodeDataBlocks[j]
+						});
+                    }
+					for (int j = 0; j < bsr.Physics[i].LimitDataBlocks.Count; j++)
+					{
+						pn.Nodes.Add(new TreeNode()
+						{
+							Text = $"Limit {bsr.Physics[i].LimitDataBlocks[j].ID1} > {bsr.Physics[i].LimitDataBlocks[j].ID2}",
+							Tag = bsr.Physics[i].LimitDataBlocks[j]
+						});
+					}
+
+					n.Nodes.Add(pn);
+                }
+
+            }
 			else if (uf.GetType() == typeof(EMB))
 			{
 				EMB emb = (EMB)uf;
@@ -586,6 +620,7 @@ namespace USF4_Stage_Tool
 							Tag = emo.Skeleton.Nodes[i]
 						});
 					}
+
 					n.Nodes.Add(nodeSkeleton);
 				}
 				else
@@ -624,6 +659,17 @@ namespace USF4_Stage_Tool
 							Text = ema.Skeleton.NodeNames[i],
 							Tag = ema.Skeleton.Nodes[i]
 						});
+					}
+					if (ema.Skeleton.IKNodes != null && ema.Skeleton.IKNodes.Count > 0)
+					{
+						for (int i = 0; i < ema.Skeleton.IKNodes.Count; i++)
+						{
+							nodeSkeleton.Nodes.Add(new TreeNode()
+							{
+								Text = Encoding.ASCII.GetString(ema.Skeleton.IKNodeNames[i]),
+								Tag = ema.Skeleton.IKNodes[i]
+							});
+						}
 					}
 					n.Nodes.Add(nodeSkeleton);
 				}
@@ -696,16 +742,27 @@ namespace USF4_Stage_Tool
 					title = e.Node.Text;
 					TreeDisplayEMMDetails((Material)e.Node.Tag);
 				}
+				if (e.Node.Tag.GetType() == typeof(PhysNode))
+                {
+					title = e.Node.Text;
+					TreeDisplayPhysNodeData((PhysNode)e.Node.Tag);
+                }
+				if (e.Node.Tag.GetType() == typeof(LimitData))
+				{
+					title = e.Node.Text;
+					TreeDisplayLimitData((LimitData)e.Node.Tag);
+				}
 				if (e.Node.Tag.GetType() == typeof(EMA))
 				{
 					title = e.Node.Text;
-					lbSelNODE_ListData.Items.Clear();
 					TreeDisplayEMAData((EMA)e.Node.Tag);
 				}
 				if (e.Node.Tag.GetType() == typeof(Animation))
 				{
+					newCM.Items.Add(new ToolStripMenuItem($"Generate KFs {LastSelectedTreeNodeU.Parent.Text}", null, cmEMAgenerateKeyFramesToolStripMenuItem_Click));
+					
 					title = e.Node.Text;
-					lbSelNODE_ListData.Items.Clear();
+					TreeDisplayAnimationData((Animation)e.Node.Tag);
 				}
 				if (e.Node.Tag.GetType() == typeof(DDS))
 				{
@@ -753,26 +810,33 @@ namespace USF4_Stage_Tool
 					newCM.Items.Add(new ToolStripMenuItem($"Expand {LastSelectedTreeNodeU.Text}", null, cmEMOexpandAllToolStripMenuItem_Click));
 					newCM.Items.Add(new ToolStripMenuItem($"Collapse {LastSelectedTreeNodeU.Text}", null, cmEMOcollapseAllToolStripMenuItem_Click));
 					pnlEO_EMO.Visible = true;
+					newCM.Items.Add(new ToolStripMenuItem($"Preview Skeleton {LastSelectedTreeNodeU.Text}", null, cmEMOpreviewSkeletonToolStripMenuItem_Click));
+
+
 					TreeDisplayEMOData((EMO)e.Node.Tag);
 					title = e.Node.Text;
 				}
 				if (e.Node.Tag.GetType() == typeof(EMG))
 				{
-					ToolStripMenuItem tsmiInjectObj = new ToolStripMenuItem($"Inject model into {LastSelectedTreeNodeU.Text} from...");
+					ToolStripMenuItem tsmiInjectFile = new ToolStripMenuItem($"Inject model into {LastSelectedTreeNodeU.Text} from...");
 					foreach (ModelFile f in master_ModelFileList)
                     {
 						if(f.GetType() == typeof(ObjFile))
                         {
-							tsmiInjectObj.DropDownItems.Add(new ToolStripMenuItem($"{f.Name}..."));
+							tsmiInjectFile.DropDownItems.Add(new ToolStripMenuItem($"{f.Name}..."));
 							foreach (ObjObject o in ((ObjFile)f).ObjObjects)
                             {
 								ToolStripMenuItem tsmiSelectedObjObject = new ToolStripMenuItem(o.Name, null, cmEMGinjectOBJToolStripMenuItem_Click);
 								tsmiSelectedObjObject.Tag = o;
-								((ToolStripMenuItem)tsmiInjectObj.DropDownItems[tsmiInjectObj.DropDownItems.Count-1]).DropDownItems.Add(tsmiSelectedObjObject);
+								((ToolStripMenuItem)tsmiInjectFile.DropDownItems[tsmiInjectFile.DropDownItems.Count-1]).DropDownItems.Add(tsmiSelectedObjObject);
 							}
                         }
+						else if (f.GetType() == typeof(SMDFile))
+                        {
+							tsmiInjectFile.DropDownItems.Add(new ToolStripMenuItem(f.Name, null, cmEMGinjectOBJToolStripMenuItem_Click));
+						}
                     }
-					newCM.Items.Add(tsmiInjectObj);
+					newCM.Items.Add(tsmiInjectFile);
 
 					if (e.Node.Parent != null)
 					{
@@ -812,6 +876,12 @@ namespace USF4_Stage_Tool
 				if (e.Node.Tag.GetType() == typeof(Node))
 				{
 					TreeDisplaySkelNodeData((Node)e.Node.Tag);
+
+					title = e.Node.Text;
+				}
+				if (e.Node.Tag.GetType() == typeof(IKNode))
+				{
+					TreeDisplaySkelIKNodeData((IKNode)e.Node.Tag);
 
 					title = e.Node.Text;
 				}
@@ -900,14 +970,39 @@ namespace USF4_Stage_Tool
 				AddPropertyLineToTextBox($"{sName.Replace("\0", "")} {sValue}");
 			}
 		}
-
+		void TreeDisplayPhysNodeData(PhysNode pn)
+        {
+			lbSelNODE_ListData.Items.Clear();
+			lbSelNODE_ListData.Items.Add($"ID: {pn.ID}");
+			lbSelNODE_ListData.Items.Add($"Float: {pn.LimitValues[0].ToString("0.000000")}");
+			lbSelNODE_ListData.Items.Add($"Float: {pn.LimitValues[1].ToString("0.000000")}");
+			lbSelNODE_ListData.Items.Add($"Float: {pn.LimitValues[2].ToString("0.000000")}");
+			lbSelNODE_ListData.Items.Add($"Float: {pn.LimitValues[3].ToString("0.000000")}");
+			lbSelNODE_ListData.Items.Add($"Float: {pn.LimitValues[4].ToString("0.000000")}");
+			lbSelNODE_ListData.Items.Add($"Float: {pn.LimitValues[5].ToString("0.000000")}");
+		}
+		void TreeDisplayLimitData(LimitData ld)
+        {
+			lbSelNODE_ListData.Items.Clear();
+			lbSelNODE_ListData.Items.Add($"Link: {ld.ID1} > {ld.ID2}");
+			lbSelNODE_ListData.Items.Add($"Bitflag: {ld.bitflag}");
+			lbSelNODE_ListData.Items.Add($"Limit Value: {ld.LimitValues[0].ToString("0.000000")}");
+			lbSelNODE_ListData.Items.Add($"Limit Value: {ld.LimitValues[1].ToString("0.000000")}");
+			lbSelNODE_ListData.Items.Add($"Limit Value: {ld.LimitValues[2].ToString("0.000000")}");
+			lbSelNODE_ListData.Items.Add($"Limit Value: {ld.LimitValues[3].ToString("0.000000")}");
+			lbSelNODE_ListData.Items.Add($"Limit Value: {ld.LimitValues[4].ToString("0.000000")}");
+			lbSelNODE_ListData.Items.Add($"Limit Value: {ld.LimitValues[5].ToString("0.000000")}");
+		}
 		void TreeDisplaySkeletonData(Skeleton skel)
         {
 			lbSelNODE_ListData.Items.Clear();
 
-			for (int i = 0; i < skel.Nodes.Count; i++)
-            {
-				lbSelNODE_ListData.Items.Add($"{i}:\t{skel.NodeNames[i]}");
+			if (skel.Nodes != null)
+			{
+				for (int i = 0; i < skel.Nodes.Count; i++)
+				{
+					lbSelNODE_ListData.Items.Add($"{i}:\t{skel.NodeNames[i]}");
+				}
 			}
         }
 
@@ -916,10 +1011,6 @@ namespace USF4_Stage_Tool
 			lvShaderProperties.Text = lvShaderProperties.Text + Line + Environment.NewLine;
 		}
 
-		void GetNodeParent(TreeNode node, int ParrentUP)
-		{
-			//node.
-		}
 		void OpenEMONode(bool SelectTheEMG) //false for deleting so we select only the EMO
 		{
 			//tvTree.SelectedNode = LastSe; //FIX
@@ -944,12 +1035,39 @@ namespace USF4_Stage_Tool
 			lbSelNODE_ListData.Items.Add($"Animation Count: {ema.AnimationCount}");
 			lbSelNODE_ListData.Items.Add($"Skeleton node count: {ema.Skeleton.NodeCount}");
 		}
+		void TreeDisplayAnimationData(Animation a)
+        {
+			lbSelNODE_ListData.Items.Clear();
+			lbSelNODE_ListData.Items.Add($"Duration: {a.Duration}");
+			lbSelNODE_ListData.Items.Add($"CMD Track Count: {a.CMDTracks.Count}");
+			lbSelNODE_ListData.Items.Add($"Value Count: {a.ValueCount}");
+			lbSelNODE_ListData.Items.Add($"CMD Tracks:");
+
+			Skeleton s = ((EMA)LastSelectedTreeNodeU.Parent.Tag).Skeleton;
+
+			for (int i = 0; i < a.CMDTracks.Count; i++)
+            {
+				lbSelNODE_ListData.Items.Add($"{i} - TRS {a.CMDTracks[i].TransformType} / XYZ {(a.CMDTracks[i].BitFlag & 0x03)} / B {a.CMDTracks[i].BoneID} {s.NodeNames[a.CMDTracks[i].BoneID]} {s.Nodes[a.CMDTracks[i].BoneID].BitFlag}");
+			}
+		}
 		void TreeDisplaySkelNodeData(Node node)
 		{
+			Skeleton s = (Skeleton)LastSelectedTreeNodeU.Parent.Tag;
 			lbSelNODE_ListData.Items.Clear();
 			lbSelNODE_ListData.Items.Add($"Parent ID: {node.Parent}");
 			lbSelNODE_ListData.Items.Add($"Child ID: {node.Child1}");
 			lbSelNODE_ListData.Items.Add($"Sibling ID: {node.Sibling}");
+			lbSelNODE_ListData.Items.Add($"Bitflag: {node.BitFlag}");
+			lbSelNODE_ListData.Items.Add($"PreMartix Float: {node.PreMatrixFloat}");
+			lbSelNODE_ListData.Items.Add($"PreMartix Float: {node.PreMatrixFloat}");
+			string FFstring = string.Empty;
+			byte[] ff = s.FFList[LastSelectedTreeNodeU.Index];
+			foreach (byte b in ff)
+            {
+				FFstring += $" {b}";
+            }
+			lbSelNODE_ListData.Items.Add($"FF: {FFstring}");
+
 
 			//Utils.DecomposeMatrixNaive(node.NodeMatrix, out float tx, out float ty, out float tz, out float rx, out float ry, out float rz);
 			Utils.DecomposeMatrixXYZ(node.NodeMatrix, out float tx, out float ty, out float tz, out float rx, out float ry, out float rz, out _, out _, out _);
@@ -963,6 +1081,16 @@ namespace USF4_Stage_Tool
 			Utils.DecomposeMatrixXYZ(inverse, out tx, out ty, out tz, out rx, out ry, out rz, out _, out _, out _);
 			lbSelNODE_ListData.Items.Add($"SBP Position: ({tx.ToString("0.0000")}, {ty.ToString("0.0000")}, {tz.ToString("0.0000")})");
 			lbSelNODE_ListData.Items.Add($"SBP Rotation: ({rx.ToString("0.0000")}, {ry.ToString("0.0000")}, {rz.ToString("0.0000")})");
+		}
+		void TreeDisplaySkelIKNodeData(IKNode iknode)
+        {
+			lbSelNODE_ListData.Items.Clear();
+			lbSelNODE_ListData.Items.Add($"Nodes?:");
+			Skeleton s = (Skeleton)LastSelectedTreeNodeU.Parent.Tag;
+			for (int i = 0; i < iknode.BoneList.Count; i++)
+            {
+				lbSelNODE_ListData.Items.Add($"{i} {s.NodeNames[iknode.BoneList[i]]} {s.Nodes[iknode.BoneList[i]].BitFlag}");
+			}
 		}
 		void TreeDisplayEMGData(EMG emg)
 		{
@@ -1147,7 +1275,7 @@ namespace USF4_Stage_Tool
 
 						if (filepath.Contains("tex.emz"))
 						{
-							WorkingTEXEMZ = new EMB(bytes);
+							WorkingTEXEMZ = new EMB(bytes, diagOpenOBJ.SafeFileName);
 							TargetTEXEMZFilePath = filepath;
 							TargetTEXEMZFileName = friendlyName;
 							RefreshTree(tvTreeUSF4);
@@ -1155,7 +1283,7 @@ namespace USF4_Stage_Tool
 						}
 						else
 						{
-							WorkingEMZ = new EMB(bytes);
+							WorkingEMZ = new EMB(bytes, diagOpenOBJ.SafeFileName);
 							TargetEMZFilePath = filepath;
 							TargetEMZFileName = friendlyName;
 							FillShaderComboBox();
@@ -4043,6 +4171,82 @@ namespace USF4_Stage_Tool
 
 		}
 
+		private void AddEMOSkeletontoPreview(EMO emo)
+		{
+			
+			foreach (Node n in emo.Skeleton.Nodes)
+			{
+				//Find world transform
+				Node node = n;
+				Matrix4x4 m = n.NodeMatrix;
+
+				while (node.Parent != -1)
+                {
+					node = emo.Skeleton.Nodes[node.Parent];
+					m = Matrix4x4.Multiply(m, node.NodeMatrix);
+                }
+
+				uc.AddModel(new GeometryModel3D()
+				{
+					
+					Transform = new Transform3DGroup()
+					{
+						Children = new Transform3DCollection()
+						{
+							new MatrixTransform3D(new Matrix3D()
+							{
+								M11 = m.M11, M12 = m.M12, M13 = m.M13, M14 = m.M14,
+								M21 = m.M21, M22 = m.M22, M23 = m.M23, M24 = m.M24,
+								M31 = m.M31, M32 = m.M32, M33 = m.M33, M34 = m.M34,
+								OffsetX = m.M41, OffsetY = m.M42, OffsetZ = m.M43, M44 = m.M44,
+							}),
+							new ScaleTransform3D(-1, 1, 1),
+							//new TranslateTransform3D(m.M41, m.M42, m.M43)
+						}
+					},
+					Geometry = new MeshGeometry3D()
+					{
+						Positions = new Point3DCollection()
+                        {
+							new Point3D(0.0100000,0.0100000,-0.0100000),
+							new Point3D(0.0100000,-0.0100000,-0.0100000),
+							new Point3D(0.0100000,0.0100000,0.0100000),
+							new Point3D(0.0100000,-0.0100000,0.0100000),
+							new Point3D(-0.0100000,0.0100000,-0.0100000),
+							new Point3D(-0.0100000,-0.0100000,-0.0100000),
+							new Point3D(-0.0100000,0.0100000,0.0100000),
+							new Point3D(-0.0100000,-0.0100000,0.0100000),
+						},
+						TriangleIndices = new Int32Collection()
+                        {
+							4,2,0,
+							2,7,3,
+							6,5,7,
+							1,7,5,
+							0,3,1,
+							4,1,5,
+							4,6,2,
+							2,6,7,
+							6,4,5,
+							1,3,7,
+							0,2,3,
+							4,0,1
+						}
+					},
+					Material = new DiffuseMaterial()
+					{
+						Brush = new SolidColorBrush()
+						{
+							Color = System.Windows.Media.Color.FromRgb(0, 255, 0),
+							Opacity = 1
+						}
+					}
+				});
+			}
+
+		}
+
+
 		private void AddEMGtoPreview(EMO emo, EMG emg)
 		{
 
@@ -4153,12 +4357,12 @@ namespace USF4_Stage_Tool
 						}
 						else //Default to solid color Red if there's no matching dds
 						{
-							mg.Children.Add(new DiffuseMaterial()
+							mg.Children.Add(new EmissiveMaterial()
 							{
 								Brush = new SolidColorBrush()
 								{
 									Color = System.Windows.Media.Color.FromRgb(255, 0, 0),
-									Opacity = 1
+									Opacity = 0.5
 								}
 							});
 						}
@@ -4662,17 +4866,7 @@ namespace USF4_Stage_Tool
 
 			int FileType = Utils.ReadInt(true, 0, bytes);
 
-			USF4File file;
-
-			if (FileType == USF4Methods.EMO) file = new EMO();
-			else if (FileType == USF4Methods.EMM) file = new EMM();
-			else if (FileType == USF4Methods.EMB) file = new EMB();
-			else if (FileType == USF4Methods.LUA) file = new LUA();
-			else if (FileType == USF4Methods.EMA) file = new EMA();
-			else if (FileType == USF4Methods.CSB) file = new CSB();
-			else if (FileType == USF4Methods.DDS) file = new DDS();
-			else if (FileType == USF4Methods.EMG) file = new EMG();
-			else file = new OtherFile();
+			USF4File file = USF4Methods.CheckFile(FileType);
 
 			file.ReadFile(bytes);
 			file.Name = diagOpenOBJ.SafeFileName;
@@ -4758,6 +4952,25 @@ namespace USF4_Stage_Tool
 			while (n.Parent != null) n = n.Parent;
 			master_ModelFileList.RemoveAt(n.Index);
 			RefreshTree(tvTreeModel);
+        }
+
+        private void cmEMOpreviewSkeletonToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			AddEMOSkeletontoPreview((EMO)LastSelectedTreeNodeU.Tag);
+        }
+
+        private void cmEMAgenerateKeyFramesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			EMA ema = (EMA)LastSelectedTreeNodeU.Parent.Tag;
+			Animation anim = (Animation)LastSelectedTreeNodeU.Tag;
+
+			//ANIMATIONS ARE APPLIED TO MODEL GROUPS, NOT MODELS
+
+			for (int i = 0; i < ema.Skeleton.Nodes.Count; i++)
+            {
+				Node n = ema.Skeleton.Nodes[i];
+				SingleAnimationUsingKeyFrames saufk = Anim.GenerateKeyFrames(anim, i, 0, 0);
+            }
         }
     }
 }

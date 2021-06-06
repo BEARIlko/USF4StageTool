@@ -192,6 +192,7 @@
             this.previewEMOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.eMOToLibraryControllerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.eMOToLibraryGeometryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.previewSkeletonExperimentalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.UniversalContext = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.cmUNIVcloseFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -202,6 +203,7 @@
             this.generateEMOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openFileToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.closeFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.generateKeyFramesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pnlOBJECTS.SuspendLayout();
             this.pSelectedTreeNodeData.SuspendLayout();
             this.pnlEO_SUBMOD.SuspendLayout();
@@ -1627,9 +1629,10 @@
             this.DeleteAnimaiontoolStripMenuItem3,
             this.dumpRefPoseToSMDToolStripMenuItem,
             this.rawDumpEMAToolStripMenuItem,
-            this.deleteEMAToolStripMenuItem});
+            this.deleteEMAToolStripMenuItem,
+            this.generateKeyFramesToolStripMenuItem});
             this.emaContext.Name = "treeContext";
-            this.emaContext.Size = new System.Drawing.Size(198, 136);
+            this.emaContext.Size = new System.Drawing.Size(198, 180);
             this.emaContext.Opening += new System.ComponentModel.CancelEventHandler(this.animationContext_Opening);
             // 
             // InjectAnimationtoolStripMenuItem1
@@ -1688,9 +1691,10 @@
             this.rawDumpEMOAsSMDToolStripMenuItem,
             this.previewEMOToolStripMenuItem,
             this.eMOToLibraryControllerToolStripMenuItem,
-            this.eMOToLibraryGeometryToolStripMenuItem});
+            this.eMOToLibraryGeometryToolStripMenuItem,
+            this.previewSkeletonExperimentalToolStripMenuItem});
             this.emoContext.Name = "luaContext";
-            this.emoContext.Size = new System.Drawing.Size(259, 268);
+            this.emoContext.Size = new System.Drawing.Size(259, 290);
             this.emoContext.Opening += new System.ComponentModel.CancelEventHandler(this.emoContext_Opening);
             // 
             // insertOBJAsNewEMGToolStripMenuItem1
@@ -1777,6 +1781,13 @@
             this.eMOToLibraryGeometryToolStripMenuItem.Text = "EMO to Library_Geometry";
             this.eMOToLibraryGeometryToolStripMenuItem.Click += new System.EventHandler(this.eMOToLibraryGeometryToolStripMenuItem_Click);
             // 
+            // previewSkeletonExperimentalToolStripMenuItem
+            // 
+            this.previewSkeletonExperimentalToolStripMenuItem.Name = "previewSkeletonExperimentalToolStripMenuItem";
+            this.previewSkeletonExperimentalToolStripMenuItem.Size = new System.Drawing.Size(258, 22);
+            this.previewSkeletonExperimentalToolStripMenuItem.Text = "Preview Skeleton (Experimental)";
+            this.previewSkeletonExperimentalToolStripMenuItem.Click += new System.EventHandler(this.cmEMOpreviewSkeletonToolStripMenuItem_Click);
+            // 
             // UniversalContext
             // 
             this.UniversalContext.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -1852,6 +1863,13 @@
             this.closeFileToolStripMenuItem.Size = new System.Drawing.Size(150, 22);
             this.closeFileToolStripMenuItem.Text = "Close File";
             this.closeFileToolStripMenuItem.Click += new System.EventHandler(this.cmMODcloseFileToolStripMenuItem_Click);
+            // 
+            // generateKeyFramesToolStripMenuItem
+            // 
+            this.generateKeyFramesToolStripMenuItem.Name = "generateKeyFramesToolStripMenuItem";
+            this.generateKeyFramesToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
+            this.generateKeyFramesToolStripMenuItem.Text = "Generate KeyFrames";
+            this.generateKeyFramesToolStripMenuItem.Click += new System.EventHandler(this.cmEMAgenerateKeyFramesToolStripMenuItem_Click);
             // 
             // Form1
             // 
@@ -2079,6 +2097,8 @@
         private System.Windows.Forms.ToolStripMenuItem openFileToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem generateEMOToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem closeFileToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem previewSkeletonExperimentalToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem generateKeyFramesToolStripMenuItem;
     }
 }
 
