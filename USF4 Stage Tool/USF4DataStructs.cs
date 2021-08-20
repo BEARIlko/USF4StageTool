@@ -140,7 +140,7 @@ namespace USF4_Stage_Tool
 				Utils.UpdateIntAtPosition(Data, FileNamePointerPositions[i], Data.Count);
 				FileNamePointersList[i] = Data.Count;
 
-				Data.AddRange(Encoding.ASCII.GetBytes(FileNamesList[i]));
+				Data.AddRange(Encoding.ASCII.GetBytes(Files[i].Name));
 				Utils.AddCopiedBytes(Data, 0x00, 0x01, new byte[] { 0x00 });
 			}
 
@@ -260,6 +260,93 @@ namespace USF4_Stage_Tool
 			GenerateBytes();
 		}
 	}
+
+	public class RY2 : USF4File
+    {
+		public int PhysicsCount;
+		public int PhysicsIndexPointer;
+		public int PhysicsNamesCount;
+		public int PhysicsNamesIndexPointer;
+
+		public RY2()
+		{
+
+		}
+
+		public RY2(byte[] Data, string name)
+        {
+			Name = name;
+			ReadFile(Data);
+        }
+
+		public override void ReadFile(byte[] Data)
+		{
+			PhysicsCount = Utils.ReadInt(true, 0x10, Data);
+			PhysicsIndexPointer = Utils.ReadInt(true, 0x14, Data);
+			PhysicsNamesCount = Utils.ReadInt(true, 0x18, Data);
+			PhysicsNamesIndexPointer = Utils.ReadInt(true, 0x1C, Data);
+
+			for (int i = 0; i < PhysicsCount; i++)
+			{
+
+			}
+		}
+	}
+
+	public struct SCD
+	{
+		public byte[] HEXBytes;
+		public int NodeNameIndexPointer;
+		public float Gravity;
+		public float AirResistance;
+
+		public int PreNodeCount;
+		public int PreNodePointer;
+		public int PTCCount;
+		public int PTCPointer;
+		public int JNTCount;
+		public int JNTPointer;
+		public int COLCount;
+		public int COLPointer;
+		public int NodeNameCount;
+		public int NodeNameIndexPointer2;
+
+		public List<byte> FFFF;
+
+		public SCD(byte[] Data)
+        {
+			HEXBytes = Data;
+			NodeNameIndexPointer = Utils.ReadInt(true, 0x04, Data);
+			Gravity = Utils.ReadFloat(0x08, Data);
+			AirResistance = Utils.ReadFloat(0x0C, Data);
+
+			PreNodeCount = Utils.ReadInt(true, 0x10, Data);
+			PreNodePointer = Utils.ReadInt(true, 0x14, Data);
+			PTCCount = Utils.ReadInt(true, 0x18, Data);
+			PTCPointer = Utils.ReadInt(true, 0x1C, Data);
+			JNTCount = Utils.ReadInt(true, 0x20, Data);
+			JNTPointer = Utils.ReadInt(true, 0x24, Data);
+			COLCount = Utils.ReadInt(true, 0x28, Data);
+			COLPointer = Utils.ReadInt(true, 0x2C, Data);
+			NodeNameCount = Utils.ReadInt(true, 0x30, Data);
+			NodeNameIndexPointer2 = Utils.ReadInt(true, 0x34, Data);
+
+			FFFF = Utils.Slice(Data, 0x38, 0x08).ToList();
+
+			for (int i = 0; i < PreNodeCount; i++)
+            {
+
+            }
+		}
+	}
+
+	public struct PTC
+    {
+		public int ptcID;
+		public int ID1;
+		public int ID2;
+		public List<float> PTCFloats;
+    }
 
 	public class BSR : USF4File
     {
@@ -388,13 +475,13 @@ namespace USF4_Stage_Tool
 	public struct Physic
     {
 		public byte[] HEXBytes;
-		float Gravity;
-		float AirResistance;
-		float MysteryFloat0x08;	//Often these two floats seem to be zero
-		float MysteryFloat0x0C; //non-zero if there's a mystery data block?
+		public float Gravity;
+		public float AirResistance;
+		public float MysteryFloat0x08;  //Often these two floats seem to be zero
+		public float MysteryFloat0x0C; //non-zero if there's a mystery data block?
 
-		public int PreNodeCount;
-		public int PreNodePointer;
+		public int ChainLengthsCount;
+		public int ChainLengthsPointer;
 		public int NodeDataCount;
 		public int NodeDataPointer;
 
@@ -403,8 +490,8 @@ namespace USF4_Stage_Tool
 		public int MysteryDataCount;
 		public int MysteryDataPointer;
 
-		public List<int> PreNodeInts;
-		public List<float[]> PreNodeFloats;
+		public List<int> ChainLengthsList;
+		public List<float[]> ChainFloatsList; //Still not sure about these
 		public List<PhysNode> NodeDataBlocks;
 		public List<LimitData> LimitDataBlocks;
 		public List<MysteryData> MysteryDataBlocks;
@@ -416,8 +503,8 @@ namespace USF4_Stage_Tool
 			AirResistance = Utils.ReadFloat(0x04, Data);
 			MysteryFloat0x08 = Utils.ReadFloat(0x08, Data);
 			MysteryFloat0x0C = Utils.ReadFloat(0x0C, Data);
-			PreNodeCount = Utils.ReadInt(true, 0x10, Data);
-			PreNodePointer = Utils.ReadInt(true, 0x14, Data);
+			ChainLengthsCount = Utils.ReadInt(true, 0x10, Data);
+			ChainLengthsPointer = Utils.ReadInt(true, 0x14, Data);
 			NodeDataCount = Utils.ReadInt(true, 0x18, Data);
 			NodeDataPointer = Utils.ReadInt(true, 0x1C, Data);
 			LimitDataCount = Utils.ReadInt(true, 0x20, Data);
@@ -425,16 +512,16 @@ namespace USF4_Stage_Tool
 			MysteryDataCount = Utils.ReadInt(true, 0x28, Data);
 			MysteryDataPointer = Utils.ReadInt(true, 0x2C, Data);
 
-			PreNodeInts = new List<int>();
-			PreNodeFloats = new List<float[]>();
-			for (int i = 0; i < PreNodeCount; i++)
+			ChainLengthsList = new List<int>();
+			ChainFloatsList = new List<float[]>();
+			for (int i = 0; i < ChainLengthsCount; i++)
             {
-				PreNodeInts.Add(Utils.ReadInt(true, PreNodePointer + i * 12, Data));
-				PreNodeFloats.Add(new float[] { Utils.ReadFloat(PreNodePointer + i * 12 + 4, Data),
-												Utils.ReadFloat(PreNodePointer + i * 12 + 8, Data)});
-				if (PreNodeFloats[i][1] != 0)
+				ChainLengthsList.Add(Utils.ReadInt(true, ChainLengthsPointer + i * 12, Data));
+				ChainFloatsList.Add(new float[] { Utils.ReadFloat(ChainLengthsPointer + i * 12 + 4, Data),
+												Utils.ReadFloat(ChainLengthsPointer + i * 12 + 8, Data)});
+				if (ChainFloatsList[i][1] != 0)
                 {
-					Console.WriteLine($"Prenodefloat {i} {PreNodeFloats[i][1]}");
+					Console.WriteLine($"Prenodefloat {i} {ChainFloatsList[i][1]}");
                 }
             }
 			NodeDataBlocks = new List<PhysNode>();
@@ -493,9 +580,9 @@ namespace USF4_Stage_Tool
 			Utils.AddFloatAsBytes(Data, MysteryFloat0x08);
 			Utils.AddFloatAsBytes(Data, MysteryFloat0x0C);
 			//0x10
-			Utils.AddIntAsBytes(Data, PreNodeCount, true);
+			Utils.AddIntAsBytes(Data, ChainLengthsCount, true);
 			int PreNodePointerPosition = Data.Count;
-			Utils.AddIntAsBytes(Data, PreNodePointer, true);
+			Utils.AddIntAsBytes(Data, ChainLengthsPointer, true);
 			Utils.AddIntAsBytes(Data, NodeDataCount, true);
 			int NodeDataPointerPosition = Data.Count;
 			Utils.AddIntAsBytes(Data, NodeDataPointer, true);
@@ -508,11 +595,11 @@ namespace USF4_Stage_Tool
 			Utils.AddIntAsBytes(Data, MysteryDataPointer, true);
 			//0x30
 			Utils.UpdateIntAtPosition(Data, PreNodePointerPosition, Data.Count);
-			for (int i = 0; i < PreNodeCount; i++)
+			for (int i = 0; i < ChainLengthsCount; i++)
             {
-				Utils.AddIntAsBytes(Data, PreNodeInts[i], true);
-				Utils.AddFloatAsBytes(Data, PreNodeFloats[i][0]);
-				Utils.AddFloatAsBytes(Data, PreNodeFloats[i][1]);
+				Utils.AddIntAsBytes(Data, ChainLengthsList[i], true);
+				Utils.AddFloatAsBytes(Data, ChainFloatsList[i][0]);
+				Utils.AddFloatAsBytes(Data, ChainFloatsList[i][1]);
 			}
 			Utils.UpdateIntAtPosition(Data, NodeDataPointerPosition, Data.Count);
 			for (int i = 0; i < NodeDataCount; i++)
@@ -691,7 +778,7 @@ namespace USF4_Stage_Tool
 					CMDTrack WorkingCMD = new CMDTrack();
 					WorkingCMD.BoneID = Utils.ReadInt(false, curCmdOS, Data);
 					WorkingCMD.TransformType = Data[curCmdOS + 0x02];
-					WorkingCMD.BitFlag = Data[curCmdOS + 0x03];
+					WorkingCMD.BitFlag = (byte)(Data[curCmdOS + 0x03]);
 					WorkingCMD.StepCount = Utils.ReadInt(false, curCmdOS + 0x04, Data);
 					WorkingCMD.IndicesListPointer = Utils.ReadInt(false, curCmdOS + 0x06, Data);
 
@@ -1179,7 +1266,7 @@ namespace USF4_Stage_Tool
 		public List<string> NodeNames;
 		public List<IKNode> IKNodes;
 		public List<int> IKNamePointersList;
-		public List<byte[]> IKNodeNames;
+		public List<string> IKNodeNames;
 		public List<IKDataBlock> IKDataBlocks;
 
 		public Skeleton(byte[] Data)
@@ -1192,7 +1279,7 @@ namespace USF4_Stage_Tool
 			FFList = new List<byte[]>();
 			IKNodes = new List<IKNode>();
 			IKNamePointersList = new List<int>();
-			IKNodeNames = new List<byte[]>();
+			IKNodeNames = new List<string>();
 			IKDataBlocks = new List<IKDataBlock>();
 
 			NodeCount = Utils.ReadInt(false, 0x00, Data);
@@ -1291,7 +1378,7 @@ namespace USF4_Stage_Tool
 					}
 
 					IKNamePointersList.Add(Utils.ReadInt(true, IKObjectNameIndexPointer + i * 0x04, Data));
-					IKNodeNames.Add(Utils.ReadZeroTermStringToArray(IKNamePointersList[i], Data, Data.Length));
+					IKNodeNames.Add(Encoding.ASCII.GetString(Utils.ReadZeroTermStringToArray(IKNamePointersList[i], Data, Data.Length)));
 
 					IKNodes.Add(wIK);
 				}
@@ -1309,26 +1396,28 @@ namespace USF4_Stage_Tool
 						IKShorts = new List<int>(),
 						IKFloats = new List<float>(),
 
-						BitFlag = Utils.ReadInt(false, CurrentBlockStartPosition, Data),
-						Length = Utils.ReadInt(false, CurrentBlockStartPosition + 0x02, Data)
+						Method = Utils.ReadInt(false, CurrentBlockStartPosition, Data),
+						Length = Utils.ReadInt(false, CurrentBlockStartPosition + 0x02, Data),
+						Flag0x00 = Data[CurrentBlockStartPosition + 0x04],
+						Flag0x01 = Data[CurrentBlockStartPosition + 0x05]
 					};
 
-					if (wIKData.BitFlag == 0x00)
+					if (wIKData.Method == 0x00)
 					{
-						for (int j = 0; j < wIKData.Length - 0x04; j += 2)
+						for (int j = 0; j < wIKData.Length - 0x06; j += 2)
 						{
-							wIKData.IKShorts.Add(Utils.ReadInt(false, CurrentBlockStartPosition + j + 0x04, Data));
+							wIKData.IKShorts.Add(Utils.ReadInt(false, CurrentBlockStartPosition + j + 0x06, Data));
 						}
 					}
-					else if (wIKData.BitFlag == 0x01)
+					else if (wIKData.Method == 0x01)
 					{
-						for (int j = 0; j < wIKData.Length - 0x10; j += 2) //- 0x10 because first 0x04 bytes are the "header", last 0x0C bytes are the floats
+						for (int j = 0; j < wIKData.Length - 0x12; j += 2) //- 0x12 because first 0x06 bytes are the "header" and flag, last 0x0C bytes are the floats
 						{
-							wIKData.IKShorts.Add(Utils.ReadInt(false, CurrentBlockStartPosition + j + 0x04, Data));
+							wIKData.IKShorts.Add(Utils.ReadInt(false, CurrentBlockStartPosition + j + 0x06, Data));
 						}
 						for (int j = 0; j < 3; j++)
 						{
-							wIKData.IKFloats.Add(Utils.ReadFloat(CurrentBlockStartPosition + 0x04 + wIKData.IKShorts.Count * 0x02 + j * 0x04, Data));
+							wIKData.IKFloats.Add(Utils.ReadFloat(CurrentBlockStartPosition + 0x06 + wIKData.IKShorts.Count * 0x02 + j * 0x04, Data));
 						}
 					}
 					else
@@ -1458,7 +1547,7 @@ namespace USF4_Stage_Tool
 				Utils.UpdateIntAtPosition(Data, IKDataPointerPosition, Data.Count);
 				for (int i = 0; i < IKDataCount; i++)
 				{
-					Utils.AddIntAsBytes(Data, IKDataBlocks[i].BitFlag, false);
+					Utils.AddIntAsBytes(Data, IKDataBlocks[i].Method, false);
 					Utils.AddIntAsBytes(Data, IKDataBlocks[i].Length, false);
 					for (int j = 0; j < IKDataBlocks[i].IKShorts.Count; j++)
 					{
@@ -1500,7 +1589,7 @@ namespace USF4_Stage_Tool
 				for (int i = 0; i < IKObjectCount; i++)
 				{
 					Utils.UpdateIntAtPosition(Data, IKObjectNamePointers[i], Data.Count);
-					Utils.AddCopiedBytes(Data, 0x00, IKNodeNames[i].Length, IKNodeNames[i]);
+					Data.AddRange(Encoding.ASCII.GetBytes(IKNodeNames[i]));
 					Data.Add(0x00);
 				}
 			}
@@ -1508,6 +1597,116 @@ namespace USF4_Stage_Tool
 
 			HEXBytes = Data.ToArray();
 		}
+	}
+
+	public struct AnimatedSkeleton
+    {
+		public List<AnimatedNode> AnimatedNodes;
+		public List<string> NodeNames;
+		public List<IKNode> IKNodes;
+		public List<string> IKNodeNames;
+		public List<IKDataBlock> IKDataBlocks;
+
+		public AnimatedSkeleton SetupSkeleton(Skeleton s)
+        {
+			AnimatedNodes = new List<AnimatedNode>();
+			NodeNames = new List<string>(s.NodeNames);
+			IKNodes = new List<IKNode>(s.IKNodes);
+			IKNodeNames = new List<string>(s.IKNodeNames);
+			IKDataBlocks = new List<IKDataBlock>(s.IKDataBlocks);
+
+			foreach (Node n in s.Nodes)
+            {
+				AnimatedNodes.Add(new AnimatedNode() { ID = AnimatedNodes.Count }.SetupNode(n));
+            }
+
+			return this;
+        }
+	}
+
+	public struct AnimatedNode
+    {
+		public string Name;
+		public int ID;
+		public int Parent;
+		public int Child1;
+		public int Sibling;
+		public int BitFlag;
+		
+		public float PreMatrixFloat;
+		public Matrix4x4 NodeMatrix;
+		public Vector3 Translation;
+		public Vector3 Rotation; //RADIANS
+		public Vector3 Scale;
+		public Quaternion RotationQuaternion;
+
+		public short number;
+		public short absolute;
+		public bool animationProcessingDone;
+		public bool IKanimatedNode;
+
+		public bool animatedAbsoluteRotationFlag;
+		public bool animatedAbsoluteScaleFlag;
+		public bool animatedAbsoluteTranslationFlag;
+
+
+		public Matrix4x4 animatedMatrix;
+		public Matrix4x4 animatedLocalMatrix;
+		public Vector3 animatedTranslation;
+		public Vector3 animatedRotation; //RADIANS
+		public Vector3 animatedScale;
+		public Quaternion animatedRotationQuaternion;
+
+		public AnimatedNode SetupNode(Node n)
+        {
+			Name = n.Name;
+			Parent = n.Parent;
+			Child1 = n.Child1;
+			Sibling = n.Sibling;
+			BitFlag = n.BitFlag;
+			PreMatrixFloat = n.PreMatrixFloat;
+			NodeMatrix = n.NodeMatrix;
+			animatedMatrix = n.NodeMatrix;
+
+			animationProcessingDone = false;
+			IKanimatedNode = false;
+
+			animatedAbsoluteRotationFlag = false;
+			animatedAbsoluteScaleFlag = false;
+			animatedAbsoluteTranslationFlag = false;
+
+			Matrix4x4.Decompose(NodeMatrix, out Scale, out RotationQuaternion, out Translation);
+			Utils.DecomposeMatrix_AE(NodeMatrix, out _, out _, out _, out Rotation.X, out Rotation.Y, out Rotation.Z, out _, out _, out _);
+
+			animatedTranslation = Translation;
+			animatedRotation = Rotation;
+			animatedScale = Scale;
+			animatedRotationQuaternion = RotationQuaternion;
+
+			return this;
+        }
+
+		public AnimatedNode ResetNode()
+        {
+			if (!IKanimatedNode)
+			{
+				animatedMatrix = NodeMatrix;
+				animationProcessingDone = false;
+				animatedAbsoluteRotationFlag = false;
+				animatedAbsoluteScaleFlag = false;
+				animatedAbsoluteTranslationFlag = false;
+
+				Matrix4x4.Decompose(NodeMatrix, out Scale, out RotationQuaternion, out Translation);
+				Utils.DecomposeMatrix_AE(NodeMatrix, out _, out _, out _, out Rotation.X, out Rotation.Y, out Rotation.Z, out _, out _, out _);
+
+				animatedTranslation = Translation;
+				animatedRotation = Rotation;
+				animatedScale = Scale;
+				animatedRotationQuaternion = RotationQuaternion;
+			}
+
+			return this;
+        }
 	}
 
 	public struct Node
@@ -1534,8 +1733,10 @@ namespace USF4_Stage_Tool
 
 	public struct IKDataBlock
 	{
-		public int BitFlag;
+		public int Method;
 		public int Length;
+		public int Flag0x00;
+		public int Flag0x01;
 		public List<int> IKShorts;
 		public List<float> IKFloats;
 	}

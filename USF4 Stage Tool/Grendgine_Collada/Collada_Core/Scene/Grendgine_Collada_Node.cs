@@ -23,21 +23,21 @@ namespace grendgine_collada
 
 		[XmlAttribute("layer")]
 		public string Layer;				
-		
-		[XmlElement(ElementName = "lookat")]
-		public Grendgine_Collada_Lookat[] Lookat;
-
-		[XmlElement(ElementName = "matrix")]
-		public Grendgine_Collada_Matrix[] Matrix;
 
 		[XmlElement(ElementName = "translate")]
 		public Grendgine_Collada_Translate[] Translate;
-
+		
 		[XmlElement(ElementName = "rotate")]
 		public Grendgine_Collada_Rotate[] Rotate;
 
 		[XmlElement(ElementName = "scale")]
 		public Grendgine_Collada_Scale[] Scale;
+
+		[XmlElement(ElementName = "lookat")]
+		public Grendgine_Collada_Lookat[] Lookat;
+
+		[XmlElement(ElementName = "matrix")]
+		public Grendgine_Collada_Matrix[] Matrix;
 
 		[XmlElement(ElementName = "skew")]
 		public Grendgine_Collada_Skew[] Skew;

@@ -38,6 +38,7 @@ namespace USF4_Stage_Tool
 		public static int LUA = 0x61754C1B;
 		public static int DDS = 0x20534444;
 		public static int BSR = 0x52534223;
+		public static int RY2 = 0x59523223;
 
 		public static USF4File CheckFile(byte[] Data)
         {
@@ -55,6 +56,7 @@ namespace USF4_Stage_Tool
 			else if (FileNumber == LUA) return new LUA();
 			else if (FileNumber == DDS) return new DDS();
 			else if (FileNumber == BSR) return new BSR();
+			else if (FileNumber == RY2) return new RY2();
 			else return new USF4File();
 		}
 	}

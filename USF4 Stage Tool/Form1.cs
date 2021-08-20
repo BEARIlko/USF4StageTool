@@ -21,6 +21,7 @@ using System.Windows.Media.Media3D;
 using System.Xml.Serialization;
 using static CSharpImageLibrary.ImageFormats;
 using static KopiLua.Lua;
+using Quaternion = System.Numerics.Quaternion;
 
 namespace USF4_Stage_Tool
 {
@@ -616,7 +617,7 @@ namespace USF4_Stage_Tool
 					{
 						nodeSkeleton.Nodes.Add(new TreeNode()
 						{
-							Text = emo.Skeleton.NodeNames[i],
+							Text = $"{i} {emo.Skeleton.NodeNames[i]}",
 							Tag = emo.Skeleton.Nodes[i]
 						});
 					}
@@ -641,7 +642,7 @@ namespace USF4_Stage_Tool
 				{
 					n.Nodes.Add(new TreeNode()
 					{
-						Text = Encoding.ASCII.GetString(ema.Animations[i].Name),
+						Text = $"{i} {Encoding.ASCII.GetString(ema.Animations[i].Name)}",
 						Tag = ema.Animations[i]
 					});
 				}
@@ -656,7 +657,7 @@ namespace USF4_Stage_Tool
 					{
 						nodeSkeleton.Nodes.Add(new TreeNode()
 						{
-							Text = ema.Skeleton.NodeNames[i],
+							Text = $"{i} {ema.Skeleton.NodeNames[i]}",
 							Tag = ema.Skeleton.Nodes[i]
 						});
 					}
@@ -666,7 +667,7 @@ namespace USF4_Stage_Tool
 						{
 							nodeSkeleton.Nodes.Add(new TreeNode()
 							{
-								Text = Encoding.ASCII.GetString(ema.Skeleton.IKNodeNames[i]),
+								Text = $"{i} {ema.Skeleton.IKNodeNames[i]}",
 								Tag = ema.Skeleton.IKNodes[i]
 							});
 						}
@@ -759,6 +760,7 @@ namespace USF4_Stage_Tool
 				}
 				if (e.Node.Tag.GetType() == typeof(Animation))
 				{
+					newCM.Items.Add(new ToolStripMenuItem($"Export {LastSelectedTreeNodeU.Text} to Collada", null, cmEMAexportToColladaToolStripMenuItem_Click));
 					newCM.Items.Add(new ToolStripMenuItem($"Generate KFs {LastSelectedTreeNodeU.Parent.Text}", null, cmEMAgenerateKeyFramesToolStripMenuItem_Click));
 					
 					title = e.Node.Text;
@@ -805,13 +807,15 @@ namespace USF4_Stage_Tool
 				{
 					newCM.Items.Add(new ToolStripMenuItem($"Add OBJ as new EMG in {LastSelectedTreeNodeU.Text}", null, cmEMOinsertOBJAsNewEMGToolStripMenuItem_Click));
 					newCM.Items.Add(new ToolStripMenuItem($"Add EMG to {LastSelectedTreeNodeU.Text}", null, cmEMOaddEMGToolStripMenuItem_Click));
-					newCM.Items.Add(new ToolStripMenuItem($"Export {LastSelectedTreeNodeU.Text} to OBJ", null, cmEMOexportEMOAsOBJToolStripMenuItem_Click));
+					newCM.Items.Add(new ToolStripMenuItem($"Export {LastSelectedTreeNodeU.Text} to OBJ", null, cmEMOexportEMOToOBJToolStripMenuItem_Click));
+					newCM.Items.Add(new ToolStripMenuItem($"Export {LastSelectedTreeNodeU.Text} to SMD", null, cmEMOextractEMOtoSMDToolStripMenuItem_Click));
 					newCM.Items.Add(new ToolStripMenuItem($"Preview {LastSelectedTreeNodeU.Text}", null, cmEMOpreviewEMOToolStripMenuItem_Click));
 					newCM.Items.Add(new ToolStripMenuItem($"Expand {LastSelectedTreeNodeU.Text}", null, cmEMOexpandAllToolStripMenuItem_Click));
 					newCM.Items.Add(new ToolStripMenuItem($"Collapse {LastSelectedTreeNodeU.Text}", null, cmEMOcollapseAllToolStripMenuItem_Click));
-					pnlEO_EMO.Visible = true;
 					newCM.Items.Add(new ToolStripMenuItem($"Preview Skeleton {LastSelectedTreeNodeU.Text}", null, cmEMOpreviewSkeletonToolStripMenuItem_Click));
+					newCM.Items.Add(new ToolStripMenuItem($"Export {LastSelectedTreeNodeU.Text} to Collada", null, cmEMOemoToColladaToolStripMenuItem_Click));
 
+					pnlEO_EMO.Visible = true;
 
 					TreeDisplayEMOData((EMO)e.Node.Tag);
 					title = e.Node.Text;
@@ -875,6 +879,7 @@ namespace USF4_Stage_Tool
 				}
 				if (e.Node.Tag.GetType() == typeof(Node))
 				{
+
 					TreeDisplaySkelNodeData((Node)e.Node.Tag);
 
 					title = e.Node.Text;
@@ -888,6 +893,10 @@ namespace USF4_Stage_Tool
 
 				//Set up local node universal options, if appropriate
 				//If current node is a USF4 file, we can dump it:
+				if (typeof(USF4File).IsAssignableFrom(LastSelectedTreeNodeU.Tag.GetType()))
+                {
+					newCM.Items.Add(new ToolStripMenuItem($"Rename {LastSelectedTreeNodeU.Text}", null, cmUNIrenameFileToolStripMenuItem_Click));
+                }
 				if (LastSelectedTreeNodeU.Parent != null && typeof(USF4File).IsAssignableFrom(LastSelectedTreeNodeU.Tag.GetType()))
 				{
 					newCM.Items.Add(new ToolStripMenuItem($"Raw dump {LastSelectedTreeNodeU.Text}", null, cmUNIVrawDumpFileToolStripMenuItem_Click));
@@ -1004,6 +1013,20 @@ namespace USF4_Stage_Tool
 					lbSelNODE_ListData.Items.Add($"{i}:\t{skel.NodeNames[i]}");
 				}
 			}
+
+			if (skel.IKDataBlocks != null)
+            {
+				for (int i = 0; i < skel.IKDataBlocks.Count; i++)
+                {
+					string ikstring = string.Empty;
+					for (int j = 0; j < skel.IKDataBlocks[i].IKShorts.Count; j++)
+                    {
+						ikstring += $"{skel.IKDataBlocks[i].IKShorts[j]} ";
+                    }
+
+					lbSelNODE_ListData.Items.Add($"IK {i}: {ikstring}");
+				}
+            }
         }
 
 		void AddPropertyLineToTextBox(string Line)
@@ -1036,7 +1059,7 @@ namespace USF4_Stage_Tool
 			lbSelNODE_ListData.Items.Add($"Skeleton node count: {ema.Skeleton.NodeCount}");
 		}
 		void TreeDisplayAnimationData(Animation a)
-        {
+		{
 			lbSelNODE_ListData.Items.Clear();
 			lbSelNODE_ListData.Items.Add($"Duration: {a.Duration}");
 			lbSelNODE_ListData.Items.Add($"CMD Track Count: {a.CMDTracks.Count}");
@@ -1045,21 +1068,83 @@ namespace USF4_Stage_Tool
 
 			Skeleton s = ((EMA)LastSelectedTreeNodeU.Parent.Tag).Skeleton;
 
+
+
 			for (int i = 0; i < a.CMDTracks.Count; i++)
-            {
-				lbSelNODE_ListData.Items.Add($"{i} - TRS {a.CMDTracks[i].TransformType} / XYZ {(a.CMDTracks[i].BitFlag & 0x03)} / B {a.CMDTracks[i].BoneID} {s.NodeNames[a.CMDTracks[i].BoneID]} {s.Nodes[a.CMDTracks[i].BoneID].BitFlag}");
+			{
+				string axis;
+				if ((a.CMDTracks[i].BitFlag & 0x03) == 0x00) axis = "X";
+				else if ((a.CMDTracks[i].BitFlag & 0x03) == 0x01) axis = "Y";
+				else axis = "Z";
+
+				string ttype;
+				if (a.CMDTracks[i].TransformType == 0x00) ttype = "T";
+				else if (a.CMDTracks[i].TransformType == 0x01) ttype = "R";
+				else ttype = "S";
+
+				if (s.Nodes != null)
+				{
+						lbSelNODE_ListData.Items.Add($"{i} - {ttype} / {axis} / {a.CMDTracks[i].BoneID} {s.NodeNames[a.CMDTracks[i].BoneID]} / {String.Format("{0:X}", a.CMDTracks[i].BitFlag)}");
+				}
+				else
+				{
+					lbSelNODE_ListData.Items.Add($"{i} - {ttype} / {axis} / NA / {String.Format("{0:X}", a.CMDTracks[i].BitFlag)}");
+				}
 			}
 		}
 		void TreeDisplaySkelNodeData(Node node)
 		{
 			Skeleton s = (Skeleton)LastSelectedTreeNodeU.Parent.Tag;
+
+			Node pnode = new Node();
+
+			if (node.Parent != -1)
+			{
+				pnode = s.Nodes[node.Parent];
+			}
+
+			Matrix4x4 iRest = Matrix4x4.Transpose(node.SkinBindPoseMatrix);
+
+			Matrix4x4.Invert(pnode.SkinBindPoseMatrix, out Matrix4x4 pnodeInvSBP);
+
+			pnodeInvSBP = Matrix4x4.Transpose(pnodeInvSBP);
+
+			int SiblingOf = -1;
+
+			for (int i = 0; i < s.NodeCount; i++)
+            {
+				if (s.Nodes[i].Sibling == LastSelectedTreeNodeU.Index) SiblingOf = i;
+            }
+
+			string P = string.Empty;
+			string C1 = string.Empty;
+			string S = string.Empty;
+			string C3 = string.Empty;
+			string C4 = string.Empty;
+			string SO = string.Empty;
+
+			if (node.Parent != -1) P = s.NodeNames[node.Parent];
+			if (node.Child1 != -1) C1 = s.NodeNames[node.Child1];
+			if (node.Child3 != -1) C3 = s.NodeNames[node.Child3];
+			if (node.Child4 != -1) C4 = s.NodeNames[node.Child4];
+			if (node.Sibling != -1) S = s.NodeNames[node.Sibling];
+			if (SiblingOf != -1) SO = s.NodeNames[SiblingOf];
+
 			lbSelNODE_ListData.Items.Clear();
-			lbSelNODE_ListData.Items.Add($"Parent ID: {node.Parent}");
-			lbSelNODE_ListData.Items.Add($"Child ID: {node.Child1}");
-			lbSelNODE_ListData.Items.Add($"Sibling ID: {node.Sibling}");
+			lbSelNODE_ListData.Items.Add($"Parent ID: {node.Parent} {P}");
+			lbSelNODE_ListData.Items.Add($"Child ID: {node.Child1} {C1}");
+			lbSelNODE_ListData.Items.Add($"Child ID3: {node.Child3} {C3}");
+			lbSelNODE_ListData.Items.Add($"Child ID4: {node.Child4} {C4}");
+			lbSelNODE_ListData.Items.Add($"Sibling ID: {node.Sibling} {S}");
+			lbSelNODE_ListData.Items.Add($"Sibling of...: {SiblingOf} {SO}");
 			lbSelNODE_ListData.Items.Add($"Bitflag: {node.BitFlag}");
 			lbSelNODE_ListData.Items.Add($"PreMartix Float: {node.PreMatrixFloat}");
 			lbSelNODE_ListData.Items.Add($"PreMartix Float: {node.PreMatrixFloat}");
+
+			Matrix4x4 original_matrix = node.SkinBindPoseMatrix;
+
+			Matrix4x4 m = node.NodeMatrix;
+
 			string FFstring = string.Empty;
 			byte[] ff = s.FFList[LastSelectedTreeNodeU.Index];
 			foreach (byte b in ff)
@@ -1070,15 +1155,13 @@ namespace USF4_Stage_Tool
 
 
 			//Utils.DecomposeMatrixNaive(node.NodeMatrix, out float tx, out float ty, out float tz, out float rx, out float ry, out float rz);
-			Utils.DecomposeMatrixXYZ(node.NodeMatrix, out float tx, out float ty, out float tz, out float rx, out float ry, out float rz, out _, out _, out _);
+			Utils.DecomposeMatrixToDegrees(node.NodeMatrix, out float tx, out float ty, out float tz, out float rx, out float ry, out float rz, out _, out _, out _);
 			lbSelNODE_ListData.Items.Add($"Position: ({tx.ToString("0.000000")}, {ty.ToString("0.000000")}, {tz.ToString("0.000000")})");
 			lbSelNODE_ListData.Items.Add($"Rotation: ({rx.ToString("0.000000")}, {ry.ToString("0.000000")}, {rz.ToString("0.000000")})");
 
 			Matrix4x4.Invert(node.SkinBindPoseMatrix, out Matrix4x4 inverse);
 
-			Matrix4x4 m = node.SkinBindPoseMatrix;
-
-			Utils.DecomposeMatrixXYZ(inverse, out tx, out ty, out tz, out rx, out ry, out rz, out _, out _, out _);
+			Utils.DecomposeMatrixToDegrees(inverse, out tx, out ty, out tz, out rx, out ry, out rz, out _, out _, out _);
 			lbSelNODE_ListData.Items.Add($"SBP Position: ({tx.ToString("0.0000")}, {ty.ToString("0.0000")}, {tz.ToString("0.0000")})");
 			lbSelNODE_ListData.Items.Add($"SBP Rotation: ({rx.ToString("0.0000")}, {ry.ToString("0.0000")}, {rz.ToString("0.0000")})");
 		}
@@ -1271,6 +1354,9 @@ namespace USF4_Stage_Tool
 							List<byte> zipbytes = bytes.ToList();
 
 							bytes = ZlibDecoder.Inflate(zipbytes).ToArray();
+
+							byte[] recompress = Utils.Compress(bytes);
+
 						}
 
 						if (filepath.Contains("tex.emz"))
@@ -2132,15 +2218,9 @@ namespace USF4_Stage_Tool
 
 				float tx, ty, tz, rx, ry, rz;
 
-				//Utils.DecomposeMatrixXYZ(skel.Nodes[i].NodeMatrix, out tx, out ty, out tz, out rx, out ry, out rz, out sx, out sy, out sz);
-				Utils.DecomposeMatrixNaive(skel.Nodes[i].NodeMatrix, out tx, out ty, out tz, out rx, out ry, out rz);
+				Utils.DecomposeMatrixToRadians(skel.Nodes[i].NodeMatrix, out tx, out ty, out tz, out rx, out ry, out rz, out _, out _, out _);
 
-				Utils.LeftHandToEulerAnglesXYZ(skel.Nodes[i].NodeMatrix, out rx, out ry, out rz);
-
-				skeldata.Add($"{i} {String.Format("{0:0.000000}", -tx)} {String.Format("{0:0.000000}", tz)} {String.Format("{0:0.000000}", ty)} {String.Format("{0:0.000000}", -rx)} {String.Format("{0:0.000000}", rz)} {String.Format("{0:0.000000}", ry)}");
-
-				//skeldata.Add($"{i} {String.Format("{0:0.000000}", tx)} {String.Format("{0:0.000000}", ty)} {String.Format("{0:0.000000}", tz)} {String.Format("{0:0.000000}", rx)} {String.Format("{0:0.000000}", ry)} {String.Format("{0:0.000000}", rz)} #{sx} {sy} {sz}");
-
+				skeldata.Add($"{i} {String.Format("{0:0.000000}", tx)} {String.Format("{0:0.000000}", -tz)} {String.Format("{0:0.000000}", ty)} {String.Format("{0:0.000000}", rz)} {String.Format("{0:0.000000}", -rx)} {String.Format("{0:0.000000}", ry)}");
 			}
 			skeldata.Add("end");
 
@@ -2260,112 +2340,623 @@ namespace USF4_Stage_Tool
 			File.WriteAllLines($"{ema.Name}.smd", SMDData.Cast<string>().ToArray());
 		}
 
-		private void EMOtoRefSMD(EMO emo)
-		{
-			string filepath;
-			string newSMD = $"{emo.Name}.smd";
+		private List<string> EMAtoSMDFrames(EMA ema, int anim_index)
+        {
+			Animation a = ema.Animations[anim_index];
+			Skeleton s = ema.Skeleton;
 
-			saveFileDialog1.InitialDirectory = string.Empty;
-			saveFileDialog1.FileName = newSMD;
-			saveFileDialog1.Filter = SMDFileFilter;     //"Wavefront (.obj)|*.obj";
-			if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+			List<string> Data = new List<string>() { "skeleton" };
+			//Each frame...
+			for (int i = 0; i < a.Duration; i++)
+            {
+				Data.Add($"time {i}");
+				//Each Node...
+				for (int j = 0; j < s.Nodes.Count; j++)
+                {
+					Anim.InterpolateRelativeKeyFrames(a, j, i, out float atx, out float aty, out float atz, out float arx, out float ary, out float arz, out _, out _, out _);
+
+					//Generate animation matrix
+
+
+					//InterpolateRelativeKeyFrames returns degrees - convert to radians for SMD
+					arx *= (float)(Math.PI / 180d);
+					ary *= (float)(Math.PI / 180d);
+					arz *= (float)(Math.PI / 180d);
+
+					Data.Add($"{j} {atx.ToString("0.000000")} {aty.ToString("0.000000")} {atz.ToString("0.000000")}  {arx.ToString("0.000000")}  {ary.ToString("0.000000")} {arz.ToString("0.000000")}");
+                }
+            }
+			Data.Add("end");
+			return Data;
+        }
+
+		public List<string> EMOtoSMDTriangles(EMO emo)
+        {
+			List<string> Data = new List<string>() { "triangles" };
+
+			Data.Add("triangles");
+			for (int i = 0; i < emo.EMGs.Count; i++)
 			{
-				filepath = saveFileDialog1.FileName;
-				if (filepath.Trim() != "")
+				for (int j = 0; j < emo.EMGs[i].Models.Count; j++)
 				{
-					List<string> SMDData = new List<string>() { "version 1" };
+					Model wMod = emo.EMGs[i].Models[j];
 
-					SMDData.AddRange(WriteSMDNodesFromSkeleton(emo.Skeleton));
-					//SMDData.AddRange(WriteSMDNodesFromSkeleton(Anim.DuplicateSkeleton(emo.Skeleton)));
-
-					SMDData.Add("triangles");
-					for (int i = 0; i < emo.EMGs.Count; i++)
+					for (int k = 0; k < emo.EMGs[i].Models[j].SubModels.Count; k++)
 					{
-						for (int j = 0; j < emo.EMGs[i].Models.Count; j++)
+						SubModel wSM = wMod.SubModels[k];
+						List<int[]> smFaces = GeometryIO.FaceIndicesFromDaisyChain(wSM.DaisyChain);
+
+						for (int f = 0; f < smFaces.Count; f++)
 						{
-							Model wMod = emo.EMGs[i].Models[j];
+							Data.Add(Encoding.ASCII.GetString(wSM.SubModelName).Replace(Convert.ToChar(0x00), ' ')); //Use as material name
 
-							for (int k = 0; k < emo.EMGs[i].Models[j].SubModels.Count; k++)
+							//TODO crash - exporting an EMG to SMD crashes if the EMG was created from an SMD import
+							string v1 = "0 ";
+							v1 += $"{wMod.VertexData[smFaces[f][0]].X} {-wMod.VertexData[smFaces[f][0]].Z} {wMod.VertexData[smFaces[f][0]].Y} ";
+							v1 += $"{wMod.VertexData[smFaces[f][0]].nX} {-wMod.VertexData[smFaces[f][0]].nZ} {wMod.VertexData[smFaces[f][0]].nY} ";
+							v1 += $"{wMod.VertexData[smFaces[f][0]].U} {-wMod.VertexData[smFaces[f][0]].V} ";
+							if (wMod.VertexData[smFaces[f][2]].BoneIDs != null && wMod.VertexData[smFaces[f][2]].BoneIDs.Count > 0)
 							{
-								SubModel wSM = wMod.SubModels[k];
-								List<int[]> smFaces = GeometryIO.FaceIndicesFromDaisyChain(wSM.DaisyChain);
+								List<int> local_IDs = new List<int>();
+								List<float> local_weights = new List<float>();
 
-								for (int f = 0; f < smFaces.Count; f++)
+								local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][0]].BoneIDs[0]]);
+								local_weights.Add(wMod.VertexData[smFaces[f][0]].BoneWeights[0]);
+
+								if (local_weights.Sum() < 1f)
 								{
-									SMDData.Add(Encoding.ASCII.GetString(wSM.SubModelName).Replace(Convert.ToChar(0x00), ' ')); //Use as material name
-
-									float weightTotal = 0;
-
-									//TODO crash - exporting an EMG to SMD crashes if the EMG was created from an SMD import
-									string v1 = $"{emo.EMGs[i].RootBone} ";
-									v1 += $"{wMod.VertexData[smFaces[f][0]].X} {wMod.VertexData[smFaces[f][0]].Y} {wMod.VertexData[smFaces[f][0]].Z} ";
-									v1 += $"{wMod.VertexData[smFaces[f][0]].nX} {wMod.VertexData[smFaces[f][0]].nY} {wMod.VertexData[smFaces[f][0]].nZ} ";
-									v1 += $"{wMod.VertexData[smFaces[f][0]].U} {wMod.VertexData[smFaces[f][0]].V} ";
-									if (wMod.VertexData[smFaces[f][0]].BoneIDs != null && wMod.VertexData[smFaces[f][0]].BoneIDs.Count > 0)
-									{
-										v1 += "4 ";
-										v1 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][0]].BoneIDs[0]]} {wMod.VertexData[smFaces[f][0]].BoneWeights[0]} ";
-										v1 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][0]].BoneIDs[1]]} {wMod.VertexData[smFaces[f][0]].BoneWeights[1]} ";
-										v1 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][0]].BoneIDs[2]]} {wMod.VertexData[smFaces[f][0]].BoneWeights[2]} ";
-										weightTotal += wMod.VertexData[smFaces[f][0]].BoneWeights[0];
-										weightTotal += wMod.VertexData[smFaces[f][0]].BoneWeights[1];
-										weightTotal += wMod.VertexData[smFaces[f][0]].BoneWeights[2];
-										v1 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][0]].BoneIDs[3]]} {Math.Max(1 - weightTotal, 0)} ";
-									}
-
-									SMDData.Add(v1);
-									weightTotal = 0;
-
-									string v2 = $"{emo.EMGs[i].RootBone} ";
-									v2 += $"{wMod.VertexData[smFaces[f][1]].X} {wMod.VertexData[smFaces[f][1]].Y} {wMod.VertexData[smFaces[f][1]].Z} ";
-									v2 += $"{wMod.VertexData[smFaces[f][1]].nX} {wMod.VertexData[smFaces[f][1]].nY} {wMod.VertexData[smFaces[f][1]].nZ} ";
-									v2 += $"{wMod.VertexData[smFaces[f][1]].U} {wMod.VertexData[smFaces[f][1]].V} ";
-									if (wMod.VertexData[smFaces[f][1]].BoneIDs != null && wMod.VertexData[smFaces[f][1]].BoneIDs.Count > 0)
-									{
-										v2 += "4 ";
-										v2 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][1]].BoneIDs[0]]} {wMod.VertexData[smFaces[f][1]].BoneWeights[0]} ";
-										v2 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][1]].BoneIDs[1]]} {wMod.VertexData[smFaces[f][1]].BoneWeights[1]} ";
-										v2 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][1]].BoneIDs[2]]} {wMod.VertexData[smFaces[f][1]].BoneWeights[2]} ";
-										weightTotal += wMod.VertexData[smFaces[f][1]].BoneWeights[0];
-										weightTotal += wMod.VertexData[smFaces[f][1]].BoneWeights[1];
-										weightTotal += wMod.VertexData[smFaces[f][1]].BoneWeights[2];
-										v2 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][1]].BoneIDs[3]]} {Math.Max(1 - weightTotal, 0)} ";
-									}
-
-									SMDData.Add(v2);
-									weightTotal = 0;
-
-									string v3 = $"{emo.EMGs[i].RootBone} ";
-									v3 += $"{wMod.VertexData[smFaces[f][2]].X} {wMod.VertexData[smFaces[f][2]].Y} {wMod.VertexData[smFaces[f][2]].Z} ";
-									v3 += $"{wMod.VertexData[smFaces[f][2]].nX} {wMod.VertexData[smFaces[f][2]].nY} {wMod.VertexData[smFaces[f][2]].nZ} ";
-									v3 += $"{wMod.VertexData[smFaces[f][2]].U} {wMod.VertexData[smFaces[f][2]].V} ";
-									if (wMod.VertexData[smFaces[f][2]].BoneIDs != null && wMod.VertexData[smFaces[f][2]].BoneIDs.Count > 0)
-									{
-										v3 += "4 ";
-										v3 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][2]].BoneIDs[0]]} {wMod.VertexData[smFaces[f][2]].BoneWeights[0]} ";
-										v3 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][2]].BoneIDs[1]]} {wMod.VertexData[smFaces[f][2]].BoneWeights[1]} ";
-										v3 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][2]].BoneIDs[2]]} {wMod.VertexData[smFaces[f][2]].BoneWeights[2]} ";
-										weightTotal += wMod.VertexData[smFaces[f][2]].BoneWeights[0];
-										weightTotal += wMod.VertexData[smFaces[f][2]].BoneWeights[1];
-										weightTotal += wMod.VertexData[smFaces[f][2]].BoneWeights[2];
-										v3 += $"{wSM.BoneIntegersList[wMod.VertexData[smFaces[f][2]].BoneIDs[3]]} {Math.Max(1 - weightTotal, 0)} ";
-									}
-
-									SMDData.Add(v3);
+									local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][0]].BoneIDs[1]]);
+									local_weights.Add(Math.Min(1 - local_weights.Sum(), wMod.VertexData[smFaces[f][0]].BoneWeights[1]));
 								}
+
+								if (local_weights.Sum() < 1f)
+								{
+									local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][0]].BoneIDs[2]]);
+									local_weights.Add(Math.Min(1 - local_weights.Sum(), wMod.VertexData[smFaces[f][0]].BoneWeights[2]));
+								}
+
+								if (local_weights.Sum() < 1f)
+								{
+									local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][0]].BoneIDs[3]]);
+									local_weights.Add(1 - local_weights.Sum());
+								}
+
+								//Skip g = 0, then check for "bad" IDs
+								for (int g = 1; g < local_IDs.Count; g++)
+								{
+									if (local_IDs[g] == wSM.BoneIntegersList[0])
+									{
+										local_IDs.RemoveRange(g, local_IDs.Count - g);
+										local_weights.RemoveRange(g, local_weights.Count - g);
+									}
+								}
+
+								string weight_string1 = string.Empty;
+								for (int g = 0; g < local_IDs.Count; g++)
+								{
+									weight_string1 += $"{local_IDs[g]} {local_weights[g].ToString("0.000000")} ";
+								}
+								v1 += $"{local_IDs.Count} " + weight_string1;
 							}
+
+							Data.Add(v1);
+
+							//string v2 = $"{emo.EMGs[i].RootBone} ";
+							string v2 = "0 ";
+							v2 += $"{wMod.VertexData[smFaces[f][1]].X} {-wMod.VertexData[smFaces[f][1]].Z} {wMod.VertexData[smFaces[f][1]].Y} ";
+							v2 += $"{wMod.VertexData[smFaces[f][1]].nX} {-wMod.VertexData[smFaces[f][1]].nZ} {wMod.VertexData[smFaces[f][1]].nY} ";
+							v2 += $"{wMod.VertexData[smFaces[f][1]].U} {-wMod.VertexData[smFaces[f][1]].V} ";
+							if (wMod.VertexData[smFaces[f][2]].BoneIDs != null && wMod.VertexData[smFaces[f][2]].BoneIDs.Count > 0)
+							{
+								List<int> local_IDs = new List<int>();
+								List<float> local_weights = new List<float>();
+
+								local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][1]].BoneIDs[0]]);
+								local_weights.Add(wMod.VertexData[smFaces[f][1]].BoneWeights[0]);
+
+								if (local_weights.Sum() < 1f)
+								{
+									local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][1]].BoneIDs[1]]);
+									local_weights.Add(Math.Min(1 - local_weights.Sum(), wMod.VertexData[smFaces[f][1]].BoneWeights[1]));
+								}
+
+								if (local_weights.Sum() < 1f)
+								{
+									local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][1]].BoneIDs[2]]);
+									local_weights.Add(Math.Min(1 - local_weights.Sum(), wMod.VertexData[smFaces[f][1]].BoneWeights[2]));
+								}
+
+								if (local_weights.Sum() < 1f)
+								{
+									local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][1]].BoneIDs[3]]);
+									local_weights.Add(1 - local_weights.Sum());
+								}
+								//Skip g = 0, then check for "bad" IDs
+								for (int g = 1; g < local_IDs.Count; g++)
+								{
+									if (local_IDs[g] == wSM.BoneIntegersList[0])
+									{
+										local_IDs.RemoveRange(g, local_IDs.Count - g);
+										local_weights.RemoveRange(g, local_weights.Count - g);
+									}
+								}
+								string weight_string2 = string.Empty;
+								for (int g = 0; g < local_IDs.Count; g++)
+								{
+									weight_string2 += $"{local_IDs[g]} {local_weights[g].ToString("0.000000")} ";
+								}
+								v2 += $"{local_IDs.Count} " + weight_string2;
+							}
+
+							Data.Add(v2);
+
+							//string v3 = $"{emo.EMGs[i].RootBone} ";
+							string v3 = "0 ";
+							v3 += $"{wMod.VertexData[smFaces[f][2]].X} {-wMod.VertexData[smFaces[f][2]].Z} {wMod.VertexData[smFaces[f][2]].Y} ";
+							v3 += $"{wMod.VertexData[smFaces[f][2]].nX} {-wMod.VertexData[smFaces[f][2]].nZ} {wMod.VertexData[smFaces[f][2]].nY} ";
+							v3 += $"{wMod.VertexData[smFaces[f][2]].U} {-wMod.VertexData[smFaces[f][2]].V} ";
+							if (wMod.VertexData[smFaces[f][2]].BoneIDs != null && wMod.VertexData[smFaces[f][2]].BoneIDs.Count > 0)
+							{
+								List<int> local_IDs = new List<int>();
+								List<float> local_weights = new List<float>();
+
+								local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][2]].BoneIDs[0]]);
+								local_weights.Add(wMod.VertexData[smFaces[f][2]].BoneWeights[0]);
+
+								if (local_weights.Sum() < 1f)
+								{
+									local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][2]].BoneIDs[1]]);
+									local_weights.Add(Math.Min(1 - local_weights.Sum(), wMod.VertexData[smFaces[f][2]].BoneWeights[1]));
+								}
+
+								if (local_weights.Sum() < 1f)
+								{
+									local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][2]].BoneIDs[2]]);
+									local_weights.Add(Math.Min(1 - local_weights.Sum(), wMod.VertexData[smFaces[f][2]].BoneWeights[2]));
+								}
+
+								if (local_weights.Sum() < 1f)
+								{
+									local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][2]].BoneIDs[3]]);
+									local_weights.Add(1 - local_weights.Sum());
+								}
+								//Skip g = 0, then check for "bad" IDs
+								for (int g = 1; g < local_IDs.Count; g++)
+								{
+									if (local_IDs[g] == wSM.BoneIntegersList[0])
+									{
+										local_IDs.RemoveRange(g, local_IDs.Count - g);
+										local_weights.RemoveRange(g, local_weights.Count - g);
+									}
+								}
+								string weight_string3 = string.Empty;
+								for (int g = 0; g < local_IDs.Count; g++)
+								{
+									weight_string3 += $"{local_IDs[g]} {local_weights[g].ToString("0.000000")} ";
+								}
+								//string weight_string3 = string.Empty;
+								v3 += $"{local_IDs.Count} " + weight_string3;
+							}
+
+							Data.Add(v3);
 						}
 					}
-
-					SMDData.Add("end");
-
-					//File.WriteAllLines($"{Encoding.ASCII.GetString(emo.Name)}.smd", SMDData.Cast<string>().ToArray());
-					File.WriteAllLines(filepath, SMDData.Cast<string>().ToArray());
 				}
 			}
 
+			Data.Add("end");
 
+			return Data;
 		}
+
+		private List<string> EMAtoSMDAnimation(EMA ema, int anim_index)
+        {
+			List<string> Data = new List<string>() { "version 1" };
+
+			//Node list
+			Data.Add("nodes");
+			Skeleton s = ema.Skeleton;
+			for (int i = 0; i < s.Nodes.Count; i++)
+			{
+				string pname = string.Empty;
+
+				if (s.Nodes[i].Parent >= 0)
+				{
+					pname = s.NodeNames[s.Nodes[i].Parent];
+				}
+
+				Data.Add($"{i} \"{s.NodeNames[i]}\" {s.Nodes[i].Parent} #{pname}");
+			}
+			Data.Add("end");
+
+			//Animation data
+			Data.AddRange(EMAtoSMDFrames(ema, anim_index));
+
+			//No triangles in animation files!
+
+			return Data;
+        }
+
+		private List<string> EMOtoRefSMD(EMO emo)
+        {
+			List<string> SMDData = new List<string>() { "version 1" };
+
+			SMDData.AddRange(WriteSMDNodesFromSkeleton(emo.Skeleton));
+
+            SMDData.Add("triangles");
+            for (int i = 0; i < emo.EMGs.Count; i++)
+            {
+                for (int j = 0; j < emo.EMGs[i].Models.Count; j++)
+                {
+                    Model wMod = emo.EMGs[i].Models[j];
+
+                    for (int k = 0; k < emo.EMGs[i].Models[j].SubModels.Count; k++)
+                    {
+                        SubModel wSM = wMod.SubModels[k];
+                        List<int[]> smFaces = GeometryIO.FaceIndicesFromDaisyChain(wSM.DaisyChain);
+
+                        for (int f = 0; f < smFaces.Count; f++)
+                        {
+                            SMDData.Add(Encoding.ASCII.GetString(wSM.SubModelName).Replace(Convert.ToChar(0x00), ' ')); //Use as material name
+
+                            //TODO crash - exporting an EMG to SMD crashes if the EMG was created from an SMD import
+                            //string v1 = $"{emo.EMGs[i].RootBone} ";
+                            string v1 = "0 ";
+                            v1 += $"{wMod.VertexData[smFaces[f][0]].X} {-wMod.VertexData[smFaces[f][0]].Z} {wMod.VertexData[smFaces[f][0]].Y} ";
+                            v1 += $"{wMod.VertexData[smFaces[f][0]].nX} {-wMod.VertexData[smFaces[f][0]].nZ} {wMod.VertexData[smFaces[f][0]].nY} ";
+                            v1 += $"{wMod.VertexData[smFaces[f][0]].U} {-wMod.VertexData[smFaces[f][0]].V} ";
+                            if (wMod.VertexData[smFaces[f][2]].BoneIDs != null && wMod.VertexData[smFaces[f][2]].BoneIDs.Count > 0)
+                            {
+                                List<int> local_IDs = new List<int>();
+                                List<float> local_weights = new List<float>();
+
+                                local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][0]].BoneIDs[0]]);
+                                local_weights.Add(wMod.VertexData[smFaces[f][0]].BoneWeights[0]);
+
+                                if (local_weights.Sum() < 1f)
+                                {
+                                    local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][0]].BoneIDs[1]]);
+                                    local_weights.Add(Math.Min(1 - local_weights.Sum(), wMod.VertexData[smFaces[f][0]].BoneWeights[1]));
+                                }
+
+                                if (local_weights.Sum() < 1f)
+                                {
+                                    local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][0]].BoneIDs[2]]);
+                                    local_weights.Add(Math.Min(1 - local_weights.Sum(), wMod.VertexData[smFaces[f][0]].BoneWeights[2]));
+                                }
+
+                                if (local_weights.Sum() < 1f)
+                                {
+                                    local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][0]].BoneIDs[3]]);
+                                    local_weights.Add(1 - local_weights.Sum());
+                                }
+
+                                //Skip g = 0, then check for "bad" IDs
+                                for (int g = 1; g < local_IDs.Count; g++)
+                                {
+                                    if (local_IDs[g] == wSM.BoneIntegersList[0])
+                                    {
+                                        local_IDs.RemoveRange(g, local_IDs.Count - g);
+                                        local_weights.RemoveRange(g, local_weights.Count - g);
+                                    }
+                                }
+
+                                string weight_string1 = string.Empty;
+                                for (int g = 0; g < local_IDs.Count; g++)
+                                {
+                                    weight_string1 += $"{local_IDs[g]} {local_weights[g].ToString("0.000000")} ";
+                                }
+                                v1 += $"{local_IDs.Count} " + weight_string1;
+                            }
+
+                            SMDData.Add(v1);
+
+                            //string v2 = $"{emo.EMGs[i].RootBone} ";
+                            string v2 = "0 ";
+                            v2 += $"{wMod.VertexData[smFaces[f][1]].X} {-wMod.VertexData[smFaces[f][1]].Z} {wMod.VertexData[smFaces[f][1]].Y} ";
+                            v2 += $"{wMod.VertexData[smFaces[f][1]].nX} {-wMod.VertexData[smFaces[f][1]].nZ} {wMod.VertexData[smFaces[f][1]].nY} ";
+                            v2 += $"{wMod.VertexData[smFaces[f][1]].U} {-wMod.VertexData[smFaces[f][1]].V} ";
+                            if (wMod.VertexData[smFaces[f][2]].BoneIDs != null && wMod.VertexData[smFaces[f][2]].BoneIDs.Count > 0)
+                            {
+                                List<int> local_IDs = new List<int>();
+                                List<float> local_weights = new List<float>();
+
+                                local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][1]].BoneIDs[0]]);
+                                local_weights.Add(wMod.VertexData[smFaces[f][1]].BoneWeights[0]);
+
+                                if (local_weights.Sum() < 1f)
+                                {
+                                    local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][1]].BoneIDs[1]]);
+                                    local_weights.Add(Math.Min(1 - local_weights.Sum(), wMod.VertexData[smFaces[f][1]].BoneWeights[1]));
+                                }
+
+                                if (local_weights.Sum() < 1f)
+                                {
+                                    local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][1]].BoneIDs[2]]);
+                                    local_weights.Add(Math.Min(1 - local_weights.Sum(), wMod.VertexData[smFaces[f][1]].BoneWeights[2]));
+                                }
+
+                                if (local_weights.Sum() < 1f)
+                                {
+                                    local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][1]].BoneIDs[3]]);
+                                    local_weights.Add(1 - local_weights.Sum());
+                                }
+                                //Skip g = 0, then check for "bad" IDs
+                                for (int g = 1; g < local_IDs.Count; g++)
+                                {
+                                    if (local_IDs[g] == wSM.BoneIntegersList[0])
+                                    {
+                                        local_IDs.RemoveRange(g, local_IDs.Count - g);
+                                        local_weights.RemoveRange(g, local_weights.Count - g);
+                                    }
+                                }
+                                string weight_string2 = string.Empty;
+                                for (int g = 0; g < local_IDs.Count; g++)
+                                {
+                                    weight_string2 += $"{local_IDs[g]} {local_weights[g].ToString("0.000000")} ";
+                                }
+                                v2 += $"{local_IDs.Count} " + weight_string2;
+                            }
+
+                            SMDData.Add(v2);
+
+                            //string v3 = $"{emo.EMGs[i].RootBone} ";
+                            string v3 = "0 ";
+                            v3 += $"{wMod.VertexData[smFaces[f][2]].X} {-wMod.VertexData[smFaces[f][2]].Z} {wMod.VertexData[smFaces[f][2]].Y} ";
+                            v3 += $"{wMod.VertexData[smFaces[f][2]].nX} {-wMod.VertexData[smFaces[f][2]].nZ} {wMod.VertexData[smFaces[f][2]].nY} ";
+                            v3 += $"{wMod.VertexData[smFaces[f][2]].U} {-wMod.VertexData[smFaces[f][2]].V} ";
+                            if (wMod.VertexData[smFaces[f][2]].BoneIDs != null && wMod.VertexData[smFaces[f][2]].BoneIDs.Count > 0)
+                            {
+                                List<int> local_IDs = new List<int>();
+                                List<float> local_weights = new List<float>();
+
+                                local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][2]].BoneIDs[0]]);
+                                local_weights.Add(wMod.VertexData[smFaces[f][2]].BoneWeights[0]);
+
+                                if (local_weights.Sum() < 1f)
+                                {
+                                    local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][2]].BoneIDs[1]]);
+                                    local_weights.Add(Math.Min(1 - local_weights.Sum(), wMod.VertexData[smFaces[f][2]].BoneWeights[1]));
+                                }
+
+                                if (local_weights.Sum() < 1f)
+                                {
+                                    local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][2]].BoneIDs[2]]);
+                                    local_weights.Add(Math.Min(1 - local_weights.Sum(), wMod.VertexData[smFaces[f][2]].BoneWeights[2]));
+                                }
+
+                                if (local_weights.Sum() < 1f)
+                                {
+                                    local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][2]].BoneIDs[3]]);
+                                    local_weights.Add(1 - local_weights.Sum());
+                                }
+                                //Skip g = 0, then check for "bad" IDs
+                                for (int g = 1; g < local_IDs.Count; g++)
+                                {
+                                    if (local_IDs[g] == wSM.BoneIntegersList[0])
+                                    {
+                                        local_IDs.RemoveRange(g, local_IDs.Count - g);
+                                        local_weights.RemoveRange(g, local_weights.Count - g);
+                                    }
+                                }
+                                string weight_string3 = string.Empty;
+                                for (int g = 0; g < local_IDs.Count; g++)
+                                {
+                                    weight_string3 += $"{local_IDs[g]} {local_weights[g].ToString("0.000000")} ";
+                                }
+                                //string weight_string3 = string.Empty;
+                                v3 += $"{local_IDs.Count} " + weight_string3;
+                            }
+
+                            SMDData.Add(v3);
+                        }
+                    }
+                }
+            }
+
+            SMDData.Add("end");
+
+            return SMDData;
+		}
+
+
+		//private void EMOtoRefSMD(EMO emo)
+		//{
+		//	string filepath;
+		//	string newSMD = $"{emo.Name}.smd";
+
+		//	saveFileDialog1.InitialDirectory = string.Empty;
+		//	saveFileDialog1.FileName = newSMD;
+		//	saveFileDialog1.Filter = SMDFileFilter;
+		//	if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+		//	{
+		//		filepath = saveFileDialog1.FileName;
+		//		if (filepath.Trim() != "")
+		//		{
+		//			List<string> SMDData = new List<string>() { "version 1" };
+
+		//			SMDData.AddRange(WriteSMDNodesFromSkeleton(emo.Skeleton));
+
+		//			SMDData.Add("triangles");
+		//			for (int i = 0; i < emo.EMGs.Count; i++)
+		//			{
+		//				for (int j = 0; j < emo.EMGs[i].Models.Count; j++)
+		//				{
+		//					Model wMod = emo.EMGs[i].Models[j];
+
+		//					for (int k = 0; k < emo.EMGs[i].Models[j].SubModels.Count; k++)
+		//					{
+		//						SubModel wSM = wMod.SubModels[k];
+		//						List<int[]> smFaces = GeometryIO.FaceIndicesFromDaisyChain(wSM.DaisyChain);
+
+		//						for (int f = 0; f < smFaces.Count; f++)
+		//						{
+		//							SMDData.Add(Encoding.ASCII.GetString(wSM.SubModelName).Replace(Convert.ToChar(0x00), ' ')); //Use as material name
+
+		//							//TODO crash - exporting an EMG to SMD crashes if the EMG was created from an SMD import
+		//							//string v1 = $"{emo.EMGs[i].RootBone} ";
+		//							string v1 = "0 ";
+		//							v1 += $"{wMod.VertexData[smFaces[f][0]].X} {-wMod.VertexData[smFaces[f][0]].Z} {wMod.VertexData[smFaces[f][0]].Y} ";
+		//							v1 += $"{wMod.VertexData[smFaces[f][0]].nX} {-wMod.VertexData[smFaces[f][0]].nZ} {wMod.VertexData[smFaces[f][0]].nY} ";
+		//							v1 += $"{wMod.VertexData[smFaces[f][0]].U} {-wMod.VertexData[smFaces[f][0]].V} ";
+		//							if (wMod.VertexData[smFaces[f][2]].BoneIDs != null && wMod.VertexData[smFaces[f][2]].BoneIDs.Count > 0)
+		//							{
+		//								List<int> local_IDs = new List<int>();
+		//								List<float> local_weights = new List<float>();
+
+		//								local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][0]].BoneIDs[0]]);
+		//								local_weights.Add(wMod.VertexData[smFaces[f][0]].BoneWeights[0]);
+
+		//								if (local_weights.Sum() < 1f)
+		//								{
+		//									local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][0]].BoneIDs[1]]);
+		//									local_weights.Add(Math.Min(1 - local_weights.Sum(), wMod.VertexData[smFaces[f][0]].BoneWeights[1]));
+		//								}
+
+		//								if (local_weights.Sum() < 1f)
+		//								{
+		//									local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][0]].BoneIDs[2]]);
+		//									local_weights.Add(Math.Min(1 - local_weights.Sum(), wMod.VertexData[smFaces[f][0]].BoneWeights[2]));
+		//								}
+
+		//								if (local_weights.Sum() < 1f)
+		//								{
+		//									local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][0]].BoneIDs[3]]);
+		//									local_weights.Add(1 - local_weights.Sum());
+		//								}
+
+		//								//Skip g = 0, then check for "bad" IDs
+		//								for (int g = 1; g < local_IDs.Count; g++)
+		//								{
+		//									if (local_IDs[g] == wSM.BoneIntegersList[0])
+  //                                          {
+		//										local_IDs.RemoveRange(g, local_IDs.Count - g);
+		//										local_weights.RemoveRange(g, local_weights.Count - g);
+		//									}
+		//								}
+
+		//								string weight_string1 = string.Empty;
+		//								for (int g = 0; g < local_IDs.Count; g++)
+		//								{
+		//									weight_string1 += $"{local_IDs[g]} {local_weights[g].ToString("0.000000")} ";
+		//								}
+		//								v1 += $"{local_IDs.Count} " + weight_string1;
+		//							}
+
+		//							SMDData.Add(v1);
+
+		//							//string v2 = $"{emo.EMGs[i].RootBone} ";
+		//							string v2 = "0 ";
+		//							v2 += $"{wMod.VertexData[smFaces[f][1]].X} {-wMod.VertexData[smFaces[f][1]].Z} {wMod.VertexData[smFaces[f][1]].Y} ";
+		//							v2 += $"{wMod.VertexData[smFaces[f][1]].nX} {-wMod.VertexData[smFaces[f][1]].nZ} {wMod.VertexData[smFaces[f][1]].nY} ";
+		//							v2 += $"{wMod.VertexData[smFaces[f][1]].U} {-wMod.VertexData[smFaces[f][1]].V} ";
+		//							if (wMod.VertexData[smFaces[f][2]].BoneIDs != null && wMod.VertexData[smFaces[f][2]].BoneIDs.Count > 0)
+		//							{
+		//								List<int> local_IDs = new List<int>();
+		//								List<float> local_weights = new List<float>();
+
+		//								local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][1]].BoneIDs[0]]);
+		//								local_weights.Add(wMod.VertexData[smFaces[f][1]].BoneWeights[0]);
+
+		//								if (local_weights.Sum() < 1f)
+		//								{
+		//									local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][1]].BoneIDs[1]]);
+		//									local_weights.Add(Math.Min(1 - local_weights.Sum(), wMod.VertexData[smFaces[f][1]].BoneWeights[1]));
+		//								}
+
+		//								if (local_weights.Sum() < 1f)
+		//								{
+		//									local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][1]].BoneIDs[2]]);
+		//									local_weights.Add(Math.Min(1 - local_weights.Sum(), wMod.VertexData[smFaces[f][1]].BoneWeights[2]));
+		//								}
+
+		//								if (local_weights.Sum() < 1f)
+		//								{
+		//									local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][1]].BoneIDs[3]]);
+		//									local_weights.Add(1 - local_weights.Sum());
+		//								}
+		//								//Skip g = 0, then check for "bad" IDs
+		//								for (int g = 1; g < local_IDs.Count; g++)
+		//								{
+		//									if (local_IDs[g] == wSM.BoneIntegersList[0])
+		//									{
+		//										local_IDs.RemoveRange(g, local_IDs.Count - g);
+		//										local_weights.RemoveRange(g, local_weights.Count - g);
+		//									}
+		//								}
+		//								string weight_string2 = string.Empty;
+		//								for (int g = 0; g < local_IDs.Count; g++)
+		//								{
+		//									weight_string2 += $"{local_IDs[g]} {local_weights[g].ToString("0.000000")} ";
+		//								}
+		//								v2 += $"{local_IDs.Count} " + weight_string2;
+		//							}
+
+		//							SMDData.Add(v2);
+
+		//							//string v3 = $"{emo.EMGs[i].RootBone} ";
+		//							string v3 = "0 ";
+		//							v3 += $"{wMod.VertexData[smFaces[f][2]].X} {-wMod.VertexData[smFaces[f][2]].Z} {wMod.VertexData[smFaces[f][2]].Y} ";
+		//							v3 += $"{wMod.VertexData[smFaces[f][2]].nX} {-wMod.VertexData[smFaces[f][2]].nZ} {wMod.VertexData[smFaces[f][2]].nY} ";
+		//							v3 += $"{wMod.VertexData[smFaces[f][2]].U} {-wMod.VertexData[smFaces[f][2]].V} ";
+		//							if (wMod.VertexData[smFaces[f][2]].BoneIDs != null && wMod.VertexData[smFaces[f][2]].BoneIDs.Count > 0)
+		//							{
+		//								List<int> local_IDs = new List<int>();
+		//								List<float> local_weights = new List<float>();
+
+		//								local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][2]].BoneIDs[0]]);
+		//								local_weights.Add(wMod.VertexData[smFaces[f][2]].BoneWeights[0]);
+
+		//								if (local_weights.Sum() < 1f)
+  //                                      {
+		//									local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][2]].BoneIDs[1]]);
+		//									local_weights.Add(Math.Min(1 - local_weights.Sum(), wMod.VertexData[smFaces[f][2]].BoneWeights[1]));
+  //                                      }
+
+		//								if (local_weights.Sum() < 1f)
+		//								{
+		//									local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][2]].BoneIDs[2]]);
+		//									local_weights.Add(Math.Min(1 - local_weights.Sum(), wMod.VertexData[smFaces[f][2]].BoneWeights[2]));
+		//								}
+
+		//								if (local_weights.Sum() < 1f)
+		//								{
+		//									local_IDs.Add(wSM.BoneIntegersList[wMod.VertexData[smFaces[f][2]].BoneIDs[3]]);
+		//									local_weights.Add(1 - local_weights.Sum());
+		//								}
+		//								//Skip g = 0, then check for "bad" IDs
+		//								for (int g = 1; g < local_IDs.Count; g++)
+		//								{
+		//									if (local_IDs[g] == wSM.BoneIntegersList[0])
+		//									{
+		//										local_IDs.RemoveRange(g, local_IDs.Count - g);
+		//										local_weights.RemoveRange(g, local_weights.Count - g);
+		//									}
+		//								}
+		//								string weight_string3 = string.Empty;
+		//								for (int g = 0; g < local_IDs.Count; g++)
+		//								{
+		//									weight_string3 += $"{local_IDs[g]} {local_weights[g].ToString("0.000000")} ";
+		//								}
+		//								//string weight_string3 = string.Empty;
+		//								v3 += $"{local_IDs.Count} " + weight_string3;
+		//							}
+
+		//							SMDData.Add(v3);
+		//						}
+		//					}
+		//				}
+		//			}
+
+		//			SMDData.Add("end");
+
+		//			//File.WriteAllLines($"{Encoding.ASCII.GetString(emo.Name)}.smd", SMDData.Cast<string>().ToArray());
+		//			File.WriteAllLines(filepath, SMDData.Cast<string>().ToArray());
+		//		}
+		//	}
+
+
+		//}
 
 		EMO EMOFromSMD(SMDFile model)
 		{
@@ -3048,7 +3639,6 @@ namespace USF4_Stage_Tool
 		private void cmEMAdeleteAnimationtoolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			EMA ema = (EMA)LastSelectedTreeNodeU.Parent.Tag;
-			Animation anim = (Animation)LastSelectedTreeNodeU.Tag;
 
 			DeleteAnimation(ema, LastSelectedTreeNodeU.Index);
 		}
@@ -3286,11 +3876,15 @@ namespace USF4_Stage_Tool
 			InitialPoseFromEMA(ema);
 		}
 
-		private void rawDumpEMOAsSMDToolStripMenuItem_Click(object sender, EventArgs e)
+		private void cmEMOextractEMOtoSMDToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			EMO emo = (EMO)LastSelectedTreeNodeU.Tag;
+			EMA ema = (EMA)((EMB)LastSelectedTreeNodeU.Parent.Tag).Files[LastSelectedTreeNodeU.Index - 2];
 
-			EMOtoRefSMD(emo);
+			File.WriteAllLines("testSMDref.smd", EMOtoRefSMD(emo).ToArray());
+			File.WriteAllLines("testSMDanim.smd", EMAtoSMDAnimation(ema, 0).ToArray());
+
+			//EMOtoRefSMD(emo);
 		}
 
 		private void rawDumpLUAToolStripMenuItem_Click(object sender, EventArgs e)
@@ -3715,7 +4309,7 @@ namespace USF4_Stage_Tool
 			RefreshTree(tvTreeUSF4);
 		}
 
-		private void cmEMOexportEMOAsOBJToolStripMenuItem_Click(object sender, EventArgs e)
+		private void cmEMOexportEMOToOBJToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			EMO emo = (EMO)LastSelectedTreeNodeU.Tag;
 
@@ -4171,29 +4765,28 @@ namespace USF4_Stage_Tool
 
 		}
 
-		private void AddEMOSkeletontoPreview(EMO emo)
+		private void AddProcessedSkeletonToPreview(EMAProcessor emap)
 		{
-			
-			foreach (Node n in emo.Skeleton.Nodes)
+			AnimatedNode[] anodes = emap.ReturnAnimatedNodes();
+
+			for (int i = 0; i < anodes.Length; i++)
 			{
 				//Find world transform
-				Node node = n;
-				Matrix4x4 m = n.NodeMatrix;
-
-				while (node.Parent != -1)
-                {
-					node = emo.Skeleton.Nodes[node.Parent];
-					m = Matrix4x4.Multiply(m, node.NodeMatrix);
-                }
+				Matrix4x4 m = anodes[i].animatedMatrix;
 
 				uc.AddModel(new GeometryModel3D()
 				{
-					
 					Transform = new Transform3DGroup()
 					{
 						Children = new Transform3DCollection()
 						{
-							new MatrixTransform3D(new Matrix3D()
+                            //scale,
+                            //rotY,
+                            //rotX,
+                            //rotZ,
+                            //translate,
+
+                            new MatrixTransform3D(new Matrix3D()
 							{
 								M11 = m.M11, M12 = m.M12, M13 = m.M13, M14 = m.M14,
 								M21 = m.M21, M22 = m.M22, M23 = m.M23, M24 = m.M24,
@@ -4207,7 +4800,7 @@ namespace USF4_Stage_Tool
 					Geometry = new MeshGeometry3D()
 					{
 						Positions = new Point3DCollection()
-                        {
+						{
 							new Point3D(0.0100000,0.0100000,-0.0100000),
 							new Point3D(0.0100000,-0.0100000,-0.0100000),
 							new Point3D(0.0100000,0.0100000,0.0100000),
@@ -4218,7 +4811,7 @@ namespace USF4_Stage_Tool
 							new Point3D(-0.0100000,-0.0100000,0.0100000),
 						},
 						TriangleIndices = new Int32Collection()
-                        {
+						{
 							4,2,0,
 							2,7,3,
 							6,5,7,
@@ -4243,13 +4836,98 @@ namespace USF4_Stage_Tool
 					}
 				});
 			}
-
 		}
 
+		private void AddEMOSkeletontoPreview(EMO emo)
+		{
+            foreach (Node n in emo.Skeleton.Nodes)
+            {
+                //Find world transform
+                Node node = n;
+                Matrix4x4 m = n.NodeMatrix;
+
+                while (node.Parent != -1)
+                {
+                    node = emo.Skeleton.Nodes[node.Parent];
+                    m = Matrix4x4.Multiply(m, node.NodeMatrix);
+                }
+
+                //m = Matrix4x4.Transpose(m);
+
+                Utils.DecomposeMatrixToDegrees(m, out float tx, out float ty, out float tz, out float rx, out float ry, out float rz, out float sx, out float sy, out float sz);
+
+                ScaleTransform3D scale = new ScaleTransform3D(sx, sy, sz);
+                RotateTransform3D rotY = new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(0, 1, 0), ry));
+                RotateTransform3D rotX = new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(1, 0, 0), rx));
+                RotateTransform3D rotZ = new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(0, 0, 1), rz));
+                TranslateTransform3D translate = new TranslateTransform3D(tx, ty, tz);
+
+                uc.AddModel(new GeometryModel3D()
+                {
+                    Transform = new Transform3DGroup()
+                    {
+                        Children = new Transform3DCollection()
+                        {
+                            //scale,
+                            //rotY,
+                            //rotX,
+                            //rotZ,
+                            //translate,
+
+                            new MatrixTransform3D(new Matrix3D()
+                            {
+                                M11 = m.M11, M12 = m.M12, M13 = m.M13, M14 = m.M14,
+                                M21 = m.M21, M22 = m.M22, M23 = m.M23, M24 = m.M24,
+                                M31 = m.M31, M32 = m.M32, M33 = m.M33, M34 = m.M34,
+                                OffsetX = m.M41, OffsetY = m.M42, OffsetZ = m.M43, M44 = m.M44,
+                            }),
+							new ScaleTransform3D(-1, 1, 1),
+							//new TranslateTransform3D(m.M41, m.M42, m.M43)
+						}
+                    },
+                    Geometry = new MeshGeometry3D()
+                    {
+                        Positions = new Point3DCollection()
+                        {
+                            new Point3D(0.0100000,0.0100000,-0.0100000),
+                            new Point3D(0.0100000,-0.0100000,-0.0100000),
+                            new Point3D(0.0100000,0.0100000,0.0100000),
+                            new Point3D(0.0100000,-0.0100000,0.0100000),
+                            new Point3D(-0.0100000,0.0100000,-0.0100000),
+                            new Point3D(-0.0100000,-0.0100000,-0.0100000),
+                            new Point3D(-0.0100000,0.0100000,0.0100000),
+                            new Point3D(-0.0100000,-0.0100000,0.0100000),
+                        },
+                        TriangleIndices = new Int32Collection()
+                        {
+                            4,2,0,
+                            2,7,3,
+                            6,5,7,
+                            1,7,5,
+                            0,3,1,
+                            4,1,5,
+                            4,6,2,
+                            2,6,7,
+                            6,4,5,
+                            1,3,7,
+                            0,2,3,
+                            4,0,1
+                        }
+                    },
+                    Material = new DiffuseMaterial()
+                    {
+                        Brush = new SolidColorBrush()
+                        {
+                            Color = System.Windows.Media.Color.FromRgb(0, 255, 0),
+                            Opacity = 1
+                        }
+                    }
+                });
+            }
+        }
 
 		private void AddEMGtoPreview(EMO emo, EMG emg)
 		{
-
 			Node n = emo.Skeleton.Nodes[emg.RootBone];
 			Matrix4x4 m = n.NodeMatrix;
 
@@ -4638,32 +5316,30 @@ namespace USF4_Stage_Tool
 			GeometryIO.EMOtoCollada_Library_Controller((EMO)WorkingEMZ.Files[LastSelectedTreeNodeU.Index]);
 		}
 
-		private void eMOToLibraryGeometryToolStripMenuItem_Click(object sender, EventArgs e)
+		private void cmEMOemoToColladaToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			//GeometryIO.EMOtoCollada_Library_Geometries((EMO)WorkingEMZ.Files[LastSelectedTreeNode.Index]);
-			//test
-			//GeometryIO.EMOtoCollada_Library_Controller((EMO)WorkingEMZ.Files[LastSelectedTreeNode.Index]);
+			EMO emo = (EMO)LastSelectedTreeNodeU.Tag;
+			EMA ema = (EMA)((EMB)LastSelectedTreeNodeU.Parent.Tag).Files[LastSelectedTreeNodeU.Index-2];
 
-			//GeometryIO.EMOtoCollada_Library_Visual_Scenes((EMO)WorkingEMZ.Files[LastSelectedTreeNode.Index]);
-
-			//grendgine_collada.Grendgine_Collada template = Grendgine_Collada.Grendgine_Load_File("untitled.dae");
-
-			EMA balrog_ema = (EMA)WorkingEMZ.Files[LastSelectedTreeNodeU.Index - 2];
-
-			grendgine_collada.Grendgine_Collada collada = new grendgine_collada.Grendgine_Collada()
+			Grendgine_Collada collada = new Grendgine_Collada()
 			{
 				Collada_Version = "1.4.1",
 				Asset = new Grendgine_Collada_Asset()
 				{
 					Up_Axis = "Y_UP"
 				},
-				Library_Controllers = GeometryIO.EMOtoCollada_Library_Controller((EMO)WorkingEMZ.Files[LastSelectedTreeNodeU.Index]),
-				Library_Geometries = GeometryIO.EMOtoCollada_Library_Geometries((EMO)WorkingEMZ.Files[LastSelectedTreeNodeU.Index]),
-				Library_Visual_Scene = GeometryIO.EMOtoCollada_Library_Visual_Scenes((EMO)WorkingEMZ.Files[LastSelectedTreeNodeU.Index]),
-				Library_Animations = GeometryIO.EMAtoCollada_Library_Animations(balrog_ema)
+				Library_Controllers = GeometryIO.EMOtoCollada_Library_Controller(emo),
+				//Library_Controllers = GeometryIO.LEGACY_EMOtoCollada_Library_Controller(emo),
+				Library_Geometries = GeometryIO.LEGACY_EMOtoCollada_Library_Geometries(emo),
+				//Library_Visual_Scene = GeometryIO.LEGACY_EMOtoCollada_Library_Visual_Scenes(emo),
+				Library_Visual_Scene = GeometryIO.EMOtoCollada_Library_Visual_Scenes(emo),
+				//Library_Visual_Scene = GeometryIO.EMOtoCollada_Library_Visual_Scenes_Matrix_NODEPTH(emo),
+				//Library_Visual_Scene = GeometryIO.EMOtoCollada_Library_Visual_Scenes_Matrix(emo),
+				Library_Animations = GeometryIO.LEGACY_EMAtoCollada_Library_Animations(ema)
+				//Library_Animations = GeometryIO.EMAtoCollada_Library_AnimationsWithInterpolation(ema,1)
+				//Library_Animations = GeometryIO.EMAtoCollada_Library_Animations_Matrix(ema, 0),
+				//Library_Animations = GeometryIO.EMAtoCollada_Library_Animations_AssetExplorer(ema, 0),
 			};
-
-			//collada = Grendgine_Collada.Grendgine_Load_File("untitled.dae");
 
 			try
 			{
@@ -4683,6 +5359,8 @@ namespace USF4_Stage_Tool
 				Console.ReadLine();
 			}
 		}
+
+
 
 		private void setColourToolStripMenuItem_Click(object sender, EventArgs e)
 		{
@@ -4959,10 +5637,51 @@ namespace USF4_Stage_Tool
 			AddEMOSkeletontoPreview((EMO)LastSelectedTreeNodeU.Tag);
         }
 
+		int frame = 0;
+
         private void cmEMAgenerateKeyFramesToolStripMenuItem_Click(object sender, EventArgs e)
         {
 			EMA ema = (EMA)LastSelectedTreeNodeU.Parent.Tag;
 			Animation anim = (Animation)LastSelectedTreeNodeU.Tag;
+
+			EMAProcessor eMAProcessor = new EMAProcessor(ema, LastSelectedTreeNodeU.Index);
+
+			eMAProcessor.AnimateFrame(frame);
+			frame += 5;
+
+			AddProcessedSkeletonToPreview(eMAProcessor);
+
+			Anim.InterpolateRelativeKeyFrames(anim, 3, 3, out float tx, out float ty, out float tz, out float rx, out float ry, out float rz, out float sx, out float sy, out float sz);
+
+			GeometryIO.EMAtoCollada_Library_AnimationsWithInterpolation(ema, LastSelectedTreeNodeU.Index);
+
+			Grendgine_Collada collada = new Grendgine_Collada()
+			{
+				Collada_Version = "1.4.1",
+				Asset = new Grendgine_Collada_Asset()
+				{
+					Up_Axis = "Y_UP"
+				},
+				Library_Animations = GeometryIO.EMAtoCollada_Library_AnimationsWithInterpolation(ema, LastSelectedTreeNodeU.Index)
+			};
+
+			try
+			{
+				Grendgine_Collada col_scenes = collada;
+
+				XmlSerializer sr = new XmlSerializer(typeof(Grendgine_Collada));
+				TextWriter tw = new StreamWriter("anim_out.dae");
+				sr.Serialize(tw, col_scenes);
+
+				tw.Close();
+
+
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.ToString());
+				Console.ReadLine();
+			}
 
 			//ANIMATIONS ARE APPLIED TO MODEL GROUPS, NOT MODELS
 
@@ -4972,6 +5691,77 @@ namespace USF4_Stage_Tool
 				SingleAnimationUsingKeyFrames saufk = Anim.GenerateKeyFrames(anim, i, 0, 0);
             }
         }
+
+        private void cmUNIrenameFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			USF4File uf = (USF4File)LastSelectedTreeNodeU.Tag;
+
+			IB.StartPosition = FormStartPosition.CenterParent; IB.ShowDialog(this);
+
+			if (IB.EnteredValue.Trim() != string.Empty)
+			{
+				string newname = IB.EnteredValue.Trim();
+				string oldname = uf.Name;
+
+				if (oldname == newname)
+				{
+					return;
+				}
+
+				uf.Name = newname;
+
+				RefreshTree(tvTreeUSF4);
+				AddStatus($"File '{oldname}' renamed to '{newname}'.");
+			}
+			else
+			{
+				return;
+			}
+		}
+
+        private void cmEMAexportToColladaToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			EMA ema = (EMA)LastSelectedTreeNodeU.Parent.Tag;
+			EMO emo = (EMO)((EMB)LastSelectedTreeNodeU.Parent.Parent.Tag).Files[LastSelectedTreeNodeU.Parent.Index + 2];
+
+			Grendgine_Collada collada = new Grendgine_Collada()
+			{
+				Collada_Version = "1.4.1",
+				Asset = new Grendgine_Collada_Asset()
+				{
+					Up_Axis = "Y_UP"
+				},
+				Library_Controllers = GeometryIO.EMOtoCollada_Library_Controller(emo),
+				//Library_Controllers = GeometryIO.LEGACY_EMOtoCollada_Library_Controller(emo),
+				Library_Geometries = GeometryIO.LEGACY_EMOtoCollada_Library_Geometries(emo),
+				//Library_Visual_Scene = GeometryIO.LEGACY_EMOtoCollada_Library_Visual_Scenes(emo),
+				//Library_Visual_Scene = GeometryIO.EMOtoCollada_Library_Visual_Scenes_Matrix_NODEPTH(emo),
+				Library_Visual_Scene = GeometryIO.EMOtoCollada_Library_Visual_Scenes_Matrix(emo),
+				//Library_Visual_Scene = GeometryIO.EMOtoCollada_Library_Visual_Scenes(emo),
+				//Library_Animations = GeometryIO.LEGACY_EMAtoCollada_Library_Animations(ema)
+				//Library_Animations = GeometryIO.EMAtoCollada_Library_AnimationsWithInterpolation(ema,0)
+				//Library_Animations = GeometryIO.EMAtoCollada_Library_Animations_Matrix(ema, 0),
+				Library_Animations = GeometryIO.EMAtoCollada_Library_Animations_AssetExplorer(ema, LastSelectedTreeNodeU.Index),
+			};
+
+			try
+			{
+				Grendgine_Collada col_scenes = collada;
+
+				XmlSerializer sr = new XmlSerializer(typeof(Grendgine_Collada));
+				TextWriter tw = new StreamWriter("outputtest.dae");
+				sr.Serialize(tw, col_scenes);
+
+				tw.Close();
+
+
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.ToString());
+				Console.ReadLine();
+			}
+		}
     }
 }
 

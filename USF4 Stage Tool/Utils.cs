@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Diagnostics;
 using CSharpImageLibrary;
+using System.IO.Compression;
 using static CSharpImageLibrary.ImageFormats;
 
 namespace USF4_Stage_Tool
@@ -377,6 +378,16 @@ namespace USF4_Stage_Tool
 
     public static class Utils
 	{
+		public static byte[] Compress(byte[] data)
+		{
+			using (var compressedStream = new MemoryStream())
+			using (var zipStream = new GZipStream(compressedStream, CompressionLevel.Optimal))
+			{
+				zipStream.Write(data, 0, data.Length);
+				zipStream.Close();
+				return compressedStream.ToArray();
+			}
+		}
 
 		public static string shaderFilename = "./Shaders.dat";
 		public static string shaderPropertiesFilename = "./ShadersProperties.dat";
@@ -478,6 +489,27 @@ namespace USF4_Stage_Tool
 			return returnArray;
 		}
 
+		public static void EulerToQuaternionXYZ(float pitch, float yaw, float roll, out Quaternion q)
+        {
+			double dpitch = (double)pitch;
+			double dyaw = (double)yaw;
+			double droll = (double)roll;
+
+			double dSinPitch = Math.Sin(dpitch * 0.5);
+			double dCosPitch = Math.Cos(dpitch * 0.5);
+			double dSinYaw = Math.Sin(dyaw * 0.5);
+			double dCosYaw = Math.Cos(dyaw * 0.5);
+			double dSinRoll = Math.Sin(droll * 0.5);
+			double dCosRoll = Math.Cos(droll * 0.5);
+			double dCosPitchCosYaw = dCosPitch * dCosYaw;
+			double dSinPitchSinYaw = dSinPitch * dSinYaw;
+
+			q.X = (float)(dSinRoll * dCosPitchCosYaw - dCosRoll * dSinPitchSinYaw);
+			q.Y = (float)(dCosRoll * dSinPitch * dCosYaw + dSinRoll * dCosPitch * dSinYaw);
+			q.Z = (float)(dCosRoll * dCosPitch * dSinYaw - dSinRoll * dSinPitch * dCosYaw);
+			q.W = (float)(dCosRoll * dCosPitchCosYaw + dSinRoll * dSinPitchSinYaw);
+		}
+
 		public static void LeftHandToEulerAnglesXYZ(Matrix4x4 m, out float rfXAngle, out float rfYAngle, out float rfZAngle)
 		{
 			// +-           -+   +-                                      -+
@@ -548,8 +580,25 @@ namespace USF4_Stage_Tool
 			Quaternion quatrotation = new Quaternion();
 			Vector3 translation = new Vector3();
 
+			Matrix4x4 m = matrix;
 
 			Matrix4x4.Decompose(matrix, out scale, out quatrotation, out translation);
+
+			double M1xSum = (matrix.M11 + matrix.M12 + matrix.M13);
+			double M2xSum = (matrix.M21 + matrix.M22 + matrix.M23);
+			double M3xSum = (matrix.M31 + matrix.M32 + matrix.M33);
+
+			double M1xDet = Math.Sqrt(M1xSum * M1xSum);
+			double M2xDet = Math.Sqrt(M2xSum * M2xSum);
+			double M3xDet = Math.Sqrt(M3xSum * M3xSum);
+
+			Matrix4x4 normed = new Matrix4x4((float)(m.M11 / M1xDet), (float)(m.M12 / M1xDet), (float)(m.M13 / M1xDet), (float)(m.M14 / M1xDet),
+											 (float)(m.M21 / M2xDet), (float)(m.M22 / M2xDet), (float)(m.M23 / M2xDet), (float)(m.M24 / M1xDet),
+											 (float)(m.M31 / M3xDet), (float)(m.M12 / M3xDet), (float)(m.M33 / M1xDet), (float)(m.M34 / M1xDet),
+											 m.M41, m.M42, m.M43, m.M44);
+              
+
+
 
 			double p0 = quatrotation.W;
 			double p2 = quatrotation.X;
@@ -635,9 +684,57 @@ namespace USF4_Stage_Tool
 			ty = -translation.Z;
 			tz = translation.Y;
 
-			//rx = Convert.ToSingle(drx * 180d/Math.PI);
-			//ry = Convert.ToSingle(dry * 180d / Math.PI);
-			//rz = Convert.ToSingle(drz * 180d / Math.PI);
+            //rx = Convert.ToSingle(drx);
+            //ry = Convert.ToSingle(dry);
+            //rz = Convert.ToSingle(drz);
+
+	        rx = Convert.ToSingle((180 / Math.PI) * drx);
+			ry = Convert.ToSingle((180 / Math.PI) * dry);
+			rz = Convert.ToSingle((180 / Math.PI) * drz);
+
+			sx = scale.X;
+			sy = scale.Y;
+			sz = scale.Z;
+		}
+
+		public static void DecomposeMatrixToDegrees(Matrix4x4 matrix, out float tx, out float ty, out float tz, out float rx, out float ry, out float rz, out float sx, out float sy, out float sz)
+		{
+			Vector3 scale = new Vector3();
+			Quaternion quatrotation = new Quaternion();
+			Vector3 translation = new Vector3();
+
+			Matrix4x4.Decompose(matrix, out scale, out quatrotation, out translation);
+
+			double qw = quatrotation.W;
+			double qx = quatrotation.X;
+			double qy = quatrotation.Y;
+			double qz = quatrotation.Z;
+
+			//HEADING / YAW = Y
+			double dry = Math.Atan2(2 * qy * qw - 2 * qx * qz, 1 - 2 * qy * qy - 2 * qz * qz);
+			//ATTITUDE / PITCH = X
+			double drx = Math.Asin(2 * qx * qy + 2 * qz * qw);
+			//BANK / ROLL = Z
+			double drz = Math.Atan2(2 * qx * qw - 2 * qy * qz, 1 - 2 * qx * qx - 2 * qz * qz);
+
+			//Handle singularities
+			double test = qx * qy + qz * qw;
+			if (test > 0.499999)
+			{
+				dry = 2 * Math.Atan2(qx, qw);
+				drx = Math.PI / 2;
+				drz = 0;
+			}
+			if (test < -0.499999)
+			{
+				dry = -2 * Math.Atan2(qx, qw);
+				drx = -Math.PI / 2;
+				drz = 0;
+			}
+
+			tx = translation.X;
+			ty = translation.Y;
+			tz = translation.Z;
 
 			rx = Convert.ToSingle((180 / Math.PI) * drx);
 			ry = Convert.ToSingle((180 / Math.PI) * dry);
@@ -646,6 +743,96 @@ namespace USF4_Stage_Tool
 			sx = scale.X;
 			sy = scale.Y;
 			sz = scale.Z;
+		}
+
+		public static void DecomposeMatrix_AE(Matrix4x4 matrix, out float tx, out float ty, out float tz, out float rx, out float ry, out float rz, out float sx, out float sy, out float sz)
+		{
+			Vector3 scale = new Vector3();
+			Quaternion quatrotation = new Quaternion();
+			Vector3 translation = new Vector3();
+
+			Matrix4x4.Decompose(matrix, out scale, out quatrotation, out translation);
+
+			LeftHandToEulerAnglesXYZ(Matrix4x4.Transpose(matrix), out rx, out ry, out rz);
+
+			tx = translation.X;
+			ty = translation.Y;
+			tz = translation.Z;
+
+			rx *= (float)(180 / Math.PI);
+			ry *= (float)(180 / Math.PI);
+			rz *= (float)(180 / Math.PI);
+
+			//rx = (float)drx;
+			//ry = (float)dry;
+			//rz = (float)drz;
+
+			sx = scale.X;
+			sy = scale.Y;
+			sz = scale.Z;
+		}
+
+		public static void DecomposeMatrixToRadians(Matrix4x4 matrix, out float tx, out float ty, out float tz, out float rx, out float ry, out float rz, out float sx, out float sy, out float sz)
+		{
+			Vector3 scale = new Vector3();
+			Quaternion quatrotation = new Quaternion();
+			Vector3 translation = new Vector3();
+
+			Matrix4x4.Decompose(matrix, out scale, out quatrotation, out translation);
+
+			double qw = quatrotation.W;
+			double qx = quatrotation.X;
+			double qy = quatrotation.Y;
+			double qz = quatrotation.Z;
+
+			//HEADING / YAW = Y
+			double dry = Math.Atan2(2 * qy * qw - 2 * qx * qz, 1 - 2 * qy * qy - 2 * qz * qz);
+			//ATTITUDE / PITCH = X
+			double drx = Math.Asin(2 * qx * qy + 2 * qz * qw);
+			//BANK / ROLL = Z
+			double drz = Math.Atan2(2 * qx * qw - 2 * qy * qz, 1 - 2 * qx * qx - 2 * qz * qz);
+
+			//Handle singularities
+			double test = qx * qy + qz * qw;
+			if (test > 0.499999)
+			{
+				dry = 2 * Math.Atan2(qx, qw);
+				drx = Math.PI / 2;
+				drz = 0;
+			}
+			if (test < -0.499999)
+			{
+				dry = -2 * Math.Atan2(qx, qw);
+				drx = -Math.PI / 2;
+				drz = 0;
+			}
+
+			tx = translation.X;
+			ty = translation.Y;
+			tz = translation.Z;
+
+			//rx = Convert.ToSingle((180 / Math.PI) * drx);
+			//ry = Convert.ToSingle((180 / Math.PI) * dry);
+			//rz = Convert.ToSingle((180 / Math.PI) * drz);
+
+			rx = (float)drx;
+			ry = (float)dry;
+			rz = (float)drz;
+
+			sx = scale.X;
+			sy = scale.Y;
+			sz = scale.Z;
+		}
+
+		public static void composeMatrixQuat(Quaternion rotation, Vector3 scale, Vector3 translation, out Matrix4x4 matrix)
+		{
+
+			Matrix4x4 translationMatrix = Matrix4x4.CreateTranslation(translation);
+			Matrix4x4 rotationMatrix = Matrix4x4.CreateFromQuaternion(rotation);
+			Matrix4x4 scalingMatrix = Matrix4x4.CreateScale(scale);
+
+			//store result
+			matrix = scalingMatrix * rotationMatrix * translationMatrix;
 		}
 
 		public static byte[] ImageToByte(Image img)
