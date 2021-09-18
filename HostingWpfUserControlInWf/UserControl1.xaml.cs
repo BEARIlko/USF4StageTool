@@ -67,7 +67,7 @@ namespace HostingWpfUserControlInWf
             //Clamp rotation values - we're allowing full rotation around Y, but only +/- 90 around X
             //rotationY = (rotationY + ry) % (2 * Math.PI);
             //rotationX = (rotationX + rx) % (2 * Math.PI);
-            rotationX = Math.Min(rotationX + rx, 2*Math.PI - 0.000001);
+            rotationX = Math.Min(rotationX + rx, 2 * Math.PI - 0.000001);
             rotationX = Math.Min(rotationX, 0.000001);
             rotationY = Math.Min(rotationY + ry, (Math.PI - 0.000001));
             rotationY = Math.Max(rotationY, 0.000001);
@@ -118,7 +118,7 @@ namespace HostingWpfUserControlInWf
             double zp = (os.Length + dist) * Math.Cos(rotationY);
 
             //If our new radius is too small, reject the camera movement to stop the camera freaking out with negative radius
-            if (new Vector3D(xp, yp, zp).Length <= 0.25) return; 
+            if (new Vector3D(xp, yp, zp).Length <= 0.25) return;
 
             Cam.Position = new Point3D() { X = camRotationPoint.X + xp, Y = camRotationPoint.Y + yp, Z = camRotationPoint.Z + zp, };
             Cam.LookDirection = new Vector3D(-xp, -yp, -zp);
@@ -128,7 +128,7 @@ namespace HostingWpfUserControlInWf
         {
             rotationY = Math.PI;
             elevation = 0;
-            Cam.Position = new Point3D(0,0,-5);
+            Cam.Position = new Point3D(0, 0, -5);
             Cam.LookDirection = new Vector3D() { X = -Cam.Position.X, Y = -camRotationPoint.Y, Z = -Cam.Position.Z };
         }
 
@@ -144,7 +144,7 @@ namespace HostingWpfUserControlInWf
             ResetCamera();
             for (int i = 0; i < Group.Children.Count; i++)
             {
-                if(Group.Children[i].GetType() == typeof(GeometryModel3D))
+                if (Group.Children[i].GetType() == typeof(GeometryModel3D))
                 {
                     Group.Children.RemoveAt(i);
                     i--;
@@ -197,8 +197,8 @@ namespace HostingWpfUserControlInWf
             }
         }
 
-		private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
-		{
+        private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
+        {
             if (e.MiddleButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed || e.LeftButton == MouseButtonState.Pressed)
             {
                 Point ScreenCentre = myViewport.PointToScreen(new System.Windows.Point((int)(myViewport.ActualWidth / 2), (int)(myViewport.ActualHeight / 2)));
@@ -206,28 +206,28 @@ namespace HostingWpfUserControlInWf
             }
         }
 
-		private void Grid_MouseUp(object sender, MouseButtonEventArgs e)
-		{
+        private void Grid_MouseUp(object sender, MouseButtonEventArgs e)
+        {
 
         }
 
-		private void Grid_MouseWheel(object sender, MouseWheelEventArgs e)
-		{
-
-		}
-
-		private void Grid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-		{
+        private void Grid_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
 
         }
 
-		private void Grid_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
-		{
+        private void Grid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
 
         }
 
-		private void Grid_MouseMove(object sender, MouseEventArgs e)
-		{
+        private void Grid_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+
+        }
+
+        private void Grid_MouseMove(object sender, MouseEventArgs e)
+        {
             if (e.MiddleButton == MouseButtonState.Pressed)
             {
                 double XCenter = Math.Round(myViewport.ActualWidth / 2);
@@ -273,7 +273,7 @@ namespace HostingWpfUserControlInWf
                 Point ScreenCentre = myViewport.PointToScreen(new Point((int)XCenter, (int)YCenter));
 
                 System.Windows.Forms.Cursor.Position = new System.Drawing.Point((int)ScreenCentre.X, (int)ScreenCentre.Y);
- 
+
                 Zoom(zoom);
             }
         }

@@ -33,7 +33,7 @@ namespace USF4_Stage_Tool
 
         private async void bt_StartPause_Click(object sender, EventArgs e)
         {
-            if(!InProgress)
+            if (!InProgress)
             {
                 tokenSource = new CancellationTokenSource();
                 token = tokenSource.Token;
@@ -112,7 +112,7 @@ namespace USF4_Stage_Tool
             tokenSource.Cancel();
             DialogResult = DialogResult.OK;
 
-            if(!InProgress)
+            if (!InProgress)
             {
                 Close();
             }

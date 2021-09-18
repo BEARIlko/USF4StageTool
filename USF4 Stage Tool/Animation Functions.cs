@@ -445,7 +445,7 @@ namespace USF4_Stage_Tool
                 node.animatedMatrix = node.NodeMatrix;
 
 
-                
+
             }
         }
 
@@ -580,7 +580,7 @@ namespace USF4_Stage_Tool
 
                 var_A0 = var_100;
 
-                var_xmm4 = new Vector4(var_120.Length(),0,0,0);
+                var_xmm4 = new Vector4(var_120.Length(), 0, 0, 0);
 
                 Vector4 scale0x08 = new Vector4(node1.animatedScale, 1);
                 Vector4 scale0x0A = new Vector4(node2.animatedScale, 1);
@@ -648,7 +648,7 @@ namespace USF4_Stage_Tool
 
                 var_120.Y = var_xmm2.X;
 
-                if(var_xmm3.X > var_xmm1.X)
+                if (var_xmm3.X > var_xmm1.X)
                 {
                     var_120.X = var_xmm3.X;
                 }
@@ -733,7 +733,7 @@ namespace USF4_Stage_Tool
                 // update position and quaternion information for bone index 0x0A
                 rotation = Quaternion.CreateFromRotationMatrix(var_40);
                 Utils.LeftHandToEulerAnglesXYZ(var_40, out node2.animatedRotation.X, out node2.animatedRotation.Y, out node2.animatedRotation.Z);
-                
+
                 node1.animatedTranslation = mat_bone0x0A.Translation;
                 node1.animatedRotationQuaternion = rotation;
                 node1.animatedMatrix = mat_bone0x0A;
@@ -774,7 +774,7 @@ namespace USF4_Stage_Tool
                 AnimatedNode node1 = s.AnimatedNodes[ik.IKShorts[1]];
                 AnimatedNode node2 = s.AnimatedNodes[ik.IKShorts[2]];
                 AnimatedNode nodeP = new AnimatedNode();
-                if(node0.Parent != -1)
+                if (node0.Parent != -1)
                 {
                     nodeP = s.AnimatedNodes[node0.Parent];
                 }
@@ -853,19 +853,23 @@ namespace USF4_Stage_Tool
                             case 0x00:
                                 {
                                     ProcessIKData0x00_00(s, ik);
-                                } break;
+                                }
+                                break;
                             case 0x02:
                                 {
                                     ProcessIKData0x00_02(s, ik);
                                     bResult = true;
-                                } break;
+                                }
+                                break;
                         }
-                    } break;
+                    }
+                    break;
                 case 0x01:
                     {
                         ProcessIKData0x01_00(s, ik);
                         bResult = true;
-                    } break;
+                    }
+                    break;
             }
 
             return bResult;
@@ -882,7 +886,7 @@ namespace USF4_Stage_Tool
             //    {
             //        EMASkelettonNode & node = nodeIt->second;
             //        unsigned short parentNumber = node.parent;
-            if(bForce)
+            if (bForce)
             {
                 node.animationProcessingDone = false;
             }
@@ -927,9 +931,9 @@ namespace USF4_Stage_Tool
                 //            }
                 Matrix4x4 parentMatrix = parent.animatedMatrix;
                 //            D3DXMATRIX parentMatrix(parent.animatedMatrix);
-            //            D3DXMATRIX tempMatrix;
-            //            D3DXMatrixMultiply(&tempMatrix, &matrix, &parentMatrix);
-            //            matrix = tempMatrix;
+                //            D3DXMATRIX tempMatrix;
+                //            D3DXMatrixMultiply(&tempMatrix, &matrix, &parentMatrix);
+                //            matrix = tempMatrix;
                 matrix = Matrix4x4.Multiply(matrix, parentMatrix);
 
                 if (!node.animatedAbsoluteTranslationFlag)
@@ -1032,7 +1036,7 @@ namespace USF4_Stage_Tool
                         v_index2 = (c.IndicesList[i] & 0b0011111111111111);
                         t_index1 = v_index1 + (c.IndicesList[i - 1] >> 14);
                         t_index2 = v_index2 + (c.IndicesList[i] >> 14);
-                        
+
                         if ((c.IndicesList[i - 1] >> 14) == 0) t_index1 = 0;
                         if ((c.IndicesList[i] >> 14) == 0) t_index2 = 0;
                     }
@@ -1141,7 +1145,7 @@ namespace USF4_Stage_Tool
         public static Skeleton DuplicateSkeleton(Skeleton skel, int first, int last)
         {
             //Skip the root node, copy everything else
-            int adjnodecount = (last - first)+1;
+            int adjnodecount = (last - first) + 1;
 
             //Fix polymsh1 sibling
             Node polymsh1 = skel.Nodes[21];
@@ -1159,19 +1163,19 @@ namespace USF4_Stage_Tool
                 if (nNode.Child3 != -1 && nNode.Child3 <= last) { nNode.Child3 += adjnodecount; }
                 if (nNode.Child4 != -1 && nNode.Child4 <= last) { nNode.Child4 += adjnodecount; }
                 if (nNode.Child1 == 41) { nNode.Child1 = -1; }
-                    
+
                 //Node updated, add it to the list.
                 skel.Nodes.Add(nNode);
                 skel.NodeCount++;
                 skel.NodeNamePointersList.Add(0x00);
                 skel.NodeNames.Add(skel.NodeNames[i]);
                 skel.FFList.Add(skel.FFList[i]);
-                
+
             }
 
             return skel;
         }
-        
+
         public static Animation DuplicateAnimation(Animation anim, int first, int last)
         {
             int initial_cmdcount = anim.CmdTrackCount;
@@ -1183,7 +1187,7 @@ namespace USF4_Stage_Tool
 
                 cmd.BitFlag = anim.CMDTracks[i].BitFlag;
                 cmd.BoneID = anim.CMDTracks[i].BoneID;
-                cmd.IndicesList = new List<int> (anim.CMDTracks[i].IndicesList);
+                cmd.IndicesList = new List<int>(anim.CMDTracks[i].IndicesList);
                 cmd.IndicesListPointer = anim.CMDTracks[i].IndicesListPointer;
                 cmd.StepCount = anim.CMDTracks[i].StepCount;
                 cmd.StepsList = new List<int>(anim.CMDTracks[i].StepsList);
@@ -1192,11 +1196,11 @@ namespace USF4_Stage_Tool
                 if (cmd.BoneID >= first)
                 {
                     cmd.BoneID += adjnodecount;
-                    if(cmd.BoneID == 22 && cmd.TransformType == 0 && (cmd.BitFlag & 0x03) == 0)
+                    if (cmd.BoneID == 22 && cmd.TransformType == 0 && (cmd.BitFlag & 0x03) == 0)
                     {
                         cmd.BitFlag = Convert.ToByte((cmd.BitFlag | 0x40));
                         int Steps = cmd.StepCount;
-                        for(int j = 0; j < Steps; j++)
+                        for (int j = 0; j < Steps; j++)
                         {
                             anim.ValuesList.Add(anim.ValuesList[cmd.IndicesList[j]] + 2f);
                             anim.ValueCount++;
@@ -1224,5 +1228,5 @@ namespace USF4_Stage_Tool
         }
     }
 
-    
+
 }

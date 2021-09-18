@@ -16,7 +16,7 @@ namespace USF4_Stage_Tool
         static AnimatedSkeleton aSkeleton;
         public static AnimatedNode[] aNodes_array;
 
-        public EMAProcessor (EMA target_ema, int anim_index = -1)
+        public EMAProcessor(EMA target_ema, int anim_index = -1)
         {
             currentFrame = 0;
             ema = target_ema;
@@ -35,7 +35,7 @@ namespace USF4_Stage_Tool
             return aNodes_array;
         }
 
-        public bool SetupAnimation (int animation_index)
+        public bool SetupAnimation(int animation_index)
         {
             currentFrame = 0;
             currentAnimation = animation_index;
@@ -207,7 +207,7 @@ namespace USF4_Stage_Tool
                 aNodes_array[nodeNumber].animatedRotationQuaternion = rotation;
                 aNodes_array[nodeNumber].animatedMatrix = matrix;
 
-                if(parentNumber != -1)
+                if (parentNumber != -1)
                 {
                     Matrix4x4.Invert(aNodes_array[parentNumber].animatedMatrix, out Matrix4x4 parentInverseMatrix);
                     aNodes_array[nodeNumber].animatedLocalMatrix = matrix * parentInverseMatrix;

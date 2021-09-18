@@ -4,7 +4,7 @@ namespace USF4_Stage_Tool
 {
     public static class Tooltips
     {
-        public static Dictionary<string,string> tooltips = new Dictionary<string, string>()
+        public static Dictionary<string, string> tooltips = new Dictionary<string, string>()
         {
             //EMG Context
             ["emgContextInjectOBJ"] = "Inject OBJ by overwriting the selected .EMG",

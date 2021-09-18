@@ -825,7 +825,7 @@ namespace USF4_Stage_Tool
                 norm_string += $"{v.nX} {v.nY} {v.nZ} ";
                 map_string += $"{v.U} {v.V} ";
             }
-            
+
             pos_string.Trim();
             norm_string.Trim();
             map_string.Trim();
@@ -1262,7 +1262,7 @@ namespace USF4_Stage_Tool
 
                         if (v.BoneWeights.Count < v.BoneIDs.Count) //Calculate the 4th weight from the 3 weights stored in the EMG
                         {
-                            v.BoneWeights.Add(Math.Max(1 - v.BoneWeights.Sum(),0f));
+                            v.BoneWeights.Add(Math.Max(1 - v.BoneWeights.Sum(), 0f));
                         }
 
                         int boneweightcount = 0;
@@ -2382,7 +2382,7 @@ namespace USF4_Stage_Tool
 
                 if (!animated) continue;
 
-                string bonename = ema.Skeleton.NodeNames[i];      
+                string bonename = ema.Skeleton.NodeNames[i];
                 string time_vals = string.Empty;
                 string trans_vals = string.Empty;
                 string interp_vals = string.Empty;
@@ -2576,7 +2576,7 @@ namespace USF4_Stage_Tool
                 string target;
                 string time_vals = string.Empty;
                 string trans_vals = string.Empty;
-                string interp_vals = string.Empty;               
+                string interp_vals = string.Empty;
 
                 if ((c.BitFlag & 0x03) == 0) axis = "X";
                 else if ((c.BitFlag & 0x03) == 1) axis = "Y";
@@ -4337,8 +4337,8 @@ namespace USF4_Stage_Tool
                         sID = name,
                         Type = Grendgine_Collada_Node_Type.JOINT,
                         node = RecursiveNode(sk, i),
-                        Matrix = new Grendgine_Collada_Matrix[] 
-                        { 
+                        Matrix = new Grendgine_Collada_Matrix[]
+                        {
                             new Grendgine_Collada_Matrix()
                             {
                                 sID = "matrix",
@@ -4439,7 +4439,7 @@ namespace USF4_Stage_Tool
             List<Grendgine_Collada_Node> node_list = new List<Grendgine_Collada_Node>();
 
             Skeleton sk = emo.Skeleton;
-           
+
             for (int i = 0; i < sk.Nodes.Count; i++)
             {
                 Node n = sk.Nodes[i];
@@ -4663,7 +4663,7 @@ namespace USF4_Stage_Tool
                                     Value_As_String = $"{tx.ToString("0.000000")} {(ty).ToString("0.000000")} {tz.ToString("0.000000")}"
                                 }
                             },
-                                Rotate = new Grendgine_Collada_Rotate[]
+                            Rotate = new Grendgine_Collada_Rotate[]
                             {
                                 new Grendgine_Collada_Rotate()
                                 {
@@ -4681,7 +4681,7 @@ namespace USF4_Stage_Tool
                                     Value_As_String = $"1 0 0 {rx.ToString("0.000000")}"
                                 },
                             },
-                                Scale = new Grendgine_Collada_Scale[]
+                            Scale = new Grendgine_Collada_Scale[]
                             {
                                 new Grendgine_Collada_Scale()
                                 {
