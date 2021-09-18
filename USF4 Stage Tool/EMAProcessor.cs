@@ -55,10 +55,6 @@ namespace USF4_Stage_Tool
 
             for (int i = 0; i < aNodes_array.Length; i++)
             {
-                if(ema.Skeleton.NodeNames[i] == "LFoot")
-                {
-                    int f = 1;
-                }
                 updateNode(i);
             }
 
@@ -86,11 +82,6 @@ namespace USF4_Stage_Tool
                 aNodes_array[i].animatedRotationQuaternion = aNodes_array[i].RotationQuaternion;
                 aNodes_array[i].animatedMatrix = aNodes_array[i].NodeMatrix;
 
-                if (ema.Skeleton.NodeNames[i] == "LFoot")
-                {
-                    int f = 1;
-                }
-
                 //Calculate interpolated values, if the node is animated
                 if (getTransform(currentAnimation, currentFrame, aNodes_array[i].ID, 0, out Vector3 translation, out aNodes_array[i].animatedAbsoluteTranslationFlag))
                     aNodes_array[i].animatedTranslation = translation;
@@ -109,11 +100,6 @@ namespace USF4_Stage_Tool
 
         static bool getTransform(int anim_index, int frame, int bone_index, int transform_type, out Vector3 values, out bool absolute)
         {
-            if (ema.Skeleton.NodeNames[bone_index] == "LArmDir")
-            {
-                int f = 1;
-            }
-
             bool animated = false;
             absolute = false;
 
@@ -163,12 +149,6 @@ namespace USF4_Stage_Tool
 
         static bool updateNode(int nodeNumber, bool bForce = false, bool bUpdateChildren = false, bool bUpdateSiblings = false)
         {
-            if (ema.Skeleton.NodeNames[nodeNumber] == "LArmDir")
-            {
-                int f = 1;
-            }
-
-
             int parentNumber = aNodes_array[nodeNumber].Parent;
 
             if (bForce)

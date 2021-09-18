@@ -358,7 +358,6 @@ E:\GIT\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\System.Numerics.Vectors.xml
 E:\GIT\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\System.Runtime.CompilerServices.Unsafe.xml
 E:\GIT\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\System.Threading.Tasks.Dataflow.xml
 E:\GIT\USF4 Stage Tool\USF4 Stage Tool\bin\Debug\UsefulThings.xml
-E:\GIT\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csprojAssemblyReference.cache
 E:\GIT\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.CompressDaisyChain.resources
 E:\GIT\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.DebugOutput.resources
 E:\GIT\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4_Stage_Tool.Form1.resources
@@ -370,3 +369,4 @@ E:\GIT\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.Fody.Cop
 E:\GIT\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.CopyComplete
 E:\GIT\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.exe
 E:\GIT\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.pdb
+E:\GIT\USF4 Stage Tool\USF4 Stage Tool\obj\Debug\USF4 Stage Tool.csproj.AssemblyReference.cache

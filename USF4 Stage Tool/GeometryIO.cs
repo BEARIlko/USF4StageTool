@@ -1231,11 +1231,6 @@ namespace USF4_Stage_Tool
                             {
                                 foreach (int b in v.BoneIDs)
                                 {
-                                    if (sm.BoneIntegersList[b] == 133 || sm.BoneIntegersList[b] == 134)
-                                    {
-                                        int f = 1;
-                                    }
-
                                     if (temp_boneIDs.Contains(sm.BoneIntegersList[0]) && b == 0) continue;
                                     temp_boneIDs.Add(sm.BoneIntegersList[b]);
                                 }
@@ -2174,11 +2169,6 @@ namespace USF4_Stage_Tool
 
                 for (int j = 0; j < ema.Skeleton.Nodes.Count; j++)
                 {
-                    if (ema.Skeleton.NodeNames[j] == "RArmRoot")
-                    {
-                        int test = 0;
-                    }
-
                     Matrix4x4 parent_inv = Matrix4x4.Identity;
                     if (an[j].Parent != -1)
                         Matrix4x4.Invert(an[an[j].Parent].animatedMatrix, out parent_inv);
