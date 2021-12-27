@@ -5319,7 +5319,17 @@ namespace USF4_Stage_Tool
         private void cmEMOemoToColladaToolStripMenuItem_Click(object sender, EventArgs e)
         {
             EMO emo = (EMO)LastSelectedTreeNodeU.Tag;
-            EMA ema = (EMA)((EMB)LastSelectedTreeNodeU.Parent.Tag).Files[LastSelectedTreeNodeU.Index - 2];
+            EMA ema = new EMA();
+
+            //Look for an EMA in the "usual" place (files are usually ordered in the .emz as .ema, .emm, .emo)
+            //When we generate the collada struct we check to see if our ema is blank or has animations in it
+            if (LastSelectedTreeNodeU.Parent != null && LastSelectedTreeNodeU.Tag.GetType() == typeof(EMB))
+            {
+                if (LastSelectedTreeNodeU.Index > 2 && ((EMB)LastSelectedTreeNodeU.Parent.Tag).Files[LastSelectedTreeNodeU.Index - 2].GetType() == typeof(EMA))
+                {
+                    ema = (EMA)((EMB)LastSelectedTreeNodeU.Parent.Tag).Files[LastSelectedTreeNodeU.Index - 2];
+                }
+            }
 
             Grendgine_Collada collada = new Grendgine_Collada()
             {
@@ -5329,13 +5339,13 @@ namespace USF4_Stage_Tool
                     Up_Axis = "Y_UP"
                 },
                 Library_Controllers = GeometryIO.EMOtoCollada_Library_Controller(emo),
-                //Library_Controllers = GeometryIO.LEGACY_EMOtoCollada_Library_Controller(emo),
                 Library_Geometries = GeometryIO.LEGACY_EMOtoCollada_Library_Geometries(emo),
-                //Library_Visual_Scene = GeometryIO.LEGACY_EMOtoCollada_Library_Visual_Scenes(emo),
                 Library_Visual_Scene = GeometryIO.EMOtoCollada_Library_Visual_Scenes(emo),
+                Library_Animations = ema.AnimationCount > 0 ? GeometryIO.LEGACY_EMAtoCollada_Library_Animations(ema) : new Grendgine_Collada_Library_Animations()
+                //Library_Controllers = GeometryIO.LEGACY_EMOtoCollada_Library_Controller(emo),
+                //Library_Visual_Scene = GeometryIO.LEGACY_EMOtoCollada_Library_Visual_Scenes(emo),
                 //Library_Visual_Scene = GeometryIO.EMOtoCollada_Library_Visual_Scenes_Matrix_NODEPTH(emo),
                 //Library_Visual_Scene = GeometryIO.EMOtoCollada_Library_Visual_Scenes_Matrix(emo),
-                Library_Animations = GeometryIO.LEGACY_EMAtoCollada_Library_Animations(ema)
                 //Library_Animations = GeometryIO.EMAtoCollada_Library_AnimationsWithInterpolation(ema,1)
                 //Library_Animations = GeometryIO.EMAtoCollada_Library_Animations_Matrix(ema, 0),
                 //Library_Animations = GeometryIO.EMAtoCollada_Library_Animations_AssetExplorer(ema, 0),
