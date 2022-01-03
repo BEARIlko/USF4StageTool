@@ -60,7 +60,7 @@ namespace USF4_Stage_Tool
 
             for (int i = 0; i < ema.Skeleton.IKDataBlocks.Count; i++)
             {
-                //updateIKData(i);
+                updateIKData(i);
             }
 
         }

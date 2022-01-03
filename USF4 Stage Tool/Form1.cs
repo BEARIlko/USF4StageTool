@@ -82,8 +82,140 @@ namespace USF4_Stage_Tool
 
         public EMB matchingemb = new EMB(); //Used to show DDS names on the model texture edit tooltips
 
+        public void SFxTAnimationConverter(EMA sfxtEMA, EMA usf4EMA, int index)
+        {
+            EMAProcessor sfxtProcessor = new EMAProcessor(sfxtEMA, index);
+
+            //Find the bone IDs of the parts we're interested in
+            int LFootID = -1;
+            int RFootID = -1;
+
+            for (int i = 0; i < sfxtEMA.Skeleton.NodeNames.Count(); i++)
+            {
+                if (sfxtEMA.Skeleton.NodeNames[i] == "LFoot")
+                {
+                    Debug.WriteLine("Got LFoot");
+                    LFootID = i;
+                }
+                else if (sfxtEMA.Skeleton.NodeNames[i] == "RFoot")
+                {
+                    Debug.WriteLine("Got RFoot");
+                    RFootID = i;
+                }
+            }
+
+            //Run the animation processor and store the positions
+            List<Vector3> LFootPositions = new List<Vector3>();
+            List<Vector3> RFootPositions = new List<Vector3>();
+            
+            for (int i = 0; i < sfxtEMA.Animations[index].Duration; i++)
+            {
+                sfxtProcessor.AnimateFrame(i);
+
+                AnimatedNode[] sfxtNodes = sfxtProcessor.ReturnAnimatedNodes();
+
+                LFootPositions.Add(sfxtNodes[LFootID].animatedTranslation);
+                RFootPositions.Add(sfxtNodes[RFootID].animatedTranslation);
+            }
+
+            //As we know we're not dealing with tangents, we can use a simple dictionary to compress the new values and append it to the value list
+            Dictionary<float, int> new_values = new Dictionary<float, int>();
+            //Lol never mind, there's literally zero duplicate values so far, but, y'know, IN THEORY it would help
+            for (int i = 0; i < LFootPositions.Count(); i++)
+            {
+                new_values[LFootPositions[i].X] = new_values.Count() + sfxtEMA.Animations[index].ValuesList.Count();
+                new_values[LFootPositions[i].Y] = new_values.Count() + sfxtEMA.Animations[index].ValuesList.Count();
+                new_values[LFootPositions[i].Z] = new_values.Count() + sfxtEMA.Animations[index].ValuesList.Count();
+            }
+            for (int i = 0; i < RFootPositions.Count(); i++)
+            {
+                new_values[RFootPositions[i].X] = new_values.Count() + sfxtEMA.Animations[index].ValuesList.Count();
+                new_values[RFootPositions[i].Y] = new_values.Count() + sfxtEMA.Animations[index].ValuesList.Count();
+                new_values[RFootPositions[i].Z] = new_values.Count() + sfxtEMA.Animations[index].ValuesList.Count();
+            }
+
+            List<int> ValueIndicesX = new List<int>();
+            List<int> StepsX = new List<int>();
+            for (int i = 0; i < LFootPositions.Count(); i++)
+            {
+                ValueIndicesX.Add(new_values[LFootPositions[i].X]);
+                StepsX.Add(i);
+            }
+            /*  
+            *  Find the "old" non-IK CMD tracks and replace them with the new, IK-compatible CMD tracks
+            *  We need to get rid of any foot *translations* (keep rotation/scale), all Leg1/Leg2 *translations* or *rotations* (keep scale)
+            */
+
+            int LLegEffID = -1;
+            int RLegEffID = -1;
+
+            for (int i = 0; i < usf4EMA.Skeleton.NodeNames.Count(); i++)
+            {
+                if (usf4EMA.Skeleton.NodeNames[i] == "LLegEff")
+                {
+                    Debug.WriteLine("Got LLegEff");
+                    LLegEffID = i;
+                }
+                else if (usf4EMA.Skeleton.NodeNames[i] == "RLegEff")
+                {
+                    Debug.WriteLine("Got RLegEff");
+                    RLegEffID = i;
+                }
+            }
+
+            //Set absolute and axis flags
+            byte LLegEffXFlag = 0x10;
+            byte LLegEffYFlag = 0x11;
+            byte LLegEffZFlag = 0x12;
+
+
+            if (sfxtEMA.Animations[index].Duration > 0xFF)
+            {
+                LLegEffXFlag &= 0x20;
+                LLegEffYFlag &= 0x20;
+                LLegEffZFlag &= 0x20;
+            }
+            
+            CMDTrack LLegEffX = new CMDTrack()
+            {
+                BoneID = LLegEffID,
+                BitFlag = LLegEffXFlag,
+                StepCount = sfxtEMA.Animations[index].Duration,
+                TransformType = 0,
+                IndicesListPointer = 0,
+                IndicesList = ValueIndicesX,
+                StepsList = StepsX,
+                HEXBytes = new byte[1]
+            };
+
+            //Brute-force add the values to the Value list (don't bother removing any old un-needed values, would be too complicated for the benefit)
+            
+            //Create the new absolute Effector translation tracks
+            //(Maybe?) Need to insert them at the right position, or maybe the game doesn't care
+
+            //Check if we need to change the short/long 0x40 flag (ALL tracks will need updating if so)
+            
+            EMAProcessor usf4Processor = new EMAProcessor(usf4EMA, index);
+
+
+        }
+
         public Form1()
         {
+            string sfxt = "D:\\Program Files (x86)\\Steam\\steamapps\\common\\Street Fighter X Tekken\\resource\\CMN\\battle\\chara\\RYU\\Ryu.obj.ema";
+            string usf4 = "D:\\Program Files (x86)\\Steam\\steamapps\\common\\Super Street Fighter IV - Arcade Edition\\resource\\battle\\chara\\RYU\\RYUwithSFXT.obj.ema";
+            FileStream fsSource = new FileStream(sfxt, FileMode.Open, FileAccess.Read);
+            byte[] sfxtbytes;
+            using (BinaryReader br = new BinaryReader(fsSource, Encoding.ASCII)) { sfxtbytes = br.ReadBytes((int)fsSource.Length); }
+
+            fsSource = new FileStream(usf4, FileMode.Open, FileAccess.Read);
+            byte[] usf4bytes;
+            using (BinaryReader br = new BinaryReader(fsSource, Encoding.ASCII)) { usf4bytes = br.ReadBytes((int)fsSource.Length); }
+
+            EMA sfxtEMA = new EMA(sfxtbytes, "sfxt");
+            EMA usf4EMA = new EMA(usf4bytes, "usf4");
+
+            SFxTAnimationConverter(sfxtEMA, usf4EMA, 0);
 
             InitializeComponent();
             debugOutputForm = new DebugOutput();
@@ -642,7 +774,7 @@ namespace USF4_Stage_Tool
                 {
                     n.Nodes.Add(new TreeNode()
                     {
-                        Text = $"{i} {Encoding.ASCII.GetString(ema.Animations[i].Name)}",
+                        Text = $"{i} {ema.Animations[i].Name}",
                         Tag = ema.Animations[i]
                     });
                 }
@@ -762,6 +894,8 @@ namespace USF4_Stage_Tool
                 {
                     newCM.Items.Add(new ToolStripMenuItem($"Export {LastSelectedTreeNodeU.Text} to Collada", null, cmEMAexportToColladaToolStripMenuItem_Click));
                     newCM.Items.Add(new ToolStripMenuItem($"Generate KFs {LastSelectedTreeNodeU.Parent.Text}", null, cmEMAgenerateKeyFramesToolStripMenuItem_Click));
+                    newCM.Items.Add(new ToolStripMenuItem($"Dump animation {LastSelectedTreeNodeU.Text}", null, cmEMArawDumpAnimationToolStripMenuItem_Click));
+                    newCM.Items.Add(new ToolStripMenuItem($"Inject animation into {LastSelectedTreeNodeU.Text}", null, cmEMAInjectAnimationToolStripMenuItem_Click));
 
                     title = e.Node.Text;
                     TreeDisplayAnimationData((Animation)e.Node.Tag);
@@ -2058,7 +2192,7 @@ namespace USF4_Stage_Tool
             Animation WorkingAnimation = new Animation()
             {
                 Duration = model.Frames.Count,
-                Name = new byte[] { 0x45, 0x4C, 0x56, 0x5F, 0x4D, 0x41, 0x4E, 0x30, 0x31, 0x5F, 0x30, 0x30, 0x30 },
+                Name = "UNKNOWNANIM",
                 ValuesList = new List<float>()
             };
 
@@ -3722,13 +3856,16 @@ namespace USF4_Stage_Tool
 
         }
 
-        private void InjectAnimationtoolStripMenuItem1_Click(object sender, EventArgs e)
+        private void cmEMAInjectAnimationToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            GeometryIO.AnimationFromColladaStruct(Grendgine_Collada.Grendgine_Load_File("outputtest.dae"));
+            EMA ema = (EMA)LastSelectedTreeNodeU.Parent.Tag;
 
-            EMA ema = (EMA)WorkingEMZ.Files[LastSelectedTreeNodeU.Parent.Index];
+            diagOpenOBJ.RestoreDirectory = true;
+            diagOpenOBJ.FileName = string.Empty;
+            diagOpenOBJ.InitialDirectory = LastOpenFolder;
+            diagOpenOBJ.Filter = string.Empty;
 
-            ema.Animations.RemoveAt(LastSelectedTreeNodeU.Index);
+            //ema.Animations.RemoveAt(LastSelectedTreeNodeU.Index);
 
             InjectAnimation();
             //DuplicateAnimationDown();
@@ -3736,136 +3873,56 @@ namespace USF4_Stage_Tool
 
         private void InjectAnimation()
         {
-            EMA ema = (EMA)WorkingEMZ.Files[LastSelectedTreeNodeU.Parent.Index];
-
-            Animation anim = ema.Animations[LastSelectedTreeNodeU.Index];
+            EMA ema = (EMA)LastSelectedTreeNodeU.Parent.Tag;
+            Animation a = (Animation)LastSelectedTreeNodeU.Tag;
 
             diagOpenOBJ.RestoreDirectory = true;
             diagOpenOBJ.FileName = string.Empty;
             diagOpenOBJ.InitialDirectory = LastOpenFolder;
-            diagOpenOBJ.Filter = SMDFileFilter;
+            diagOpenOBJ.Filter = string.Empty;
 
             if (diagOpenOBJ.ShowDialog() == DialogResult.OK)
             {
-                SMDFile model = ReadSMD(diagOpenOBJ.FileName);
+                FileStream fsSource = new FileStream(diagOpenOBJ.FileName, FileMode.Open, FileAccess.Read);
+                byte[] bytes;
+                using (BinaryReader br = new BinaryReader(fsSource, Encoding.ASCII)) { bytes = br.ReadBytes((int)fsSource.Length); }
 
-                Animation WorkingAnimation = new Animation();
+                Animation Anim = new Animation();
+                Anim.ReadFile(bytes, a.Name);
 
-                WorkingAnimation.Duration = model.Frames.Count;
-                WorkingAnimation.Name = anim.Name;
+                Dictionary<int, string> old_bone_dict = new Dictionary<int, string>();
+                Dictionary<string, int> new_bone_dict = new Dictionary<string, int>();
 
-                WorkingAnimation.ValuesList = new List<float>();
-                Dictionary<float, int> ValueDict = new Dictionary<float, int>();
-
-                //Populate the float dictionary
-                for (int i = 0; i < model.Skeleton.Nodes.Count; i++)
+                int offset = Anim.ValuesListPointer + Anim.ValueCount * 4;
+                
+                while (offset < bytes.Count())
                 {
-
-                    for (int k = 0; k < model.Frames.Count; k++)
-                    {
-                        int xflip = -1;
-
-                        float Rad2Deg = Convert.ToSingle(180 / Math.PI);
-                        int dumVal; //TryGetValue outputs the dictionary result, but we don't care right now
-                        if (!ValueDict.TryGetValue(xflip * model.Frames[k].traX[i], out dumVal)) { ValueDict.Add(xflip * model.Frames[k].traX[i], ValueDict.Count); }
-                        if (!ValueDict.TryGetValue(model.Frames[k].traY[i], out dumVal)) { ValueDict.Add(model.Frames[k].traY[i], ValueDict.Count); }
-                        if (!ValueDict.TryGetValue(model.Frames[k].traZ[i], out dumVal)) { ValueDict.Add(model.Frames[k].traZ[i], ValueDict.Count); }
-                        if (!ValueDict.TryGetValue(Rad2Deg * xflip * model.Frames[k].rotX[i], out dumVal)) { ValueDict.Add(Rad2Deg * xflip * model.Frames[k].rotX[i], ValueDict.Count); }
-                        if (!ValueDict.TryGetValue(Rad2Deg * model.Frames[k].rotY[i], out dumVal)) { ValueDict.Add(Rad2Deg * model.Frames[k].rotY[i], ValueDict.Count); }
-                        if (!ValueDict.TryGetValue(Rad2Deg * model.Frames[k].rotZ[i], out dumVal)) { ValueDict.Add(Rad2Deg * model.Frames[k].rotZ[i], ValueDict.Count); }
-                    }
-                }
-                WorkingAnimation.ValueCount = ValueDict.Count;
-                //Populate the Value list from the dictionary
-                for (int i = 0; i < ValueDict.Count; i++)
-                {
-                    WorkingAnimation.ValuesList.Add(ValueDict.ElementAt(i).Key);
+                    string name = Encoding.ASCII.GetString(Utils.ReadZeroTermStringToArray(offset, bytes, bytes.Count()));
+                    offset += name.Length + 1;
+                    old_bone_dict.Add(old_bone_dict.Count(), name);
                 }
 
-                //Set flags for later use - short IndexValues only have 14 "useable" bits due to masking, so max is 3FFF
-                int KTimes = 0x00; if (WorkingAnimation.Duration > 0xFF) { KTimes = 0x20; }
-                int IndType = 0x00; if (WorkingAnimation.ValueCount > 0x3FFF) { IndType = 0x40; }
-                int Absolute = 0x00; //SMD animations ONLY support relative animation, but chuck this here for later
-
-                //SMD contains translation and rotation, so up to 6 tracks per node
-                WorkingAnimation.CmdTrackCount = model.Skeleton.Nodes.Count * 6;
-                WorkingAnimation.CMDTracks = new List<CMDTrack>();
-                WorkingAnimation.CmdTrackPointersList = new List<int>();
-
-                //Loop bone list
-                for (int i = 0; i < model.Skeleton.Nodes.Count; i++)
+                foreach (string n in ema.Skeleton.NodeNames)
                 {
-                    //j = transform axis
-                    for (int j = 0; j < 3; j++)
-                    {
-                        CMDTrack WorkingCMD = new CMDTrack();
-                        WorkingCMD.StepsList = new List<int>();
-                        WorkingCMD.IndicesList = new List<int>();
-                        WorkingCMD.BoneID = i;
-                        WorkingCMD.TransformType = 0;
-
-                        WorkingCMD.BitFlag = Convert.ToByte(j + KTimes + IndType + Absolute);
-                        WorkingCMD.StepCount = model.Frames.Count;
-
-                        //k = keyframe count
-                        for (int k = 0; k < model.Frames.Count; k++)
-                        {
-                            WorkingCMD.StepsList.Add(k);
-                            if (j == 0) { WorkingCMD.IndicesList.Add(ValueDict[model.Frames[k].traX[i]]); }
-                            if (j == 1) { WorkingCMD.IndicesList.Add(ValueDict[model.Frames[k].traY[i]]); }
-                            if (j == 2) { WorkingCMD.IndicesList.Add(ValueDict[model.Frames[k].traZ[i]]); }
-                        }
-                        WorkingAnimation.CMDTracks.Add(WorkingCMD);
-                        WorkingAnimation.CmdTrackPointersList.Add(0);
-                    }
+                    new_bone_dict.Add(n, new_bone_dict.Count());
                 }
 
-                for (int i = 0; i < model.Skeleton.Nodes.Count; i++)
+                List<CMDTrack> temp_cmds = new List<CMDTrack>();
+                for (int i = 0; i < Anim.CMDTracks.Count(); i++)
                 {
-                    for (int j = 0; j < 3; j++)
-                    {
-                        CMDTrack WorkingCMD = new CMDTrack();
-                        WorkingCMD = new CMDTrack();
-                        WorkingCMD.StepsList = new List<int>();
-                        WorkingCMD.IndicesList = new List<int>();
-                        WorkingCMD.BoneID = i;
-                        WorkingCMD.TransformType = 1;
-                        WorkingCMD.BitFlag = Convert.ToByte(j + KTimes + IndType + Absolute);
-                        WorkingCMD.StepCount = model.Frames.Count;
+                    CMDTrack c = Anim.CMDTracks[i];
 
-                        //k = keyframe count
-                        for (int k = 0; k < model.Frames.Count; k++)
-                        {
-                            float Rad2Deg = Convert.ToSingle(180 / Math.PI);
+                    c.BoneID = new_bone_dict[old_bone_dict[c.BoneID]];
 
-                            WorkingCMD.StepsList.Add(k);
-                            if (j == 0)
-                            {
-                                float valueDeg = Rad2Deg * model.Frames[k].rotX[i];
-                                WorkingCMD.IndicesList.Add(ValueDict[valueDeg]);
-                            }
-                            if (j == 1)
-                            {
-                                float valueDeg = Rad2Deg * model.Frames[k].rotY[i];
-                                WorkingCMD.IndicesList.Add(ValueDict[valueDeg]);
-                            }
-                            if (j == 2)
-                            {
-                                float valueDeg = Rad2Deg * model.Frames[k].rotZ[i];
-                                WorkingCMD.IndicesList.Add(ValueDict[valueDeg]);
-                            }
-                        }
-
-                        WorkingAnimation.CMDTracks.Add(WorkingCMD);
-                        WorkingAnimation.CmdTrackPointersList.Add(0);
-                    }
+                    temp_cmds.Add(c);
                 }
 
-
+                Anim.CMDTracks = temp_cmds;
 
                 ema.Animations.RemoveAt(LastSelectedTreeNodeU.Index);
-                ema.Animations.Insert(LastSelectedTreeNodeU.Index, WorkingAnimation);
-                ema.GenerateBytes();
+                ema.Animations.Insert(LastSelectedTreeNodeU.Index, Anim);
+
+                RefreshTree(tvTreeUSF4);
             }
         }
 
@@ -5323,7 +5380,7 @@ namespace USF4_Stage_Tool
 
             //Look for an EMA in the "usual" place (files are usually ordered in the .emz as .ema, .emm, .emo)
             //When we generate the collada struct we check to see if our ema is blank or has animations in it
-            if (LastSelectedTreeNodeU.Parent != null && LastSelectedTreeNodeU.Tag.GetType() == typeof(EMB))
+            if (LastSelectedTreeNodeU.Parent != null && LastSelectedTreeNodeU.Parent.Tag.GetType() == typeof(EMB))
             {
                 if (LastSelectedTreeNodeU.Index > 2 && ((EMB)LastSelectedTreeNodeU.Parent.Tag).Files[LastSelectedTreeNodeU.Index - 2].GetType() == typeof(EMA))
                 {
@@ -5770,6 +5827,32 @@ namespace USF4_Stage_Tool
             {
                 Console.WriteLine(ex.ToString());
                 Console.ReadLine();
+            }
+        }
+
+        private void cmEMArawDumpAnimationToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (LastSelectedTreeNodeU.Tag.GetType() == typeof(Animation))
+            {
+                Skeleton s = ((EMA)LastSelectedTreeNodeU.Parent.Tag).Skeleton;
+                Animation targetAnim = (Animation)LastSelectedTreeNodeU.Tag;
+
+                saveFileDialog1.Filter = string.Empty;
+                saveFileDialog1.FileName = targetAnim.Name.ToString();
+                if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+                {
+                    string bones = string.Empty;
+                    foreach (string str in s.NodeNames)
+                    {
+                        bones += str;
+                        bones += '\0';
+                    }
+
+                    List<byte> Data = targetAnim.HEXBytes.ToList();
+                    Data.AddRange(Encoding.ASCII.GetBytes(bones));
+                    Utils.WriteDataToStream(saveFileDialog1.FileName, Data.ToArray());
+                    AddStatus($"Extracted {targetAnim.Name}");
+                }
             }
         }
     }

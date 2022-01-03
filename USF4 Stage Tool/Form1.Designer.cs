@@ -180,6 +180,8 @@
             this.rawDumpEMAToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteEMAToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.generateKeyFramesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exportToColladaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.rawDumpAnimationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.emoContext = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.insertOBJAsNewEMGToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.addEMGToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -205,7 +207,6 @@
             this.generateEMOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openFileToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.closeFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.exportToColladaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pnlOBJECTS.SuspendLayout();
             this.pSelectedTreeNodeData.SuspendLayout();
             this.pnlEO_SUBMOD.SuspendLayout();
@@ -1633,9 +1634,10 @@
             this.rawDumpEMAToolStripMenuItem,
             this.deleteEMAToolStripMenuItem,
             this.generateKeyFramesToolStripMenuItem,
-            this.exportToColladaToolStripMenuItem});
+            this.exportToColladaToolStripMenuItem,
+            this.rawDumpAnimationToolStripMenuItem});
             this.emaContext.Name = "treeContext";
-            this.emaContext.Size = new System.Drawing.Size(198, 202);
+            this.emaContext.Size = new System.Drawing.Size(198, 224);
             this.emaContext.Opening += new System.ComponentModel.CancelEventHandler(this.animationContext_Opening);
             // 
             // InjectAnimationtoolStripMenuItem1
@@ -1643,7 +1645,7 @@
             this.InjectAnimationtoolStripMenuItem1.Name = "InjectAnimationtoolStripMenuItem1";
             this.InjectAnimationtoolStripMenuItem1.Size = new System.Drawing.Size(197, 22);
             this.InjectAnimationtoolStripMenuItem1.Text = "Inject Animation";
-            this.InjectAnimationtoolStripMenuItem1.Click += new System.EventHandler(this.InjectAnimationtoolStripMenuItem1_Click);
+            this.InjectAnimationtoolStripMenuItem1.Click += new System.EventHandler(this.cmEMAInjectAnimationToolStripMenuItem_Click);
             // 
             // AddAnimationtoolStripMenuItem2
             // 
@@ -1686,6 +1688,20 @@
             this.generateKeyFramesToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
             this.generateKeyFramesToolStripMenuItem.Text = "Generate KeyFrames";
             this.generateKeyFramesToolStripMenuItem.Click += new System.EventHandler(this.cmEMAgenerateKeyFramesToolStripMenuItem_Click);
+            // 
+            // exportToColladaToolStripMenuItem
+            // 
+            this.exportToColladaToolStripMenuItem.Name = "exportToColladaToolStripMenuItem";
+            this.exportToColladaToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
+            this.exportToColladaToolStripMenuItem.Text = "Export to Collada";
+            this.exportToColladaToolStripMenuItem.Click += new System.EventHandler(this.cmEMAexportToColladaToolStripMenuItem_Click);
+            // 
+            // rawDumpAnimationToolStripMenuItem
+            // 
+            this.rawDumpAnimationToolStripMenuItem.Name = "rawDumpAnimationToolStripMenuItem";
+            this.rawDumpAnimationToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
+            this.rawDumpAnimationToolStripMenuItem.Text = "Raw Dump Animation";
+            this.rawDumpAnimationToolStripMenuItem.Click += new System.EventHandler(this.cmEMArawDumpAnimationToolStripMenuItem_Click);
             // 
             // emoContext
             // 
@@ -1881,13 +1897,6 @@
             this.closeFileToolStripMenuItem.Size = new System.Drawing.Size(150, 22);
             this.closeFileToolStripMenuItem.Text = "Close File";
             this.closeFileToolStripMenuItem.Click += new System.EventHandler(this.cmMODcloseFileToolStripMenuItem_Click);
-            // 
-            // exportToColladaToolStripMenuItem
-            // 
-            this.exportToColladaToolStripMenuItem.Name = "exportToColladaToolStripMenuItem";
-            this.exportToColladaToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
-            this.exportToColladaToolStripMenuItem.Text = "Export to Collada";
-            this.exportToColladaToolStripMenuItem.Click += new System.EventHandler(this.cmEMAexportToColladaToolStripMenuItem_Click);
             // 
             // Form1
             // 
@@ -2119,6 +2128,7 @@
         private System.Windows.Forms.ToolStripMenuItem generateKeyFramesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem renameFileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exportToColladaToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem rawDumpAnimationToolStripMenuItem;
     }
 }
 

@@ -312,7 +312,7 @@ namespace USF4_Stage_Tool
                 CmdTrackCount = 0,
                 CmdTrackPointersList = new List<int>(),
                 CMDTracks = new List<CMDTrack>(),
-                Name = Encoding.ASCII.GetBytes("ANIMATION_000"),
+                Name = "ANIMATION_000",
                 NamePointer = 0,
                 ValuesList = new List<float>(),
                 ValuesListPointer = 0,

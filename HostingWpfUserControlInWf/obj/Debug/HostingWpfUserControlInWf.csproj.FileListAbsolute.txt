@@ -81,3 +81,4 @@ E:\GIT\USF4 Stage Tool\HostingWpfUserControlInWf\obj\Debug\HostingWpfUserControl
 E:\GIT\USF4 Stage Tool\HostingWpfUserControlInWf\obj\Debug\HostingWpfUserControlInWf.dll
 E:\GIT\USF4 Stage Tool\HostingWpfUserControlInWf\obj\Debug\HostingWpfUserControlInWf.pdb
 E:\GIT\USF4 Stage Tool\HostingWpfUserControlInWf\obj\Debug\HostingWpfUserControlInWf.csproj.AssemblyReference.cache
+D:\GITS\USF4StageTool\HostingWpfUserControlInWf\obj\Debug\HostingWpfUserControlInWf.csproj.AssemblyReference.cache

@@ -740,13 +740,23 @@ namespace USF4_Stage_Tool
             //Populate animation index and animation list
             for (int i = 0; i < AnimationCount; i++)
             {
-
                 int indexOffset = 0x20 + (4 * i);
                 AnimationPointersList.Add(Utils.ReadInt(true, indexOffset, Data));
-
+            }
+            for (int i = 0; i < AnimationCount; i++)
+            {
                 //Populate animation list
                 int curAnimOS = AnimationPointersList[i];
                 Animation WorkingAnimation = new Animation();
+
+                if (i < AnimationCount - 1)
+                {
+                    WorkingAnimation.HEXBytes = Utils.Slice(Data, AnimationPointersList[i], AnimationPointersList[i + 1] - AnimationPointersList[i]);
+                }
+                else
+                {
+                    WorkingAnimation.HEXBytes = Utils.Slice(Data, AnimationPointersList[i], SkeletonPointer - AnimationPointersList[i]);
+                }
 
                 WorkingAnimation.Duration = Utils.ReadInt(false, curAnimOS, Data);
                 WorkingAnimation.CmdTrackCount = Utils.ReadInt(false, curAnimOS + 0x02, Data);
@@ -754,7 +764,7 @@ namespace USF4_Stage_Tool
                 WorkingAnimation.NamePointer = Utils.ReadInt(true, curAnimOS + 0x0C, Data);
                 int NameLength, NameOffset;
                 Utils.ReadToNextNonNullByte(WorkingAnimation.NamePointer + curAnimOS, Data, out NameOffset, out NameLength);
-                WorkingAnimation.Name = Utils.ReadStringToArray(NameOffset, NameLength, Data, Data.Length);
+                WorkingAnimation.Name = Encoding.ASCII.GetString(Utils.ReadStringToArray(NameOffset, NameLength, Data, Data.Length));
                 WorkingAnimation.ValuesListPointer = Utils.ReadInt(true, curAnimOS + 0x10, Data);
 
                 //Populate value list
@@ -970,7 +980,7 @@ namespace USF4_Stage_Tool
             Utils.AddIntAsBytes(Data, 0x00, false);
 
             Data.Add(Convert.ToByte(Animations[0].Name.Length));
-            Utils.AddCopiedBytes(Data, 0x00, Animations[0].Name.Length, Animations[0].Name);
+            Utils.AddCopiedBytes(Data, 0x00, Animations[0].Name.Length, Encoding.ASCII.GetBytes(Animations[0].Name));
 
             for (int i = 1; i < Animations.Count; i++)
             {
@@ -981,7 +991,7 @@ namespace USF4_Stage_Tool
                 Utils.AddIntAsBytes(Data, 0x00, false);
 
                 Data.Add(Convert.ToByte(Animations[i].Name.Length));
-                Utils.AddCopiedBytes(Data, 0x00, Animations[i].Name.Length, Animations[i].Name);
+                Utils.AddCopiedBytes(Data, 0x00, Animations[i].Name.Length, Encoding.ASCII.GetBytes(Animations[i].Name));
             }
 
             Data.Add(0x00);
@@ -1002,7 +1012,7 @@ namespace USF4_Stage_Tool
 
     public struct Animation
     {
-        public byte[] Name;
+        public string Name;
         public byte[] HEXBytes;
         public int Duration;
         public int CmdTrackCount;
@@ -1012,6 +1022,78 @@ namespace USF4_Stage_Tool
         public List<int> CmdTrackPointersList;
         public List<CMDTrack> CMDTracks;
         public List<float> ValuesList;
+
+        public void ReadFile(byte[] Data, string Name)
+        {
+            Duration = Utils.ReadInt(false, 0x00, Data);
+            CmdTrackCount = Utils.ReadInt(false, 0x02, Data);
+            ValueCount = Utils.ReadInt(false, 0x04, Data);
+            NamePointer = Utils.ReadInt(true, 0x0C, Data);
+            this.Name = Name;
+            ValuesListPointer = Utils.ReadInt(true, 0x10, Data);
+
+            //Populate value list
+            ValuesList = new List<float>();
+
+            for (int j = 0; j < ValueCount; j++)
+            {
+                ValuesList.Add(Utils.ReadFloat(ValuesListPointer + 4 * j, Data));
+            }
+
+            //Populate command index and command list
+            CmdTrackPointersList = new List<int>();
+            CMDTracks = new List<CMDTrack>();
+
+            for (int j = 0; j < CmdTrackCount; j++)
+            {
+                CmdTrackPointersList.Add(Utils.ReadInt(true, 0x14 + 4 * j, Data));
+
+                int curCmdOS = CmdTrackPointersList[j];
+
+                CMDTrack WorkingCMD = new CMDTrack();
+                WorkingCMD.BoneID = Utils.ReadInt(false, curCmdOS, Data);
+                WorkingCMD.TransformType = Data[curCmdOS + 0x02];
+                WorkingCMD.BitFlag = Data[curCmdOS + 0x03];
+                WorkingCMD.StepCount = Utils.ReadInt(false, curCmdOS + 0x04, Data);
+                WorkingCMD.IndicesListPointer = Utils.ReadInt(false, curCmdOS + 0x06, Data);
+
+                //Populate keyframe list and indices list
+                WorkingCMD.IndicesList = new List<int>();
+                WorkingCMD.StepsList = new List<int>();
+
+                if ((WorkingCMD.BitFlag & 0x10) == 0x10)
+                {
+
+                }
+
+                for (int k = 0; k < WorkingCMD.StepCount; k++)
+                {
+                    //populate keyframes
+                    if ((WorkingCMD.BitFlag & 0x20) == 0x20)
+                    {
+                        WorkingCMD.StepsList.Add(Utils.ReadInt(false, curCmdOS + 0x08 + 2 * k, Data));
+                    }
+                    else
+                    {
+                        WorkingCMD.StepsList.Add(Data[curCmdOS + 0x08 + k]);
+                    }
+
+                    //Populate indices
+                    if ((WorkingCMD.BitFlag & 0x40) == 0x40)
+                    {
+                        WorkingCMD.IndicesList.Add(Utils.ReadInt(true, curCmdOS + WorkingCMD.IndicesListPointer + 4 * k, Data));
+                    }
+                    else
+                    {
+                        WorkingCMD.IndicesList.Add(Utils.ReadInt(false, curCmdOS + WorkingCMD.IndicesListPointer + 2 * k, Data));
+                    }
+
+                }
+
+                //cmdHeader finished, push to list and start the next one...
+                CMDTracks.Add(WorkingCMD);
+            }
+        }
     }
 
     public struct CMDTrack
